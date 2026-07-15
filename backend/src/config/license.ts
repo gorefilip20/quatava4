@@ -2,7 +2,7 @@
 export const LICENSE_CONFIG = {
   // Default license API configuration
   API_URL: process.env.APP_LICENSE_API_URL || 'http://localhost/v5/license',
-  API_KEY: process.env.API_LICENSE_API_KEY || 'CF30BB9297634F7075F6',
+  API_KEY: process.env.API_LICENSE_API_KEY || '',
   
   // Extension to Product ID mappings
   EXTENSION_MAPPINGS: {

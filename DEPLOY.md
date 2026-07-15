@@ -225,12 +225,18 @@ APP_VERIFY_TOKEN_SECRET="..."
 JWT_EXPIRY="30m"
 JWT_REFRESH_EXPIRY="30d"
 
-# License
+# License (get your own key from your MashDiv vendor account — do not reuse one from another deployment)
 APP_LICENSE_API_URL="https://api.mashdiv.com"
-API_LICENSE_API_KEY="CF30BB9297634F7075F6"
+API_LICENSE_API_KEY="..."
 
 # Encryption (regenerate)
+# ENCRYPTION_KEY_PASSPHRASE alone is not enough — after setting it, run:
+#   node scripts/kms/generate.mjs
+# This generates the actual wallet-encryption key, encrypts it with the passphrase
+# above, and writes the result into ENCRYPTED_ENCRYPTION_KEY in .env. Without this
+# step, encrypt()/decrypt() (used for stored wallet secrets) throws at runtime.
 ENCRYPTION_KEY_PASSPHRASE="..."
+ENCRYPTED_ENCRYPTION_KEY="..."
 
 # Mailer + 2FA + reCAPTCHA + Google OAuth + Stripe + Binance: all OFF for MVP
 # (Match the booleans we set locally — see local .env for the full list.)

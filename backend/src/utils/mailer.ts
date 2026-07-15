@@ -292,7 +292,7 @@ export async function prepareEmailTemplate(
 
   // Use direct logo links instead of settings
   const logoUrl = `${NEXT_PUBLIC_SITE_URL}/img/logo/logo-text.webp`;
-  const siteName = NEXT_PUBLIC_SITE_NAME || "Quantava";
+  const siteName = NEXT_PUBLIC_SITE_NAME || "Quatava";
 
   const replacements = {
     "%SITE_URL%": NEXT_PUBLIC_SITE_URL,

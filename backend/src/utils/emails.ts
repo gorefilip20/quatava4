@@ -11,8 +11,8 @@ const APP_EMAILER = process.env.APP_EMAILER || "nodemailer-service";
 
 export const emailQueue = new Bull("emailQueue", {
   redis: {
-    host: "127.0.0.1",
-    port: 6379,
+    host: process.env.REDIS_HOST || "127.0.0.1",
+    port: parseInt(process.env.REDIS_PORT || "6379"),
   },
 });
 

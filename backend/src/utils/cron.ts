@@ -540,8 +540,8 @@ export const createWorker = async (
   try {
     const queue = new Queue(name, {
       connection: {
-        host: "127.0.0.1",
-        port: 6379,
+        host: process.env.REDIS_HOST || "127.0.0.1",
+        port: parseInt(process.env.REDIS_PORT || "6379"),
       },
     });
 
@@ -593,8 +593,8 @@ export const createWorker = async (
       },
       {
         connection: {
-          host: "127.0.0.1",
-          port: 6379,
+          host: process.env.REDIS_HOST || "127.0.0.1",
+          port: parseInt(process.env.REDIS_PORT || "6379"),
         },
         concurrency, // worker concurrency
       }
@@ -624,7 +624,7 @@ export const createWorker = async (
     console.log(`\x1b[32mCron worker ${name} successfully scheduled\x1b[0m`);
   } catch (error: any) {
     console.error(`\x1b[31mFailed to create cron worker ${name}: ${error.message}\x1b[0m`);
-    console.error(`\x1b[33mMake sure Redis is running on 127.0.0.1:6379\x1b[0m`);
+    console.error(`\x1b[33mMake sure Redis is reachable at ${process.env.REDIS_HOST || "127.0.0.1"}:${process.env.REDIS_PORT || "6379"}\x1b[0m`);
     logError(`createWorker-${name}`, error, __filename);
     throw error;
   }

@@ -42,6 +42,10 @@ const nextConfig = {
   },
   // Turbopack configuration (moved from experimental.turbo as it's now stable)
   turbopack: {
+    // Without this, Turbopack infers the workspace root by walking up from
+    // frontend/app and fails to find next/package.json, since pnpm hoists
+    // `next` to the monorepo root's node_modules, not frontend/node_modules.
+    root: path.resolve(__dirname, '..'),
     resolveAlias: {
       '@': path.resolve(__dirname, '.'),
       '~': path.resolve(__dirname, '.'),
