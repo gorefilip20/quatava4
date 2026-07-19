@@ -29,7 +29,20 @@ export default async (data: { user?: any }) => {
   
   try {
     // For example purposes, many of these fields are placeholders or basic aggregates.
-    const notifications = 0; // Replace with your notification logic if available
+    // Query actual unread notification count from database
+    let notifications = 0;
+    try {
+      const notifCount = await models.notification.count({
+        where: {
+          userId: user.id,
+          read: false,
+        },
+      });
+      notifications = notifCount;
+    } catch (notifError) {
+      console.error("Error fetching notification count:", notifError);
+      notifications = 0;
+    }
 
     // Initialize default values
     let portfolioResult: any = null;

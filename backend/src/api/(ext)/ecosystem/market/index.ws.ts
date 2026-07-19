@@ -1,6 +1,6 @@
 import { messageBroker } from "@b/handler/Websocket";
 import { MatchingEngine } from "@b/api/(ext)/ecosystem/utils/matchingEngine";
-import { getOrderBook } from "@b/api/(ext)/ecosystem/utils/scylla/queries";
+import { getOrderBook, getHistoricalCandles } from "@b/api/(ext)/ecosystem/utils/scylla/queries";
 import { models } from "@b/db";
 
 export const metadata = {};
@@ -56,9 +56,37 @@ class UnifiedEcosystemMarketDataHandler {
               }
               break;
             case "trades":
-              // TODO: Implement trades fetching from database
-              // For now, don't broadcast empty trades data to reduce noise
-              // Only broadcast when there are actual trades to send
+              try {
+                const limit = payload.limit || 20;
+                const now = Date.now();
+                const lookback = 60 * 60 * 1000; // 1 hour lookback for recent trades
+                const from = now - lookback;
+
+                // Query recent candles to derive trade data
+                const interval = "1m";
+                const candles = await getHistoricalCandles(symbol, interval, from, now);
+
+                if (candles && candles.length > 0) {
+                  // Build trade-like entries from candle data (most recent first)
+                  const trades = candles
+                    .slice(-limit)
+                    .reverse()
+                    .map((candle: number[]) => ({
+                      timestamp: candle[0],
+                      price: candle[4], // close price
+                      amount: candle[5], // volume
+                      symbol,
+                    }));
+
+                  messageBroker.broadcastToSubscribedClients(
+                    `/api/ecosystem/market`,
+                    payload,
+                    { stream: "trades", data: trades }
+                  );
+                }
+              } catch (error) {
+                console.error(`Error fetching trades for ${symbol}:`, error);
+              }
               break;
             case "ticker":
               const ticker = await this.engine.getTicker(symbol);
@@ -81,7 +109,47 @@ class UnifiedEcosystemMarketDataHandler {
               }
               break;
             case "ohlcv":
-              // TODO: Implement OHLCV fetching
+              try {
+                const interval = payload.interval || "1h";
+                const limit = payload.limit || 1000;
+                const now = Date.now();
+
+                // Calculate lookback based on interval and limit
+                const intervalMs: Record<string, number> = {
+                  '1m': 60 * 1000,
+                  '3m': 3 * 60 * 1000,
+                  '5m': 5 * 60 * 1000,
+                  '15m': 15 * 60 * 1000,
+                  '30m': 30 * 60 * 1000,
+                  '1h': 60 * 60 * 1000,
+                  '2h': 2 * 60 * 60 * 1000,
+                  '4h': 4 * 60 * 60 * 1000,
+                  '6h': 6 * 60 * 60 * 1000,
+                  '8h': 8 * 60 * 60 * 1000,
+                  '12h': 12 * 60 * 60 * 1000,
+                  '1d': 24 * 60 * 60 * 1000,
+                  '3d': 3 * 24 * 60 * 60 * 1000,
+                  '1w': 7 * 24 * 60 * 60 * 1000,
+                };
+
+                const intervalDuration = intervalMs[interval] || 60 * 60 * 1000;
+                const from = now - (intervalDuration * limit);
+
+                const candles = await getHistoricalCandles(symbol, interval, from, now);
+
+                if (candles && candles.length > 0) {
+                  messageBroker.broadcastToSubscribedClients(
+                    `/api/ecosystem/market`,
+                    payload,
+                    {
+                      stream: `ohlcv:${interval}`,
+                      data: candles,
+                    }
+                  );
+                }
+              } catch (error) {
+                console.error(`Error fetching OHLCV for ${symbol}:`, error);
+              }
               break;
           }
         } catch (error) {

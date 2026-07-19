@@ -224,18 +224,41 @@ export async function notifyAdmins(
   data: any
 ): Promise<void> {
   try {
-    // Get admin users with P2P permissions
-    const admins = await models.user.findAll({
-      include: [{
-        model: models.role,
-        as: "role",
-        where: {
-          name: ["admin", "super_admin"],
-        },
-      }],
-    });
+    const { createAdminNotification } = await import("@b/utils/notifications");
 
-    // TODO: Implement actual admin notification for admins
+    let title = "P2P Admin Alert";
+    let message = "";
+
+    switch (event) {
+      case "TRADE_DISPUTED":
+        title = "P2P Trade Disputed";
+        message = `A P2P trade (#${data.tradeId}) has been disputed. Buyer: ${data.buyerId}, Seller: ${data.sellerId}, Amount: ${data.amount} ${data.currency}.${data.reason ? ` Reason: ${data.reason}` : ""}`;
+        break;
+      case "SUSPICIOUS_ACTIVITY":
+        title = "Suspicious P2P Activity";
+        message = `Suspicious activity detected. ${data.description || "Details in audit log."}`;
+        break;
+      case "ADMIN_TRADE_RESOLVED":
+        title = "P2P Trade Resolved";
+        message = `A P2P trade has been resolved by admin. Trade: ${data.tradeId}.`;
+        break;
+      case "TRADE_COMPLETED":
+        title = "P2P Trade Completed";
+        message = `A P2P trade (#${data.tradeId}) has been completed. Amount: ${data.amount} ${data.currency}.`;
+        break;
+      default:
+        title = `P2P Event: ${event}`;
+        message = `P2P event "${event}" occurred. ${JSON.stringify(data)}`;
+        break;
+    }
+
+    await createAdminNotification(
+      "access.admin",
+      title,
+      message,
+      "alert",
+      `/admin/p2p`
+    );
   } catch (error) {
     console.error("Failed to notify admins:", error);
   }
@@ -250,6 +273,7 @@ export async function notifyOfferEvent(
   data: any
 ): Promise<void> {
   try {
+    const { createNotification } = await import("@b/utils/notifications");
     const offer = await models.p2pOffer.findByPk(offerId, {
       include: [{ model: models.user, as: "user" }],
     });
@@ -272,9 +296,17 @@ export async function notifyOfferEvent(
         title = "Offer Expired";
         message = `Your P2P offer has expired and is no longer active.`;
         break;
+      default:
+        return;
     }
 
-    // TODO: Implement actual notification
+    await createNotification({
+      userId: offer.user.id,
+      type: "system",
+      title,
+      message,
+      link: `/p2p/offer/${offerId}`,
+    });
   } catch (error) {
     console.error("Failed to send offer notification:", error);
   }
@@ -289,6 +321,7 @@ export async function notifyReputationEvent(
   data: any
 ): Promise<void> {
   try {
+    const { createNotification } = await import("@b/utils/notifications");
     let title = "";
     let message = "";
 
@@ -305,9 +338,17 @@ export async function notifyReputationEvent(
         title = "Milestone Reached!";
         message = `Congratulations! You've completed ${data.trades} trades.`;
         break;
+      default:
+        return;
     }
 
-    // TODO: Implement actual notification
+    await createNotification({
+      userId,
+      type: "system",
+      title,
+      message,
+      link: "/p2p/dashboard",
+    });
   } catch (error) {
     console.error("Failed to send reputation notification:", error);
   }

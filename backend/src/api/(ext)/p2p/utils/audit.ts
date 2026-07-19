@@ -177,23 +177,38 @@ function determineRiskLevel(eventType: P2PAuditEventType, metadata: any): P2PRis
  */
 async function createSecurityAlert(log: P2PAuditLog, riskLevel: P2PRiskLevel): Promise<void> {
   try {
-    // Create notification for admins
-    // const { notifyAdmins } = await import("./notifications");
-    // TODO: Implement notifyAdmins function
-    
-    // TODO: Implement admin notification
-    // await notifyAdmins("P2P_SECURITY_ALERT", {
-    //   eventType: log.eventType,
-    //   entityType: log.entityType,
-    //   entityId: log.entityId,
-    //   userId: log.userId,
-    //   adminId: log.adminId,
-    //   riskLevel,
-    //   metadata: log.metadata,
-    //   timestamp: new Date().toISOString(),
-    // });
-    
-    // TODO: Send to security monitoring system
+    const { createAdminNotification } = await import("@b/utils/notifications");
+
+    await createAdminNotification(
+      "access.admin",
+      "P2P Security Alert",
+      `[${riskLevel}] ${log.eventType} detected on ${log.entityType} ${log.entityId}. User: ${log.userId}. ${log.metadata.reason ? `Reason: ${log.metadata.reason}` : ""}`.trim(),
+      "alert",
+      `/admin/p2p/audit`,
+      JSON.stringify({
+        eventType: log.eventType,
+        entityType: log.entityType,
+        entityId: log.entityId,
+        userId: log.userId,
+        adminId: log.adminId,
+        riskLevel,
+        metadata: log.metadata,
+        timestamp: new Date().toISOString(),
+      })
+    );
+
+    // For CRITICAL events, also notify the affected user if applicable
+    if (riskLevel === P2PRiskLevel.CRITICAL && log.userId && !log.isAdminAction) {
+      const { createNotification } = await import("@b/utils/notifications");
+
+      await createNotification({
+        userId: log.userId,
+        type: "alert",
+        title: "Security Alert",
+        message: `A ${riskLevel.toLowerCase()} risk event was detected on your account (${log.eventType}). If this wasn't you, please contact support immediately.`,
+        link: "/p2p/dashboard",
+      });
+    }
   } catch (error) {
     console.error("Failed to create security alert:", error);
   }

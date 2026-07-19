@@ -6,6 +6,8 @@ import {
 } from "./utils";
 import { models } from "@b/db";
 import { createError } from "@b/utils/error";
+import { sendFiatTransactionEmail } from "@b/utils/emails";
+import { createNotification, createAdminNotification } from "@b/utils/notifications";
 
 export const metadata: OperationObject = {
   summary: "dLocal webhook handler",
@@ -172,8 +174,13 @@ export default async (data: Handler) => {
 
       // Send email notification
       try {
-        // TODO: Implement email notification
-        console.log(`Email notification should be sent to ${user.email} for successful deposit`);
+        await sendFiatTransactionEmail(
+          user,
+          transaction,
+          currency,
+          Number(wallet.balance)
+        );
+        console.log(`Deposit success email sent to ${user.email}`);
       } catch (emailError) {
         console.error("Failed to send email notification:", emailError);
       }
@@ -186,9 +193,31 @@ export default async (data: Handler) => {
     if (["REJECTED", "CANCELLED", "EXPIRED"].includes(payload.status)) {
       console.log(`dLocal payment failed: ${payload.id}, status: ${payload.status}, detail: ${payload.status_detail}`);
       
-      // TODO: Send failure notification email
+      // Send failure notification email
       try {
-        console.log(`Failure notification should be sent to ${transaction.user.email}`);
+        const user = transaction.user;
+        const currency = payload.currency;
+
+        // Find user wallet (no balance change for failed payment)
+        const wallet = user.wallets?.find((w) => w.currency === currency);
+        const currentBalance = wallet ? Number(wallet.balance) : 0;
+
+        await sendFiatTransactionEmail(
+          user,
+          transaction,
+          currency,
+          currentBalance
+        );
+
+        // Also create an in-app notification
+        await createNotification({
+          userId: user.id,
+          title: "Deposit Failed",
+          type: "alert",
+          message: `Your ${currency} deposit of ${transaction.amount} has failed. Status: ${payload.status}. ${payload.status_detail || ""}`,
+        });
+
+        console.log(`Failure notification sent to ${user.email}`);
       } catch (emailError) {
         console.error("Failed to send failure notification:", emailError);
       }
@@ -198,16 +227,117 @@ export default async (data: Handler) => {
     if (["REFUNDED", "PARTIALLY_REFUNDED"].includes(payload.status)) {
       console.log(`dLocal payment refunded: ${payload.id}, status: ${payload.status}`);
       
-      // TODO: Handle refund logic - deduct from wallet if needed
-      // This would depend on the refund amount provided in the webhook
+      const user = transaction.user;
+      const currency = payload.currency;
+      const refundAmount = Number(transaction.amount);
+
+      // Only debit wallet if the deposit was previously completed
+      if (previousStatus === "COMPLETED") {
+        // Find user wallet for this currency
+        let wallet = user.wallets?.find((w) => w.currency === currency);
+
+        if (!wallet) {
+          // Wallet should exist since deposit was completed, but handle edge case
+          console.error(`Wallet not found for user ${user.id} and currency ${currency} during refund`);
+        } else {
+          // Debit the wallet (subtract the deposited amount)
+          await wallet.update({
+            balance: Number(wallet.balance) - refundAmount,
+          });
+
+          console.log(`Wallet debited for refund: user ${user.id}, -${refundAmount} ${currency}, new balance: ${Number(wallet.balance)}`);
+
+          // Send refund notification email
+          try {
+            await sendFiatTransactionEmail(
+              user,
+              transaction,
+              currency,
+              Number(wallet.balance)
+            );
+          } catch (emailError) {
+            console.error("Failed to send refund email:", emailError);
+          }
+
+          // Create in-app notification
+          try {
+            await createNotification({
+              userId: user.id,
+              title: "Deposit Refunded",
+              type: "alert",
+              message: `Your ${currency} deposit of ${refundAmount} has been refunded. The amount has been deducted from your wallet.`,
+            });
+          } catch (notifError) {
+            console.error("Failed to create refund notification:", notifError);
+          }
+        }
+      } else {
+        console.log(`Refund webhook received for non-completed transaction (${previousStatus}), skipping wallet debit`);
+      }
     }
 
     // Handle chargebacks
     if (payload.status === "CHARGEBACK") {
       console.log(`dLocal payment chargeback: ${payload.id}`);
       
-      // TODO: Handle chargeback logic - may need to deduct from wallet
-      // and notify relevant teams
+      const user = transaction.user;
+      const currency = payload.currency;
+      const chargebackAmount = Number(transaction.amount);
+
+      // Only debit wallet if the deposit was previously completed
+      if (previousStatus === "COMPLETED") {
+        // Find user wallet for this currency
+        let wallet = user.wallets?.find((w) => w.currency === currency);
+
+        if (!wallet) {
+          console.error(`Wallet not found for user ${user.id} and currency ${currency} during chargeback`);
+        } else {
+          // Debit the wallet (subtract the deposited amount)
+          await wallet.update({
+            balance: Number(wallet.balance) - chargebackAmount,
+          });
+
+          console.log(`Wallet debited for chargeback: user ${user.id}, -${chargebackAmount} ${currency}, new balance: ${Number(wallet.balance)}`);
+
+          // Send chargeback notification email
+          try {
+            await sendFiatTransactionEmail(
+              user,
+              transaction,
+              currency,
+              Number(wallet.balance)
+            );
+          } catch (emailError) {
+            console.error("Failed to send chargeback email:", emailError);
+          }
+
+          // Create in-app notification for user
+          try {
+            await createNotification({
+              userId: user.id,
+              title: "Deposit Chargeback",
+              type: "alert",
+              message: `Your ${currency} deposit of ${chargebackAmount} has been charged back. The amount has been deducted from your wallet. Please contact support if you have questions.`,
+            });
+          } catch (notifError) {
+            console.error("Failed to create chargeback notification:", notifError);
+          }
+
+          // Alert admin about the chargeback
+          try {
+            await createAdminNotification(
+              "finance.deposit.view",
+              "Chargeback Alert",
+              `A chargeback of ${chargebackAmount} ${currency} has been processed for user ${user.id} (${user.email}). Transaction: ${transaction.id}. dLocal payment: ${payload.id}.`,
+              "alert"
+            );
+          } catch (adminNotifError) {
+            console.error("Failed to create admin chargeback notification:", adminNotifError);
+          }
+        }
+      } else {
+        console.log(`Chargeback webhook received for non-completed transaction (${previousStatus}), skipping wallet debit`);
+      }
     }
 
     return {

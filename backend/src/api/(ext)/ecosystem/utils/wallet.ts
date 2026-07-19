@@ -1323,11 +1323,6 @@ export const handleEcosystemDeposit = async (trx) => {
     }
 
     const depositAmount = parseFloat(trx.amount);
-    console.log(`[DEPOSIT_DEBUG] Processing deposit for wallet ${wallet.id}`);
-    console.log(`[DEPOSIT_DEBUG] Current wallet balance: ${wallet.balance} ${wallet.currency}`);
-    console.log(`[DEPOSIT_DEBUG] Current chain balance: ${chainAddress.balance || 0} ${wallet.currency}`);
-    console.log(`[DEPOSIT_DEBUG] Deposit amount (trx.amount): ${trx.amount} ${wallet.currency}`);
-    console.log(`[DEPOSIT_DEBUG] Parsed deposit amount: ${depositAmount} ${wallet.currency}`);
 
     // Apply precision to prevent floating-point errors
     const newChainBalance = updateBalancePrecision(
@@ -1339,9 +1334,6 @@ export const handleEcosystemDeposit = async (trx) => {
       trx.chain
     );
     chainAddress.balance = newChainBalance;
-
-    console.log(`[DEPOSIT_DEBUG] New chain balance: ${chainAddress.balance} ${wallet.currency}`);
-    console.log(`[DEPOSIT_DEBUG] New wallet balance: ${walletBalance} ${wallet.currency}`);
 
     // Ensure the addresses object is properly formatted
     addresses[trx.chain] = {

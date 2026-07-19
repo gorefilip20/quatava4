@@ -199,8 +199,8 @@ export const createTradeSlice = (
           id: counterpartyData.id,
           name: counterpartyData.name || `${counterpartyData.firstName || ''} ${counterpartyData.lastName || ''}`.trim(),
           avatar: counterpartyData.avatar,
-          completedTrades: 0, // TODO: Get from backend
-          completionRate: 100, // TODO: Get from backend
+          completedTrades: counterpartyData.completedTrades ?? 0,
+          completionRate: counterpartyData.completionRate ?? 0,
         } : undefined,
         timeline: Array.isArray(timeline) ? timeline.map((event: any) => ({
           title: event.event || event.title || 'Event',

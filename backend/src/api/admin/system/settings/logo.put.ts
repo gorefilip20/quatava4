@@ -234,9 +234,6 @@ export default async (data: { body: { logoType: string; file: string } }) => {
   }
 
   try {
-    console.log(`[LOGO-API-DEBUG] Processing logo upload for type: ${logoType}`);
-    console.log(`[LOGO-API-DEBUG] File size: ${file.length} characters`);
-    
     // Determine the correct path based on environment with better detection
     const isProduction = process.env.NODE_ENV === 'production';
     
@@ -262,13 +259,6 @@ export default async (data: { body: { logoType: string; file: string } }) => {
           break;
         }
       }
-      
-      // Debug logging for production troubleshooting
-      console.log(`[LOGO-DEBUG] Production mode detected`);
-      console.log(`[LOGO-DEBUG] Current working directory: ${process.cwd()}`);
-      console.log(`[LOGO-DEBUG] Selected logo directory: ${logoDir}`);
-      console.log(`[LOGO-DEBUG] Logo directory exists: ${fsSync.existsSync(logoDir)}`);
-      console.log(`[LOGO-DEBUG] Parent directory exists: ${fsSync.existsSync(path.dirname(logoDir))}`);
     } else {
       // Development path
       logoDir = path.join(process.cwd(), "..", "frontend", "public", "img", "logo");
@@ -284,7 +274,6 @@ export default async (data: { body: { logoType: string; file: string } }) => {
     }
 
     const buffer = Buffer.from(base64Data, "base64");
-    console.log(`[LOGO-API-DEBUG] Buffer created, size: ${buffer.length} bytes`);
     
     // Try to ensure the directory exists, with fallback to alternative paths
     let finalLogoDir = logoDir;
@@ -303,7 +292,6 @@ export default async (data: { body: { logoType: string; file: string } }) => {
         try {
           if (!fsSync.existsSync(testPath)) {
             await fs.mkdir(testPath, { recursive: true });
-            console.log(`[LOGO-DEBUG] Successfully created directory: ${testPath}`);
           }
           finalLogoDir = testPath;
           directoryCreated = true;
@@ -325,7 +313,6 @@ export default async (data: { body: { logoType: string; file: string } }) => {
       if (!fsSync.existsSync(finalLogoDir)) {
         try {
           await fs.mkdir(finalLogoDir, { recursive: true });
-          console.log(`[LOGO-DEBUG] Created logo directory: ${finalLogoDir}`);
         } catch (mkdirError) {
           console.error(`[LOGO-DEBUG] Failed to create logo directory: ${finalLogoDir}`, mkdirError);
           throw createError({
@@ -336,7 +323,6 @@ export default async (data: { body: { logoType: string; file: string } }) => {
       }
     }
     
-    console.log(`[LOGO-DEBUG] Using final logo directory: ${finalLogoDir}`);
     
     // Get all files to process for this logo type
     const allFilesToProcess = [...logoConfig.primaryFiles, ...logoConfig.additionalFiles];

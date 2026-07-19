@@ -37,11 +37,6 @@ if (isProduction) {
   }
   
   // Debug logging for production troubleshooting
-  console.log(`[LOGO-DEBUG] Production mode detected`);
-  console.log(`[LOGO-DEBUG] Current working directory: ${process.cwd()}`);
-  console.log(`[LOGO-DEBUG] Selected logo directory: ${BASE_UPLOAD_DIR}`);
-  console.log(`[LOGO-DEBUG] Logo directory exists: ${fsSync.existsSync(BASE_UPLOAD_DIR)}`);
-  console.log(`[LOGO-DEBUG] Parent directory exists: ${fsSync.existsSync(path.dirname(BASE_UPLOAD_DIR))}`);
 } else {
   // Development path
   BASE_UPLOAD_DIR = path.join(process.cwd(), "..", "frontend", "public", "img", "logo");
@@ -271,13 +266,10 @@ export default async (data) => {
 async function ensureDirExists(dir: string) {
   try {
     await fs.access(dir);
-    console.log(`[LOGO-DEBUG] Directory exists: ${dir}`);
   } catch (error) {
     if (error.code === "ENOENT") {
       try {
-        console.log(`[LOGO-DEBUG] Creating directory: ${dir}`);
         await fs.mkdir(dir, { recursive: true });
-        console.log(`[LOGO-DEBUG] Directory created successfully: ${dir}`);
       } catch (mkdirError) {
         console.error(`[LOGO-DEBUG] Failed to create directory: ${dir}`, mkdirError);
         throw new Error(`Failed to create logo directory: ${mkdirError.message}`);

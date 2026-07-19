@@ -83,6 +83,65 @@ export default async (data: { params?: any; user?: any }) => {
       tradeData.seller.name = `${tradeData.seller.firstName || ''} ${tradeData.seller.lastName || ''}`.trim();
     }
 
+    // Fetch real trade stats for both buyer and seller
+    const userIds = [tradeData.buyerId, tradeData.sellerId].filter(Boolean);
+    if (userIds.length > 0) {
+      // Get total and completed trade counts per user in a single query
+      const tradeCounts = await models.p2pTrade.findAll({
+        attributes: [
+          "buyerId",
+          "sellerId",
+          "status",
+          [models.p2pTrade.sequelize!.fn("COUNT", models.p2pTrade.sequelize!.literal("*")), "count"],
+        ],
+        where: {
+          [Op.or]: [
+            { buyerId: { [Op.in]: userIds } },
+            { sellerId: { [Op.in]: userIds } },
+          ],
+        },
+        group: ["buyerId", "sellerId", "status"],
+        raw: true,
+      });
+
+      // Aggregate stats per user
+      const userStats: Record<string, { total: number; completed: number }> = {};
+      for (const row of tradeCounts) {
+        const buyerId = (row as any).buyerId;
+        const sellerId = (row as any).sellerId;
+        const status = (row as any).status;
+        const count = parseInt((row as any).count, 10);
+
+        // Attribute the trade to the user based on their role
+        if (userIds.includes(buyerId)) {
+          if (!userStats[buyerId]) userStats[buyerId] = { total: 0, completed: 0 };
+          userStats[buyerId].total += count;
+          if (status === "COMPLETED") userStats[buyerId].completed += count;
+        }
+        if (userIds.includes(sellerId)) {
+          if (!userStats[sellerId]) userStats[sellerId] = { total: 0, completed: 0 };
+          userStats[sellerId].total += count;
+          if (status === "COMPLETED") userStats[sellerId].completed += count;
+        }
+      }
+
+      // Attach stats to buyer and seller
+      if (tradeData.buyer) {
+        const stats = userStats[tradeData.buyerId] || { total: 0, completed: 0 };
+        tradeData.buyer.completedTrades = stats.completed;
+        tradeData.buyer.completionRate = stats.total > 0
+          ? Math.round((stats.completed / stats.total) * 100)
+          : 0;
+      }
+      if (tradeData.seller) {
+        const stats = userStats[tradeData.sellerId] || { total: 0, completed: 0 };
+        tradeData.seller.completedTrades = stats.completed;
+        tradeData.seller.completionRate = stats.total > 0
+          ? Math.round((stats.completed / stats.total) * 100)
+          : 0;
+      }
+    }
+
     return tradeData;
   } catch (err: any) {
     throw new Error(err.message || "Internal Server Error");

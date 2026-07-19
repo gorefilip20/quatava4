@@ -452,9 +452,6 @@ export const createOfferSlice = (
       // Transform the form data to match the API expected payload
       const apiPayload = transformFormDataToApiPayload(formData);
 
-      console.log("[Offer Slice] Form data payment methods:", formData.paymentMethods);
-      console.log("[Offer Slice] API payload paymentMethodIds:", apiPayload.paymentMethodIds);
-
       const { data, error } = await $fetch({
         url: "/api/p2p/offer",
         method: "POST",

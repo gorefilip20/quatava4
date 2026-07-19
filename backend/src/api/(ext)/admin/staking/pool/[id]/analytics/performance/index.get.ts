@@ -395,34 +395,151 @@ export default async (data: Handler) => {
       ? (Math.pow(1 + (pool.apr / 100) / compoundFrequency, compoundFrequency) - 1) * 100
       : 0;
 
-    // Generate historical data (simplified)
+    // Generate historical data with actual database queries
     const days = timeframe === "24h" ? 1 : timeframe === "7d" ? 7 : timeframe === "30d" ? 30 : 90;
     const tvlHistory: Array<{ date: string; value: number }> = [];
     const positionHistory: Array<{ date: string; new: number; completed: number; active: number }> = [];
     const rewardsHistory: Array<{ date: string; distributed: number; claimed: number }> = [];
 
+    // Query actual position history per day from database
+    let positionHistoryData: Array<{ date: string; newCount: number; completedCount: number }> = [];
+    try {
+      const dateFormatClause = fn('DATE', col('createdAt'));
+      const positionCounts = await models.stakingPosition.findAll({
+        attributes: [
+          [dateFormatClause, 'date'],
+          [fn('COUNT', col('id')), 'newCount'],
+        ],
+        where: {
+          poolId: id,
+          createdAt: { [Op.gte]: startDate }
+        },
+        group: [dateFormatClause],
+        order: [[dateFormatClause, 'ASC']],
+        raw: true,
+      });
+
+      const completedDateFormat = fn('DATE', col('completedAt'));
+      const completedCounts = await models.stakingPosition.findAll({
+        attributes: [
+          [completedDateFormat, 'date'],
+          [fn('COUNT', col('id')), 'completedCount'],
+        ],
+        where: {
+          poolId: id,
+          status: "COMPLETED",
+          completedAt: { [Op.gte]: startDate }
+        },
+        group: [completedDateFormat],
+        order: [[completedDateFormat, 'ASC']],
+        raw: true,
+      });
+
+      const completedMap = new Map<string, number>();
+      completedCounts.forEach((row: any) => {
+        if (row.date) {
+          completedMap.set(row.date, parseInt(row.completedCount) || 0);
+        }
+      });
+
+      positionHistoryData = positionCounts.map((row: any) => ({
+        date: row.date,
+        newCount: parseInt(row.newCount) || 0,
+        completedCount: completedMap.get(row.date) || 0,
+      }));
+    } catch (histError) {
+      console.warn("Failed to fetch position history:", histError.message);
+    }
+
+    const positionMap = new Map(positionHistoryData.map(p => [p.date, p]));
+
+    // Query actual rewards per day from database
+    let rewardsHistoryData: Array<{ date: string; distributed: number; claimed: number }> = [];
+    try {
+      const rewardsDateFormat = fn('DATE', col('stakingEarningRecord.createdAt'));
+      const rewardsCounts = await models.stakingEarningRecord.findAll({
+        include: [{
+          model: models.stakingPosition,
+          as: "position",
+          where: { poolId: id },
+          attributes: []
+        }],
+        where: {
+          createdAt: { [Op.gte]: startDate }
+        },
+        attributes: [
+          [rewardsDateFormat, 'date'],
+          [fn('SUM', col('stakingEarningRecord.amount')), 'distributed'],
+        ],
+        group: [rewardsDateFormat],
+        order: [[rewardsDateFormat, 'ASC']],
+        raw: true,
+      });
+
+      const claimedDateFormat = fn('DATE', col('claimedAt'));
+      const claimedCounts = await models.stakingEarningRecord.findAll({
+        include: [{
+          model: models.stakingPosition,
+          as: "position",
+          where: { poolId: id },
+          attributes: []
+        }],
+        where: {
+          isClaimed: true,
+          claimedAt: { [Op.gte]: startDate }
+        },
+        attributes: [
+          [claimedDateFormat, 'date'],
+          [fn('SUM', col('stakingEarningRecord.amount')), 'claimed'],
+        ],
+        group: [claimedDateFormat],
+        order: [[claimedDateFormat, 'ASC']],
+        raw: true,
+      });
+
+      const claimedMap = new Map<string, number>();
+      claimedCounts.forEach((row: any) => {
+        if (row.date) {
+          claimedMap.set(row.date, parseFloat(row.claimed) || 0);
+        }
+      });
+
+      rewardsHistoryData = rewardsCounts.map((row: any) => ({
+        date: row.date,
+        distributed: parseFloat(row.distributed) || 0,
+        claimed: claimedMap.get(row.date) || 0,
+      }));
+    } catch (rewardsHistError) {
+      console.warn("Failed to fetch rewards history:", rewardsHistError.message);
+    }
+
+    const rewardsMap = new Map(rewardsHistoryData.map(r => [r.date, r]));
+
+    // Build history arrays from actual data
     for (let i = days - 1; i >= 0; i--) {
       const date = new Date();
       date.setDate(date.getDate() - i);
       const dateStr = date.toISOString().split('T')[0];
 
-      // This is simplified - in production you'd query actual historical data
+      // TVL history - use actual total for the end date, approximate for earlier dates
       tvlHistory.push({
         date: dateStr,
-        value: totalValueLocked * (1 - (i * 0.01)) // Simulated growth
+        value: totalValueLocked * (1 - (i * 0.01)) // Simulated growth trend
       });
 
+      const posData = positionMap.get(dateStr);
       positionHistory.push({
         date: dateStr,
-        new: Math.floor(Math.random() * 10),
-        completed: Math.floor(Math.random() * 5),
-        active: activePositions - Math.floor(Math.random() * 20)
+        new: posData?.newCount || 0,
+        completed: posData?.completedCount || 0,
+        active: activePositions
       });
 
+      const rewData = rewardsMap.get(dateStr);
       rewardsHistory.push({
         date: dateStr,
-        distributed: totalRewardsDistributed / days,
-        claimed: (totalRewardsDistributed / days) * 0.8
+        distributed: rewData?.distributed || 0,
+        claimed: rewData?.claimed || 0
       });
     }
 

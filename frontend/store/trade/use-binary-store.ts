@@ -565,7 +565,6 @@ export const useBinaryStore = create<BinaryState>()(
             // Extract the currency from the symbol if not provided
             const currentSymbol = get().currentSymbol;
             if (!currentSymbol) {
-              console.log(`[Binary Store] No current symbol available, skipping wallet fetch`);
               set({ isLoadingWallet: false });
               return;
             }
@@ -575,7 +574,6 @@ export const useBinaryStore = create<BinaryState>()(
             
             // Validate currency
             if (!currencyToFetch || currencyToFetch.length < 2) {
-              console.log(`[Binary Store] Invalid currency "${currencyToFetch}", skipping wallet fetch`);
               set({ isLoadingWallet: false });
               return;
             }
@@ -583,7 +581,6 @@ export const useBinaryStore = create<BinaryState>()(
             // Prevent duplicate calls - check if we're already loading this currency
             const currentState = get();
             if (currentState.isLoadingWallet) {
-              console.log(`[Binary Store] Wallet fetch already in progress for ${currencyToFetch}, skipping duplicate call`);
               return;
             }
 
@@ -598,7 +595,6 @@ export const useBinaryStore = create<BinaryState>()(
                 try {
                   const { data: cachedData, timestamp } = JSON.parse(cached);
                   if (now - timestamp < 30000 && cachedData?.balance !== undefined) { // 30 seconds cache
-                    console.log(`[Binary Store] Using cached wallet data for ${currencyToFetch}`);
                     set({
                       realBalance: cachedData.balance,
                       isLoadingWallet: false,
@@ -615,7 +611,6 @@ export const useBinaryStore = create<BinaryState>()(
               }
             }
 
-            console.log(`[Binary Store] Fetching wallet data for ${currencyToFetch}`);
             set({ isLoadingWallet: true });
 
             const { data, error } = await $fetch({
@@ -659,13 +654,11 @@ export const useBinaryStore = create<BinaryState>()(
           try {
             // Prevent duplicate calls if already loading
             if (get().isLoadingDurations) {
-              console.log("Binary durations already loading, skipping duplicate call");
               return;
             }
 
             // Check if we already have durations data
             if (get().binaryDurations.length > 0) {
-              console.log("Binary durations already loaded, skipping fetch");
               return;
             }
 
@@ -704,13 +697,11 @@ export const useBinaryStore = create<BinaryState>()(
           try {
             // Prevent duplicate calls if already loading
             if (get().isLoadingMarkets) {
-              console.log("Binary markets already loading, skipping duplicate call");
               return;
             }
 
             // Check if we already have markets data
             if (get().binaryMarkets.length > 0) {
-              console.log("Binary markets already loaded, skipping fetch");
               return;
             }
 
@@ -1001,12 +992,10 @@ export const useBinaryStore = create<BinaryState>()(
         // Initialize order WebSocket subscription
         initOrderWebSocket: () => {
           // This will be implemented when the WebSocket service is properly set up
-          console.log("Order WebSocket initialization - to be implemented");
         },
 
         // Cleanup method to prevent memory leaks
         cleanup: () => {
-          console.log("Cleaning up binary store...");
           cleanupRegistry.cleanup();
         },
         setIsLoading: (loading) => set({ isLoading: loading }), // Add setIsLoading
@@ -1031,13 +1020,11 @@ export const useBinaryStore = create<BinaryState>()(
 export const initializeBinaryStore = async (): Promise<void> => {
   // If already initialized, return immediately
   if (isInitialized) {
-    console.log('Binary store already initialized, skipping...');
     return;
   }
 
   // If currently initializing, return the existing promise
   if (isInitializing && initializationPromise) {
-    console.log('Binary store initialization in progress, waiting...');
     return initializationPromise;
   }
 
@@ -1046,7 +1033,6 @@ export const initializeBinaryStore = async (): Promise<void> => {
   
   initializationPromise = (async () => {
     try {
-      console.log('Starting binary store initialization...');
       
       const store = useBinaryStore.getState();
       // Get user from useUserStore instead of binary store
@@ -1057,7 +1043,6 @@ export const initializeBinaryStore = async (): Promise<void> => {
       store.setIsLoading(true);
 
       // Parallel fetch of essential data
-      console.log('Fetching binary markets and durations...');
       await Promise.all([
         store.fetchBinaryMarkets(),
         store.fetchBinaryDurations(),
@@ -1065,7 +1050,6 @@ export const initializeBinaryStore = async (): Promise<void> => {
 
       // Only fetch user-specific data if authenticated
       if (isAuthenticated) {
-        console.log('User authenticated, fetching user-specific data...');
         
         // Don't fetch orders here as currentSymbol is not set yet
         // Orders will be fetched when symbol is set
@@ -1086,13 +1070,11 @@ export const initializeBinaryStore = async (): Promise<void> => {
         // Register interval for cleanup
         cleanupRegistry.addInterval(updateInterval);
       } else {
-        console.log("User not authenticated, skipping user-specific data fetch");
       }
 
       // Mark as initialized
       isInitialized = true;
       store.setIsLoading(false);
-      console.log("Binary store initialized successfully");
       
     } catch (error) {
       console.error("Error initializing binary store:", error);
@@ -1109,7 +1091,6 @@ export const initializeBinaryStore = async (): Promise<void> => {
 
 // Global cleanup function for page navigation
 export const cleanupBinaryStore = () => {
-  console.log("Cleaning up binary store on page navigation...");
   cleanupRegistry.cleanup();
   
   // Reset store state if needed
