@@ -36,8 +36,8 @@ export function MarketItem({
   return (
     <div
       className={cn(
-        "flex items-center justify-between py-2 px-2 hover:bg-muted dark:hover:bg-zinc-800 cursor-pointer border-b border-zinc-200/70 dark:border-zinc-900 transition-colors",
-        isSelected && "bg-muted dark:bg-zinc-800"
+        "flex items-center justify-between py-2 px-2 hover:bg-[hsl(var(--primary)/0.05)] cursor-pointer border-b border-border/50 transition-colors text-sm",
+        isSelected && "bg-[hsl(var(--primary)/0.08)]"
       )}
       onClick={() => onSelect(market.symbol)}
     >
@@ -103,11 +103,11 @@ export function MarketItem({
             <div className="flex items-center justify-between h-3 mb-1">
               <div>
                 {market.volume ? (
-                  <div className="text-[10px] text-muted-foreground dark:text-zinc-500">
+                  <div className="text-[10px] text-muted-foreground">
                     {t("vol")} {market.volume}
                   </div>
                 ) : (
-                  <div className="text-[10px] text-muted-foreground dark:text-zinc-500">
+                  <div className="text-[10px] text-muted-foreground">
                     {t("vol")} --
                   </div>
                 )}
@@ -133,8 +133,8 @@ export function MarketItem({
                     className={cn(
                       "text-[10px] flex items-center",
                       market.isPositive
-                        ? "text-emerald-600 dark:text-green-500"
-                        : "text-red-600 dark:text-red-500"
+                        ? "text-success"
+                        : "text-destructive"
                     )}
                   >
                     {market.isPositive ? (
@@ -207,11 +207,11 @@ export function MarketItem({
             </div>
             <div className="h-3 mt-0.5">
               {market.volume ? (
-                <div className="text-[10px] text-muted-foreground dark:text-zinc-500">
+                <div className="text-[10px] text-muted-foreground">
                   {t("vol")} {market.volume}
                 </div>
               ) : (
-                <div className="text-[10px] text-muted-foreground dark:text-zinc-500">
+                <div className="text-[10px] text-muted-foreground">
                   {t("vol")} --
                 </div>
               )}
@@ -240,8 +240,8 @@ export function MarketItem({
                 className={cn(
                   "text-[10px] flex items-center",
                   market.isPositive
-                    ? "text-emerald-600 dark:text-green-500"
-                    : "text-red-600 dark:text-red-500"
+                    ? "text-success"
+                    : "text-destructive"
                 )}
               >
                 {market.isPositive ? (

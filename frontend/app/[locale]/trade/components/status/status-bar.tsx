@@ -164,7 +164,7 @@ export default function StatusBar() {
   const statusConfig = getConnectionStatusConfig();
 
   return (
-    <div className="flex items-center justify-between text-[10px] px-2 py-0.5 bg-background dark:bg-zinc-950 border-t border-zinc-200 dark:border-zinc-800 text-muted-foreground dark:text-zinc-400">
+    <div className="flex items-center justify-between text-[10px] px-2 py-0.5 bg-card border-t border-border text-muted-foreground">
       {/* Left section - WebSocket connection status */}
       <div className="flex items-center space-x-3">
         <div className={`flex items-center ${statusConfig.className}`}>
@@ -184,7 +184,7 @@ export default function StatusBar() {
               {topGainers.map((market, index) => (
                 <span key={`gainer-${index}`} className="mr-4">
                   <span className="font-medium">{market.symbol}</span>{" "}
-                  <span className="text-emerald-600 dark:text-green-500">
+                  <span className="text-success">
                     {market.change}
                   </span>
                 </span>
@@ -198,7 +198,7 @@ export default function StatusBar() {
               {topLosers.map((market, index) => (
                 <span key={`loser-${index}`} className="mr-4">
                   <span className="font-medium">{market.symbol}</span>{" "}
-                  <span className="text-red-600 dark:text-red-500">
+                  <span className="text-destructive">
                     {market.change}
                   </span>
                 </span>

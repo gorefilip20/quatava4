@@ -132,13 +132,13 @@ export default function ChartPanel({ symbol, onPriceUpdate, metadata, marketType
   // If no symbol is provided, show an error message
   if (!symbol) {
     return (
-      <div className="w-full h-full bg-black flex items-center justify-center text-white">
-        <div className="flex flex-col items-center gap-4 p-6 bg-gray-900 rounded-lg max-w-md text-center">
-          <AlertCircle className="h-12 w-12 text-red-500" />
-          <h3 className="text-xl font-bold">
+      <div className="w-full h-full bg-background flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4 p-6 bg-card border border-border max-w-md text-center">
+          <AlertCircle className="h-12 w-12 text-destructive" />
+          <h3 className="text-xl font-extrabold">
             {t("no_trading_symbol_selected")}
           </h3>
-          <p className="text-gray-400">
+          <p className="text-muted-foreground">
             {t("please_select_a_trading_symbol_to_view_the_chart")}.
           </p>
         </div>
@@ -147,7 +147,7 @@ export default function ChartPanel({ symbol, onPriceUpdate, metadata, marketType
   }
 
   return (
-    <div className="w-full h-full bg-black">
+    <div className="w-full h-full bg-background">
       {isLayoutReady && (
         <ChartSwitcher
           key={chartKey}
@@ -163,8 +163,8 @@ export default function ChartPanel({ symbol, onPriceUpdate, metadata, marketType
         />
       )}
       {!isLayoutReady && (
-        <div className="w-full h-full bg-black flex items-center justify-center">
-          <div className="animate-spin h-8 w-8 border-2 border-blue-500 border-t-transparent rounded-full"></div>
+        <div className="w-full h-full bg-background flex items-center justify-center">
+          <div className="animate-spin h-8 w-8 border-2 border-primary border-t-transparent"></div>
         </div>
       )}
     </div>

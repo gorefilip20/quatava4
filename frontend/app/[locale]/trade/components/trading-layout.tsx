@@ -352,8 +352,8 @@ function TradingInterface({
       h-full
       flex flex-col
       items-center
-      bg-background dark:bg-zinc-950
-      border-r border-zinc-200 dark:border-zinc-800/50
+      bg-card
+      border-r border-border
       order-first
     "
                     >
@@ -376,7 +376,7 @@ function TradingInterface({
                       title={getGroupTitle("left")}
                       icon={getGroupIcon("left")}
                       className={cn(
-                        "bg-background dark:bg-zinc-950 border-r border-zinc-200 dark:border-zinc-800/50 relative",
+                        "bg-card border-r border-border relative",
                         panelsLoaded && "panel-animate-in panel-slide-in-left",
                         animatingPanels.left && "panel-expanding"
                       )}
@@ -444,7 +444,7 @@ function TradingInterface({
                     defaultSize={layoutConfig.chartPanel}
                     collapsedSize={3}
                     className={cn(
-                      "bg-black h-full",
+                      "bg-background h-full",
                       panelsLoaded &&
                         "panel-animate-in panel-slide-in-top panel-delay-100",
                       layoutConfig.chartPanel === 0 && "hidden"
@@ -490,7 +490,7 @@ function TradingInterface({
                         defaultSize={layoutConfig.dataPanel}
                         minSize={5} // Reduce minimum size to allow for better collapsing
                         className={cn(
-                          "border-t border-zinc-200 dark:border-zinc-800",
+                          "border-t border-border",
                           panelsLoaded &&
                             "panel-animate-in panel-slide-in-bottom panel-delay-200",
                           layoutConfig.dataPanel === 0 && "hidden"
@@ -507,7 +507,7 @@ function TradingInterface({
                             return isCollapsed ? (
                               <div
                                 key={panelId}
-                                className="h-[30px] w-full flex justify-center bg-background dark:bg-zinc-950 border-b border-zinc-200 dark:border-zinc-800"
+                                className="h-[30px] w-full flex justify-center bg-card border-b border-border"
                               >
                                 <CollapsedPanel
                                   title={
@@ -543,7 +543,7 @@ function TradingInterface({
                                 <Panel
                                   defaultSize={panel?.size || 100}
                                   className={cn(
-                                    "bg-background dark:bg-zinc-950",
+                                    "bg-card",
                                     !panel?.visible && "hidden"
                                   )}
                                   collapsible={true}
@@ -593,8 +593,8 @@ function TradingInterface({
       h-full
       flex flex-col
       items-center
-      bg-background dark:bg-zinc-950
-      border-l border-zinc-200 dark:border-zinc-800
+      bg-card
+      border-l border-border
       order-last
     "
                     >
@@ -613,7 +613,7 @@ function TradingInterface({
                       minSize={10}
                       maxSize={40}
                       className={cn(
-                        "border-l border-zinc-200 dark:border-zinc-800 transition-all duration-300 ease-in-out relative",
+                        "border-l border-border transition-all duration-300 ease-in-out relative",
                         animatingPanels.right && "panel-expanding"
                       )}
                       collapsible={rightGroupConfig?.collapsible ?? true}
@@ -667,8 +667,8 @@ function TradingInterface({
       h-[30px]
       w-full
       flex justify-center
-      bg-background dark:bg-zinc-950
-      border-t border-zinc-200 dark:border-zinc-800
+      bg-card
+      border-t border-border
       order-last
     "
                 >
@@ -687,7 +687,7 @@ function TradingInterface({
                   minSize={5}
                   maxSize={50} // Set max size to 50% explicitly here
                   className={cn(
-                    "bg-background dark:bg-zinc-950 border-t border-zinc-200 dark:border-zinc-800 relative",
+                    "bg-card border-t border-border relative",
                     panelsLoaded && "panel-animate-in panel-slide-in-bottom",
                     animatingPanels.bottom && "panel-expanding"
                   )}
@@ -1059,7 +1059,7 @@ export default function TradingLayout() {
   if (isMobile) {
     return (
       <LayoutProvider>
-        <div className="flex flex-col h-screen-mobile w-full bg-black overflow-hidden">
+        <div className="flex flex-col h-screen-mobile w-full bg-background overflow-hidden">
           <TradingHeader
             currentSymbol={currentSymbol}
             onSymbolChange={handleSymbolChange}
@@ -1079,7 +1079,7 @@ export default function TradingLayout() {
 
   return (
     <LayoutProvider>
-      <div className="flex flex-col h-screen w-full bg-black">
+      <div className="flex flex-col h-screen w-full bg-background">
         <TradingHeader
           currentSymbol={currentSymbol}
           onSymbolChange={handleSymbolChange}

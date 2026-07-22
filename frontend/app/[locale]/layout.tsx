@@ -12,11 +12,12 @@ import { getSettings } from "@/lib/fetchers/settings";
 import ConditionalLayoutProvider from "@/components/layout/conditional-layout-provider";
 import { SettingsStatus } from "@/components/development/settings-status";
 import { GlobalAuthDetector } from "@/components/auth/global-auth-detector";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Archivo, Geist_Mono } from "next/font/google";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const archivo = Archivo({
+  variable: "--font-archivo",
   subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
 });
 
 const geistMono = Geist_Mono({
@@ -232,8 +233,8 @@ export default async function RootLayout(
           )}
         </head>
         <body 
-          className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-          style={{ "--radius": "0.5rem" } as React.CSSProperties}
+          className={`${archivo.variable} ${geistMono.variable} antialiased`}
+          style={{ fontFamily: "var(--font-archivo), sans-serif" } as React.CSSProperties}
           suppressHydrationWarning
         >
           <IntlProvider locale={locale} messages={messages || {}}>
