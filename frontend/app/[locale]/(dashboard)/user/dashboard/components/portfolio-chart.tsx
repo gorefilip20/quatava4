@@ -1,18 +1,27 @@
 "use client";
 
 import { useState } from "react";
+import { useWalletStore } from "@/store/finance/wallet-store";
 
 const TIME_RANGES = ["24H", "7D", "1M", "1Y"];
 
 export function PortfolioChart() {
   const [activeRange, setActiveRange] = useState("7D");
+  const { totalBalance } = useWalletStore();
 
   return (
     <div className="bg-card border border-border p-4">
       <div className="flex justify-between items-center mb-4">
-        <span className="font-extrabold text-sm tracking-tight">
-          Portfolio Performance
-        </span>
+        <div>
+          <span className="font-extrabold text-sm tracking-tight">
+            Portfolio Performance
+          </span>
+          {totalBalance > 0 && (
+            <p className="text-xs text-muted-foreground mt-1">
+              Current: ${totalBalance.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </p>
+          )}
+        </div>
         <div className="flex gap-2">
           {TIME_RANGES.map((range) => (
             <button
