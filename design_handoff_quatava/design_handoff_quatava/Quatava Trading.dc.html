@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="_ds/modernist-40ac70d8-0d89-4811-b7e2-74ceb2bea2a2/styles.css">
+  <script src="_ds/modernist-40ac70d8-0d89-4811-b7e2-74ceb2bea2a2/_ds_bundle.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;800&display=swap');
+    :root {
+      --color-bg: #FAFBFD; --color-surface: #F0F2F5; --color-accent: #3375BB;
+      --color-accent-100: #EBF2FA; --color-accent-200: #C7DDEF; --color-accent-300: #8FBDE0;
+      --color-accent-400: #5A9BD4; --color-accent-500: #3375BB; --color-accent-600: #2A619E;
+      --color-accent-700: #1E4A7A; --color-accent-800: #153558; --color-accent-900: #0D2038;
+      --color-accent-2: #10B981;
+      --color-divider: color-mix(in srgb, #1a2332 14%, transparent);
+    }
+    body { margin: 0; background: var(--color-bg); font-feature-settings: "tnum" 1; transition: background 0.3s, color 0.3s; }
+    a { color: var(--color-accent); } a:hover { color: var(--color-accent-600); }
+    body.dark {
+      --color-bg: #0D1117; --color-surface: #161B22; --color-text: #E6EDF3;
+      --color-divider: rgba(230,237,243,0.08); background: #0D1117; color: #E6EDF3;
+    }
+    body.dark .panel { background: #161B22; border-color: rgba(230,237,243,0.06); }
+    body.dark .nav-t { border-color: rgba(230,237,243,0.06); }
+    body.dark .ob-row:hover { background: rgba(255,255,255,0.02); }
+    body.dark .trade-tab { color: rgba(230,237,243,0.5); }
+    body.dark .trade-tab.active { color: #E6EDF3; }
+    body.dark .input-t { background: #21262D; border-color: rgba(230,237,243,0.1); color: #E6EDF3; }
+    body.dark .pair-selector { background: #161B22; border-color: rgba(230,237,243,0.08); }
+    body.dark .pair-selector:hover { background: #21262D; }
+    body.dark .seg-t .seg-opt-t { border-color: rgba(230,237,243,0.1); color: rgba(230,237,243,0.6); }
+    body.dark .seg-t .seg-opt-t.active { background: var(--color-accent); color: #fff; border-color: var(--color-accent); }
+    body.dark .trades-row { border-color: rgba(230,237,243,0.04); }
+    body.dark .order-row { border-color: rgba(230,237,243,0.04); }
+    body.dark .market-list-row:hover { background: rgba(255,255,255,0.03); }
+
+    /* Nav */
+    .nav-t { display: flex; align-items: center; gap: var(--space-4); height: 50px; padding: 0 var(--space-4); border-bottom: 2px solid var(--color-divider); }
+    .q-logo { display: flex; align-items: center; gap: 8px; }
+    .q-mark { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; background: var(--color-accent); color: #fff; font-family: var(--font-heading); font-weight: 800; font-size: 15px; }
+    .q-word { font-family: var(--font-heading); font-weight: 800; font-size: 16px; color: var(--color-text); }
+    .nav-links { display: flex; gap: var(--space-4); margin-left: var(--space-6); }
+    .nav-links a { font-size: 13px; color: color-mix(in srgb, var(--color-text) 65%, transparent); text-decoration: none; font-weight: 600; }
+    .nav-links a:hover, .nav-links a.active { color: var(--color-accent); }
+    .nav-right { margin-left: auto; display: flex; align-items: center; gap: var(--space-3); }
+    .nav-icon { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; background: transparent; border: 1px solid var(--color-divider); color: var(--color-text); cursor: pointer; padding: 0; }
+    .nav-icon:hover { background: color-mix(in srgb, var(--color-text) 5%, transparent); }
+    .avatar { width: 28px; height: 28px; background: var(--color-accent); color: #fff; display: flex; align-items: center; justify-content: center; font-family: var(--font-heading); font-weight: 800; font-size: 12px; }
+
+    /* Trading layout */
+    .trade-layout { display: grid; grid-template-columns: 240px 1fr 320px; grid-template-rows: auto 1fr; height: calc(100vh - 50px); }
+    @media (max-width: 1100px) { .trade-layout { grid-template-columns: 1fr 280px; } .market-panel { display: none; } }
+    @media (max-width: 768px) { .trade-layout { grid-template-columns: 1fr; } .order-panel { display: none; } }
+
+    /* Panel */
+    .panel { background: var(--color-surface); border: 1px solid var(--color-divider); overflow: hidden; display: flex; flex-direction: column; }
+    .panel-head { padding: 10px var(--space-3); border-bottom: 1px solid var(--color-divider); font-family: var(--font-heading); font-weight: 800; font-size: 12px; letter-spacing: 0.04em; text-transform: uppercase; display: flex; justify-content: space-between; align-items: center; }
+
+    /* Market list panel */
+    .market-panel { grid-row: 1 / -1; overflow-y: auto; }
+    .market-search { padding: var(--space-2); }
+    .market-search input { width: 100%; padding: 6px 10px; font-size: 12px; background: var(--color-bg); border: 1px solid var(--color-divider); color: var(--color-text); font-family: inherit; }
+    body.dark .market-search input { background: #21262D; border-color: rgba(230,237,243,0.1); color: #E6EDF3; }
+    .market-list-row { display: grid; grid-template-columns: 1fr auto auto; gap: 8px; padding: 7px var(--space-3); font-size: 12px; align-items: center; cursor: pointer; }
+    .market-list-row:hover { background: color-mix(in srgb, var(--color-accent) 5%, transparent); }
+    .market-list-row.active { background: var(--color-accent-100); }
+    body.dark .market-list-row.active { background: rgba(51,117,187,0.1); }
+    .ml-pair { font-weight: 600; }
+    .ml-price { font-size: 12px; }
+
+    /* Pair header */
+    .pair-header { grid-column: 2; display: flex; align-items: center; gap: var(--space-4); padding: 8px var(--space-3); border-bottom: 1px solid var(--color-divider); border-left: 1px solid var(--color-divider); background: var(--color-surface); }
+    body.dark .pair-header { background: #161B22; border-color: rgba(230,237,243,0.06); }
+    .pair-selector { display: flex; align-items: center; gap: 8px; padding: 6px 12px; background: var(--color-bg); border: 1px solid var(--color-divider); cursor: pointer; font-family: var(--font-heading); font-weight: 800; font-size: 16px; }
+    .pair-selector:hover { background: var(--color-accent-100); }
+    .pair-stat { display: flex; flex-direction: column; gap: 2px; }
+    .pair-stat-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; color: color-mix(in srgb, var(--color-text) 45%, transparent); }
+    .pair-stat-val { font-size: 13px; font-weight: 600; }
+    .text-green { color: #10B981; }
+    .text-red { color: #EF4444; }
+
+    /* Chart area */
+    .chart-panel { grid-column: 2; border-left: 1px solid var(--color-divider); position: relative; min-height: 0; display: flex; flex-direction: column; }
+    .chart-tabs { display: flex; gap: 0; border-bottom: 1px solid var(--color-divider); padding: 0 var(--space-3); background: var(--color-surface); }
+    body.dark .chart-tabs { background: #161B22; }
+    .chart-tab { padding: 8px 14px; font-size: 12px; font-weight: 600; color: color-mix(in srgb, var(--color-text) 55%, transparent); cursor: pointer; border-bottom: 2px solid transparent; background: none; border-top: none; border-left: none; border-right: none; font-family: inherit; }
+    .chart-tab:hover { color: var(--color-text); }
+    .chart-tab.active { color: var(--color-accent); border-bottom-color: var(--color-accent); }
+    .chart-canvas { flex: 1; display: flex; align-items: center; justify-content: center; background: var(--color-bg); position: relative; min-height: 300px; }
+    body.dark .chart-canvas { background: #0D1117; }
+    .chart-placeholder { display: flex; flex-direction: column; align-items: center; gap: var(--space-3); }
+    .chart-svg { width: 100%; height: 100%; position: absolute; inset: 0; }
+
+    /* Order book */
+    .ob-panel { grid-column: 2; border-left: 1px solid var(--color-divider); display: grid; grid-template-columns: 1fr 1fr; }
+    .ob-section { display: flex; flex-direction: column; overflow: hidden; }
+    .ob-section + .ob-section { border-left: 1px solid var(--color-divider); }
+    .ob-head { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 4px; padding: 6px var(--space-2); font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; color: color-mix(in srgb, var(--color-text) 40%, transparent); border-bottom: 1px solid var(--color-divider); }
+    .ob-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 4px; padding: 3px var(--space-2); font-size: 11px; position: relative; }
+    .ob-row:hover { background: color-mix(in srgb, var(--color-text) 3%, transparent); }
+    .ob-bar { position: absolute; top: 0; bottom: 0; right: 0; opacity: 0.08; }
+    .ob-bar.bid { background: #10B981; }
+    .ob-bar.ask { background: #EF4444; }
+    .ob-price-bid { color: #10B981; font-weight: 600; }
+    .ob-price-ask { color: #EF4444; font-weight: 600; }
+    .ob-spread { padding: 6px var(--space-2); text-align: center; font-size: 11px; border-top: 1px solid var(--color-divider); border-bottom: 1px solid var(--color-divider); font-weight: 600; }
+
+    /* Order panel (right) */
+    .order-panel { grid-row: 1 / -1; grid-column: 3; overflow-y: auto; }
+    .trade-tabs { display: flex; border-bottom: 1px solid var(--color-divider); }
+    .trade-tab { flex: 1; padding: 10px; text-align: center; font-size: 13px; font-weight: 800; font-family: var(--font-heading); cursor: pointer; color: color-mix(in srgb, var(--color-text) 55%, transparent); background: none; border: none; }
+    .trade-tab.active { color: var(--color-text); border-bottom: 2px solid var(--color-accent); }
+    .trade-tab.buy.active { color: #10B981; border-bottom-color: #10B981; }
+    .trade-tab.sell.active { color: #EF4444; border-bottom-color: #EF4444; }
+
+    /* Segmented control */
+    .seg-t { display: flex; margin: var(--space-3); border: 1px solid var(--color-divider); }
+    .seg-opt-t { flex: 1; padding: 6px; text-align: center; font-size: 11px; font-weight: 600; cursor: pointer; border: none; background: none; color: color-mix(in srgb, var(--color-text) 55%, transparent); font-family: inherit; }
+    .seg-opt-t.active { background: var(--color-accent); color: #fff; }
+    .seg-opt-t + .seg-opt-t { border-left: 1px solid var(--color-divider); }
+
+    /* Order form */
+    .order-form { padding: 0 var(--space-3) var(--space-3); display: flex; flex-direction: column; gap: var(--space-3); }
+    .field-t { display: flex; flex-direction: column; gap: 4px; }
+    .field-t label { font-size: 11px; color: color-mix(in srgb, var(--color-text) 55%, transparent); font-weight: 600; }
+    .input-t { width: 100%; padding: 8px 10px; font-size: 13px; background: var(--color-bg); border: 1px solid var(--color-divider); color: var(--color-text); font-family: inherit; font-feature-settings: "tnum" 1; }
+    .input-t:focus { border-color: var(--color-accent); outline: none; }
+    .input-row { display: flex; gap: var(--space-2); }
+    .input-row .field-t { flex: 1; }
+    .pct-btns { display: flex; gap: 4px; }
+    .pct-btn { padding: 4px 8px; font-size: 10px; font-weight: 600; background: var(--color-bg); border: 1px solid var(--color-divider); cursor: pointer; color: var(--color-text); font-family: inherit; }
+    body.dark .pct-btn { background: #21262D; border-color: rgba(230,237,243,0.1); color: #E6EDF3; }
+    .pct-btn:hover { border-color: var(--color-accent); color: var(--color-accent); }
+    .btn-buy { width: 100%; padding: 12px; font-size: 14px; font-weight: 800; font-family: var(--font-heading); background: #10B981; color: #fff; border: none; cursor: pointer; }
+    .btn-buy:hover { background: #059669; }
+    .btn-sell { width: 100%; padding: 12px; font-size: 14px; font-weight: 800; font-family: var(--font-heading); background: #EF4444; color: #fff; border: none; cursor: pointer; }
+    .btn-sell:hover { background: #DC2626; }
+    .order-info { display: flex; justify-content: space-between; font-size: 11px; color: color-mix(in srgb, var(--color-text) 50%, transparent); }
+
+    /* Open orders */
+    .orders-section { border-top: 1px solid var(--color-divider); padding: var(--space-3); }
+    .order-row { display: grid; grid-template-columns: auto 1fr auto auto; gap: 8px; padding: 6px 0; border-bottom: 1px solid color-mix(in srgb, var(--color-divider) 50%, transparent); font-size: 11px; align-items: center; }
+    .order-side { font-weight: 800; font-size: 10px; padding: 2px 6px; }
+    .order-side.buy { background: rgba(16,185,129,0.1); color: #10B981; }
+    .order-side.sell { background: rgba(239,68,68,0.1); color: #EF4444; }
+    .order-cancel { font-size: 10px; color: #EF4444; cursor: pointer; font-weight: 600; background: none; border: none; font-family: inherit; }
+
+    /* Recent trades */
+    .trades-section { overflow-y: auto; }
+    .trades-head { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 4px; padding: 6px var(--space-2); font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; color: color-mix(in srgb, var(--color-text) 40%, transparent); }
+    .trades-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 4px; padding: 3px var(--space-2); font-size: 11px; border-bottom: 1px solid color-mix(in srgb, var(--color-divider) 30%, transparent); }
+  </style>
+</helmet>
+
+<!-- NAV -->
+<nav class="nav-t">
+  <div class="q-logo">
+    <div class="q-mark">Q</div>
+    <span class="q-word">Quatava</span>
+  </div>
+  <div class="nav-links">
+    <a href="#" class="active">Spot</a>
+    <a href="#">Futures</a>
+    <a href="#">Convert</a>
+    <a href="#">Staking</a>
+  </div>
+  <div class="nav-right">
+    <button type="button" class="nav-icon" onClick="{{ toggleTheme }}">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><sc-if value="{{ isDark }}" hint-placeholder-val="{{ false }}"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></sc-if><sc-if value="{{ isLight }}" hint-placeholder-val="{{ true }}"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></sc-if></svg>
+    </button>
+    <button type="button" class="nav-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg></button>
+    <div class="avatar">JD</div>
+  </div>
+</nav>
+
+<div class="trade-layout">
+  <!-- MARKET LIST -->
+  <div class="panel market-panel">
+    <div class="panel-head">Markets</div>
+    <div class="market-search"><input type="text" placeholder="Search pair..." /></div>
+    <div class="market-list-row active"><span class="ml-pair">BTC/USDT</span><span class="ml-price">67,842</span><span class="text-green" style="font-size: 11px;">+2.3%</span></div>
+    <div class="market-list-row"><span class="ml-pair">ETH/USDT</span><span class="ml-price">3,521</span><span class="text-green" style="font-size: 11px;">+1.9%</span></div>
+    <div class="market-list-row"><span class="ml-pair">SOL/USDT</span><span class="ml-price">178.45</span><span class="text-red" style="font-size: 11px;">−0.9%</span></div>
+    <div class="market-list-row"><span class="ml-pair">XRP/USDT</span><span class="ml-price">0.6234</span><span class="text-green" style="font-size: 11px;">+4.1%</span></div>
+    <div class="market-list-row"><span class="ml-pair">TON/USDT</span><span class="ml-price">7.82</span><span class="text-green" style="font-size: 11px;">+3.5%</span></div>
+    <div class="market-list-row"><span class="ml-pair">DOGE/USDT</span><span class="ml-price">0.1423</span><span class="text-red" style="font-size: 11px;">−1.2%</span></div>
+    <div class="market-list-row"><span class="ml-pair">ADA/USDT</span><span class="ml-price">0.4521</span><span class="text-green" style="font-size: 11px;">+0.8%</span></div>
+    <div class="market-list-row"><span class="ml-pair">AVAX/USDT</span><span class="ml-price">38.62</span><span class="text-green" style="font-size: 11px;">+2.1%</span></div>
+    <div class="market-list-row"><span class="ml-pair">DOT/USDT</span><span class="ml-price">7.45</span><span class="text-red" style="font-size: 11px;">−0.4%</span></div>
+    <div class="market-list-row"><span class="ml-pair">LINK/USDT</span><span class="ml-price">14.82</span><span class="text-green" style="font-size: 11px;">+1.5%</span></div>
+    <div class="market-list-row"><span class="ml-pair">MATIC/USDT</span><span class="ml-price">0.7823</span><span class="text-green" style="font-size: 11px;">+0.6%</span></div>
+  </div>
+
+  <!-- PAIR HEADER -->
+  <div class="pair-header">
+    <div class="pair-selector">BTC/USDT <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg></div>
+    <div class="pair-stat"><span class="pair-stat-label">Price</span><span class="pair-stat-val text-green">67,842.50</span></div>
+    <div class="pair-stat"><span class="pair-stat-label">24h Change</span><span class="pair-stat-val text-green">+2.34%</span></div>
+    <div class="pair-stat"><span class="pair-stat-label">24h High</span><span class="pair-stat-val">68,421.00</span></div>
+    <div class="pair-stat"><span class="pair-stat-label">24h Low</span><span class="pair-stat-val">66,180.25</span></div>
+    <div class="pair-stat"><span class="pair-stat-label">Volume</span><span class="pair-stat-val">$1.2B</span></div>
+  </div>
+
+  <!-- CHART -->
+  <div class="chart-panel">
+    <div class="chart-tabs">
+      <button class="chart-tab active">Chart</button>
+      <button class="chart-tab">Depth</button>
+      <button class="chart-tab">Info</button>
+      <div style="margin-left: auto; display: flex; gap: 0;">
+        <button class="chart-tab">1m</button>
+        <button class="chart-tab">5m</button>
+        <button class="chart-tab active">1H</button>
+        <button class="chart-tab">4H</button>
+        <button class="chart-tab">1D</button>
+      </div>
+    </div>
+    <div class="chart-canvas">
+      <svg viewBox="0 0 800 300" preserveAspectRatio="none" class="chart-svg">
+        <defs>
+          <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#3375BB" stop-opacity="0.12"/><stop offset="100%" stop-color="#3375BB" stop-opacity="0"/></linearGradient>
+        </defs>
+        <!-- Grid lines -->
+        <line x1="0" y1="60" x2="800" y2="60" stroke="currentColor" stroke-opacity="0.05" stroke-width="1"/>
+        <line x1="0" y1="120" x2="800" y2="120" stroke="currentColor" stroke-opacity="0.05" stroke-width="1"/>
+        <line x1="0" y1="180" x2="800" y2="180" stroke="currentColor" stroke-opacity="0.05" stroke-width="1"/>
+        <line x1="0" y1="240" x2="800" y2="240" stroke="currentColor" stroke-opacity="0.05" stroke-width="1"/>
+        <!-- Candlesticks simplified as line chart -->
+        <path d="M20,220 C60,210 100,200 140,180 C180,160 220,190 260,170 C300,150 340,120 380,130 C420,140 460,110 500,90 C540,70 580,85 620,60 C660,50 700,40 740,55 C760,50 780,35 800,30" fill="none" stroke="#3375BB" stroke-width="2"/>
+        <path d="M20,220 C60,210 100,200 140,180 C180,160 220,190 260,170 C300,150 340,120 380,130 C420,140 460,110 500,90 C540,70 580,85 620,60 C660,50 700,40 740,55 C760,50 780,35 800,30 L800,300 L20,300Z" fill="url(#chartGrad)"/>
+        <!-- Volume bars -->
+        <rect x="20" y="270" width="25" height="30" fill="#10B981" opacity="0.3"/>
+        <rect x="55" y="260" width="25" height="40" fill="#10B981" opacity="0.3"/>
+        <rect x="90" y="265" width="25" height="35" fill="#EF4444" opacity="0.3"/>
+        <rect x="125" y="255" width="25" height="45" fill="#10B981" opacity="0.3"/>
+        <rect x="160" y="270" width="25" height="30" fill="#EF4444" opacity="0.3"/>
+        <rect x="195" y="260" width="25" height="40" fill="#10B981" opacity="0.3"/>
+        <rect x="230" y="250" width="25" height="50" fill="#10B981" opacity="0.3"/>
+        <rect x="265" y="265" width="25" height="35" fill="#EF4444" opacity="0.3"/>
+        <rect x="300" y="255" width="25" height="45" fill="#10B981" opacity="0.3"/>
+        <rect x="335" y="240" width="25" height="60" fill="#10B981" opacity="0.3"/>
+        <rect x="370" y="260" width="25" height="40" fill="#EF4444" opacity="0.3"/>
+        <rect x="405" y="245" width="25" height="55" fill="#10B981" opacity="0.3"/>
+        <rect x="440" y="235" width="25" height="65" fill="#10B981" opacity="0.3"/>
+        <rect x="475" y="250" width="25" height="50" fill="#10B981" opacity="0.3"/>
+        <rect x="510" y="265" width="25" height="35" fill="#EF4444" opacity="0.3"/>
+        <rect x="545" y="255" width="25" height="45" fill="#10B981" opacity="0.3"/>
+        <rect x="580" y="240" width="25" height="60" fill="#10B981" opacity="0.3"/>
+        <rect x="615" y="250" width="25" height="50" fill="#EF4444" opacity="0.3"/>
+        <rect x="650" y="230" width="25" height="70" fill="#10B981" opacity="0.3"/>
+        <rect x="685" y="245" width="25" height="55" fill="#10B981" opacity="0.3"/>
+        <rect x="720" y="260" width="25" height="40" fill="#EF4444" opacity="0.3"/>
+        <rect x="755" y="235" width="25" height="65" fill="#10B981" opacity="0.3"/>
+      </svg>
+    </div>
+    <!-- Order book + Recent trades -->
+    <div style="display: grid; grid-template-columns: 1fr 1fr; border-top: 1px solid var(--color-divider); max-height: 240px; overflow: hidden;">
+      <div>
+        <div class="panel-head" style="font-size: 11px;">Order Book</div>
+        <div class="ob-head"><span>Price</span><span style="text-align: right;">Amount</span><span style="text-align: right;">Total</span></div>
+        <div class="ob-row"><span class="ob-price-ask">67,865.20</span><span style="text-align: right;">0.1842</span><span style="text-align: right;">12,504</span><div class="ob-bar ask" style="width: 72%;"></div></div>
+        <div class="ob-row"><span class="ob-price-ask">67,860.10</span><span style="text-align: right;">0.3215</span><span style="text-align: right;">21,826</span><div class="ob-bar ask" style="width: 85%;"></div></div>
+        <div class="ob-row"><span class="ob-price-ask">67,855.50</span><span style="text-align: right;">0.0954</span><span style="text-align: right;">6,477</span><div class="ob-bar ask" style="width: 30%;"></div></div>
+        <div class="ob-row"><span class="ob-price-ask">67,850.00</span><span style="text-align: right;">0.2581</span><span style="text-align: right;">17,522</span><div class="ob-bar ask" style="width: 65%;"></div></div>
+        <div class="ob-spread" style="color: #10B981;">67,842.50 ↑</div>
+        <div class="ob-row"><span class="ob-price-bid">67,840.00</span><span style="text-align: right;">0.4123</span><span style="text-align: right;">27,977</span><div class="ob-bar bid" style="width: 90%;"></div></div>
+        <div class="ob-row"><span class="ob-price-bid">67,835.80</span><span style="text-align: right;">0.1567</span><span style="text-align: right;">10,632</span><div class="ob-bar bid" style="width: 42%;"></div></div>
+        <div class="ob-row"><span class="ob-price-bid">67,830.20</span><span style="text-align: right;">0.2894</span><span style="text-align: right;">19,633</span><div class="ob-bar bid" style="width: 73%;"></div></div>
+        <div class="ob-row"><span class="ob-price-bid">67,825.50</span><span style="text-align: right;">0.1231</span><span style="text-align: right;">8,349</span><div class="ob-bar bid" style="width: 35%;"></div></div>
+      </div>
+      <div class="trades-section" style="border-left: 1px solid var(--color-divider);">
+        <div class="panel-head" style="font-size: 11px;">Recent Trades</div>
+        <div class="trades-head"><span>Price</span><span style="text-align: right;">Amount</span><span style="text-align: right;">Time</span></div>
+        <div class="trades-row"><span class="text-green">67,842.50</span><span style="text-align: right;">0.0523</span><span style="text-align: right;">14:32:01</span></div>
+        <div class="trades-row"><span class="text-red">67,840.20</span><span style="text-align: right;">0.1245</span><span style="text-align: right;">14:31:58</span></div>
+        <div class="trades-row"><span class="text-green">67,841.80</span><span style="text-align: right;">0.0312</span><span style="text-align: right;">14:31:55</span></div>
+        <div class="trades-row"><span class="text-green">67,843.10</span><span style="text-align: right;">0.2100</span><span style="text-align: right;">14:31:52</span></div>
+        <div class="trades-row"><span class="text-red">67,839.50</span><span style="text-align: right;">0.0891</span><span style="text-align: right;">14:31:49</span></div>
+        <div class="trades-row"><span class="text-green">67,842.00</span><span style="text-align: right;">0.0456</span><span style="text-align: right;">14:31:45</span></div>
+        <div class="trades-row"><span class="text-red">67,838.70</span><span style="text-align: right;">0.1678</span><span style="text-align: right;">14:31:42</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ORDER PANEL -->
+  <div class="panel order-panel">
+    <div class="trade-tabs">
+      <button class="trade-tab buy active">Buy</button>
+      <button class="trade-tab sell">Sell</button>
+    </div>
+    <div class="seg-t">
+      <button class="seg-opt-t active">Limit</button>
+      <button class="seg-opt-t">Market</button>
+      <button class="seg-opt-t">Stop</button>
+    </div>
+    <div class="order-form">
+      <div class="field-t">
+        <label>Price (USDT)</label>
+        <input type="text" class="input-t" value="67,842.50" />
+      </div>
+      <div class="field-t">
+        <label>Amount (BTC)</label>
+        <input type="text" class="input-t" placeholder="0.00" />
+      </div>
+      <div class="pct-btns">
+        <button class="pct-btn">25%</button>
+        <button class="pct-btn">50%</button>
+        <button class="pct-btn">75%</button>
+        <button class="pct-btn">100%</button>
+      </div>
+      <div class="field-t">
+        <label>Total (USDT)</label>
+        <input type="text" class="input-t" placeholder="0.00" />
+      </div>
+      <div class="order-info"><span>Available</span><span>5,642.00 USDT</span></div>
+      <div class="order-info"><span>Fee (0.1%)</span><span>≈ 0.00 USDT</span></div>
+      <button class="btn-buy">Buy BTC</button>
+    </div>
+    <!-- Open orders -->
+    <div class="orders-section">
+      <div class="panel-head" style="padding: 0 0 8px; border: none;">Open Orders (2)</div>
+      <div class="order-row">
+        <span class="order-side buy">BUY</span>
+        <span>0.15 BTC @ 67,500</span>
+        <span style="font-size: 10px; color: color-mix(in srgb, var(--color-text) 40%, transparent);">Limit</span>
+        <button class="order-cancel">Cancel</button>
+      </div>
+      <div class="order-row">
+        <span class="order-side sell">SELL</span>
+        <span>0.08 BTC @ 69,000</span>
+        <span style="font-size: 10px; color: color-mix(in srgb, var(--color-text) 40%, transparent);">Limit</span>
+        <button class="order-cancel">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:&quot;100%&quot;,&quot;height&quot;:&quot;100%&quot;}}">
+class Component extends DCLogic {
+  state = { dark: false };
+  componentDidMount() {
+    const saved = localStorage.getItem('quatava-theme');
+    if (saved === 'dark') {
+      this.setState({ dark: true });
+      document.body.classList.add('dark');
+    }
+  }
+  renderVals() {
+    const { dark } = this.state;
+    return {
+      isDark: dark,
+      isLight: !dark,
+      toggleTheme: () => {
+        const next = !this.state.dark;
+        this.setState({ dark: next });
+        document.body.classList.toggle('dark', next);
+        localStorage.setItem('quatava-theme', next ? 'dark' : 'light');
+      }
+    };
+  }
+}
+</script>
+</body>
+</html>

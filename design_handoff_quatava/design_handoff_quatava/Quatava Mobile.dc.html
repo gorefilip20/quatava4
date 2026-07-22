@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="_ds/modernist-40ac70d8-0d89-4811-b7e2-74ceb2bea2a2/styles.css">
+  <script src="_ds/modernist-40ac70d8-0d89-4811-b7e2-74ceb2bea2a2/_ds_bundle.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;800&display=swap');
+    :root { --color-accent: #3375BB; --color-accent-100: #EBF2FA; --color-accent-700: #1E4A7A; }
+    body { margin: 0; background: #E8ECEF; display: flex; justify-content: center; gap: 40px; padding: 40px 20px; flex-wrap: wrap; font-family: var(--font-body); }
+    .phone { width: 375px; height: 812px; background: #fff; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 20px 60px rgba(0,0,0,0.15); position: relative; }
+    .phone.dark { background: #0D1117; color: #E6EDF3; }
+    .phone-label { text-align: center; font-family: var(--font-heading); font-weight: 800; font-size: 13px; text-transform: uppercase; letter-spacing: 0.08em; color: #666; margin-bottom: 12px; }
+
+    /* Status bar */
+    .status-bar { display: flex; justify-content: space-between; align-items: center; padding: 12px 20px 8px; font-size: 13px; font-weight: 600; }
+    .status-icons { display: flex; gap: 5px; align-items: center; }
+
+    /* Bottom nav */
+    .bottom-nav { display: flex; justify-content: space-around; padding: 10px 0 28px; border-top: 1px solid rgba(0,0,0,0.08); margin-top: auto; background: inherit; }
+    .dark .bottom-nav { border-color: rgba(255,255,255,0.08); }
+    .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 10px; color: rgba(0,0,0,0.4); }
+    .dark .nav-item { color: rgba(255,255,255,0.35); }
+    .nav-item.active { color: #3375BB; }
+    .nav-item svg { width: 22px; height: 22px; }
+
+    /* Screen 1: Home */
+    .home-scroll { flex: 1; overflow-y: auto; padding: 0 20px; }
+    .greeting { font-size: 14px; color: rgba(0,0,0,0.5); margin-top: 8px; }
+    .dark .greeting { color: rgba(255,255,255,0.45); }
+    .user-name { font-family: var(--font-heading); font-weight: 800; font-size: 22px; margin: 2px 0 16px; }
+    .bal-card { background: linear-gradient(135deg, #3375BB 0%, #1E4A7A 100%); color: #fff; padding: 24px 20px; margin-bottom: 20px; }
+    .bal-label { font-size: 12px; opacity: 0.8; text-transform: uppercase; letter-spacing: 0.06em; }
+    .bal-num { font-family: var(--font-heading); font-weight: 800; font-size: 32px; margin: 6px 0; font-feature-settings: "tnum" 1; }
+    .bal-pnl { font-size: 13px; color: #6EE7B7; }
+    .action-row { display: flex; gap: 12px; margin-bottom: 20px; }
+    .action-btn { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 14px 8px; background: #F0F2F5; border: none; cursor: pointer; font-family: inherit; }
+    .dark .action-btn { background: #161B22; color: #E6EDF3; }
+    .action-btn-icon { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; background: #EBF2FA; color: #3375BB; }
+    .dark .action-btn-icon { background: rgba(51,117,187,0.15); }
+    .action-btn span { font-size: 11px; font-weight: 600; }
+    .section-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+    .section-title { font-family: var(--font-heading); font-weight: 800; font-size: 15px; }
+    .section-link { font-size: 12px; color: #3375BB; font-weight: 600; }
+    .asset-item { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid rgba(0,0,0,0.06); }
+    .dark .asset-item { border-color: rgba(255,255,255,0.06); }
+    .asset-icon-m { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; background: #EBF2FA; color: #1E4A7A; font-size: 12px; font-weight: 800; font-family: var(--font-heading); }
+    .dark .asset-icon-m { background: rgba(51,117,187,0.12); color: #8FBDE0; }
+    .asset-info { flex: 1; }
+    .asset-name-m { font-weight: 600; font-size: 14px; }
+    .asset-sub-m { font-size: 11px; color: rgba(0,0,0,0.4); }
+    .dark .asset-sub-m { color: rgba(255,255,255,0.35); }
+    .asset-right { text-align: right; }
+    .asset-val { font-weight: 600; font-size: 14px; font-feature-settings: "tnum" 1; }
+    .asset-chg { font-size: 11px; }
+    .text-green { color: #10B981; } .text-red { color: #EF4444; }
+
+    /* Screen 2: Trade */
+    .trade-scroll { flex: 1; overflow-y: auto; }
+    .trade-pair-bar { display: flex; align-items: center; justify-content: space-between; padding: 12px 20px; border-bottom: 1px solid rgba(0,0,0,0.06); }
+    .dark .trade-pair-bar { border-color: rgba(255,255,255,0.06); }
+    .pair-name { font-family: var(--font-heading); font-weight: 800; font-size: 18px; }
+    .pair-price-m { font-family: var(--font-heading); font-weight: 800; font-size: 18px; color: #10B981; }
+    .mini-chart { height: 200px; margin: 0 20px; display: flex; align-items: flex-end; position: relative; }
+    .mini-chart svg { width: 100%; height: 100%; }
+    .trade-toggle { display: flex; margin: 16px 20px 0; }
+    .trade-tog-btn { flex: 1; padding: 10px; text-align: center; font-weight: 800; font-size: 14px; font-family: var(--font-heading); border: none; cursor: pointer; }
+    .trade-tog-btn.buy { background: #10B981; color: #fff; }
+    .trade-tog-btn.sell { background: rgba(0,0,0,0.06); color: rgba(0,0,0,0.5); }
+    .dark .trade-tog-btn.sell { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.4); }
+    .trade-form { padding: 16px 20px; display: flex; flex-direction: column; gap: 12px; }
+    .trade-field { display: flex; flex-direction: column; gap: 4px; }
+    .trade-field label { font-size: 11px; font-weight: 600; color: rgba(0,0,0,0.45); }
+    .dark .trade-field label { color: rgba(255,255,255,0.4); }
+    .trade-input { padding: 10px 12px; font-size: 14px; background: #F0F2F5; border: 1px solid rgba(0,0,0,0.08); font-family: inherit; color: inherit; }
+    .dark .trade-input { background: #161B22; border-color: rgba(255,255,255,0.08); color: #E6EDF3; }
+    .pct-row { display: flex; gap: 6px; }
+    .pct-chip { flex: 1; padding: 6px; text-align: center; font-size: 11px; font-weight: 600; background: #F0F2F5; border: none; cursor: pointer; font-family: inherit; }
+    .dark .pct-chip { background: #161B22; color: #E6EDF3; }
+    .buy-btn-m { padding: 14px; font-size: 15px; font-weight: 800; font-family: var(--font-heading); background: #10B981; color: #fff; border: none; cursor: pointer; }
+
+    /* Screen 3: P2P */
+    .p2p-scroll { flex: 1; overflow-y: auto; }
+    .p2p-header { padding: 12px 20px; display: flex; gap: 0; }
+    .p2p-tog { flex: 1; padding: 10px; text-align: center; font-weight: 800; font-size: 13px; font-family: var(--font-heading); border: 1px solid rgba(0,0,0,0.1); background: none; cursor: pointer; color: rgba(0,0,0,0.5); }
+    .dark .p2p-tog { border-color: rgba(255,255,255,0.1); color: rgba(255,255,255,0.4); }
+    .p2p-tog.active { background: #10B981; color: #fff; border-color: #10B981; }
+    .p2p-tog + .p2p-tog { margin-left: -1px; }
+    .p2p-filters { display: flex; gap: 8px; padding: 12px 20px; overflow-x: auto; }
+    .p2p-chip { padding: 6px 14px; font-size: 12px; font-weight: 600; background: #F0F2F5; border: none; white-space: nowrap; font-family: inherit; }
+    .dark .p2p-chip { background: #161B22; color: #E6EDF3; }
+    .p2p-chip.active { background: #3375BB; color: #fff; }
+    .p2p-offer { padding: 16px 20px; border-bottom: 1px solid rgba(0,0,0,0.06); }
+    .dark .p2p-offer { border-color: rgba(255,255,255,0.06); }
+    .p2p-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .p2p-trader { display: flex; align-items: center; gap: 8px; }
+    .p2p-av { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; background: #EBF2FA; color: #1E4A7A; font-size: 10px; font-weight: 800; }
+    .dark .p2p-av { background: rgba(51,117,187,0.15); color: #8FBDE0; }
+    .p2p-name { font-weight: 600; font-size: 13px; }
+    .p2p-rate { font-size: 10px; color: #10B981; }
+    .p2p-price-m { font-family: var(--font-heading); font-weight: 800; font-size: 16px; }
+    .p2p-meta { display: flex; justify-content: space-between; font-size: 11px; color: rgba(0,0,0,0.4); margin-bottom: 10px; }
+    .dark .p2p-meta { color: rgba(255,255,255,0.35); }
+    .p2p-methods { display: flex; gap: 4px; }
+    .p2p-method { font-size: 10px; padding: 2px 6px; background: rgba(0,0,0,0.04); font-weight: 600; }
+    .dark .p2p-method { background: rgba(255,255,255,0.06); }
+    .p2p-buy-btn { padding: 8px 20px; font-size: 12px; font-weight: 800; font-family: var(--font-heading); background: #10B981; color: #fff; border: none; }
+  </style>
+</helmet>
+
+<div style="display: flex; gap: 40px; flex-wrap: wrap; justify-content: center;">
+
+<!-- SCREEN 1: HOME (Dark) -->
+<div>
+  <div class="phone-label">Home — Dark Mode</div>
+  <div class="phone dark">
+    <div class="status-bar"><span>9:41</span><span class="status-icons"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9zm8 8l3 3 3-3a4.24 4.24 0 0 0-6 0zm-4-4l2 2c2.76-2.76 7.24-2.76 10 0l2-2C15.14 9.14 8.87 9.14 5 13z"/></svg><svg width="16" height="12" viewBox="0 0 28 13" fill="currentColor"><rect x="0" y="1" width="23" height="11" rx="1" stroke="currentColor" stroke-width="1" fill="none"/><rect x="2" y="3" width="16" height="7"/><rect x="24" y="4" width="3" height="5" rx="1"/></svg></span></div>
+    <div class="home-scroll">
+      <div class="greeting">Welcome back</div>
+      <div class="user-name">John D.</div>
+      <div class="bal-card">
+        <div class="bal-label">Total Balance</div>
+        <div class="bal-num">$124,831.40</div>
+        <div class="bal-pnl">+$4,231.80 (3.5%) today</div>
+      </div>
+      <div class="action-row">
+        <button class="action-btn"><div class="action-btn-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"></path></svg></div><span>Deposit</span></button>
+        <button class="action-btn"><div class="action-btn-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17l9.2-9.2M17 17V7H7"></path></svg></div><span>Send</span></button>
+        <button class="action-btn"><div class="action-btn-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 1l4 4-4 4"></path><path d="M3 11V9a4 4 0 0 1 4-4h14"></path><path d="M7 23l-4-4 4-4"></path><path d="M21 13v2a4 4 0 0 1-4 4H3"></path></svg></div><span>Swap</span></button>
+        <button class="action-btn"><div class="action-btn-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg></div><span>Stake</span></button>
+      </div>
+      <div class="section-head"><span class="section-title">Assets</span><span class="section-link">See All</span></div>
+      <div class="asset-item"><div class="asset-icon-m">BTC</div><div class="asset-info"><div class="asset-name-m">Bitcoin</div><div class="asset-sub-m">1.4523 BTC</div></div><div class="asset-right"><div class="asset-val">$98,562</div><div class="asset-chg text-green">+2.3%</div></div></div>
+      <div class="asset-item"><div class="asset-icon-m">ETH</div><div class="asset-info"><div class="asset-name-m">Ethereum</div><div class="asset-sub-m">4.2100 ETH</div></div><div class="asset-right"><div class="asset-val">$14,827</div><div class="asset-chg text-green">+1.9%</div></div></div>
+      <div class="asset-item"><div class="asset-icon-m">SOL</div><div class="asset-info"><div class="asset-name-m">Solana</div><div class="asset-sub-m">32.50 SOL</div></div><div class="asset-right"><div class="asset-val">$5,800</div><div class="asset-chg text-red">−0.9%</div></div></div>
+      <div class="asset-item"><div class="asset-icon-m">USDT</div><div class="asset-info"><div class="asset-name-m">Tether</div><div class="asset-sub-m">5,642 USDT</div></div><div class="asset-right"><div class="asset-val">$5,642</div><div class="asset-chg" style="color: rgba(255,255,255,0.3);">0.0%</div></div></div>
+    </div>
+    <div class="bottom-nav">
+      <div class="nav-item active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>Home</div>
+      <div class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>Trade</div>
+      <div class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 1l4 4-4 4"></path><path d="M3 11V9a4 4 0 0 1 4-4h14"></path><path d="M7 23l-4-4 4-4"></path><path d="M21 13v2a4 4 0 0 1-4 4H3"></path></svg>Convert</div>
+      <div class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"></path><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"></path><path d="M18 12a2 2 0 0 0 0 4h4v-4z"></path></svg>Wallet</div>
+      <div class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path></svg>More</div>
+    </div>
+  </div>
+</div>
+
+<!-- SCREEN 2: TRADE (Light) -->
+<div>
+  <div class="phone-label">Trade — Light Mode</div>
+  <div class="phone">
+    <div class="status-bar"><span>9:41</span><span class="status-icons"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9zm8 8l3 3 3-3a4.24 4.24 0 0 0-6 0zm-4-4l2 2c2.76-2.76 7.24-2.76 10 0l2-2C15.14 9.14 8.87 9.14 5 13z"/></svg><svg width="16" height="12" viewBox="0 0 28 13" fill="currentColor"><rect x="0" y="1" width="23" height="11" rx="1" stroke="currentColor" stroke-width="1" fill="none"/><rect x="2" y="3" width="16" height="7"/><rect x="24" y="4" width="3" height="5" rx="1"/></svg></span></div>
+    <div class="trade-scroll">
+      <div class="trade-pair-bar"><span class="pair-name">BTC/USDT</span><span class="pair-price-m">$67,842.50</span></div>
+      <div class="mini-chart">
+        <svg viewBox="0 0 335 160" preserveAspectRatio="none">
+          <defs><linearGradient id="mg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#3375BB" stop-opacity="0.15"/><stop offset="100%" stop-color="#3375BB" stop-opacity="0"/></linearGradient></defs>
+          <path d="M0,120 C30,110 60,100 90,85 C120,70 150,90 180,75 C210,60 240,40 270,50 C300,45 320,30 335,25" fill="none" stroke="#3375BB" stroke-width="2"/>
+          <path d="M0,120 C30,110 60,100 90,85 C120,70 150,90 180,75 C210,60 240,40 270,50 C300,45 320,30 335,25 L335,160 L0,160Z" fill="url(#mg)"/>
+        </svg>
+      </div>
+      <div class="trade-toggle"><button class="trade-tog-btn buy">Buy</button><button class="trade-tog-btn sell">Sell</button></div>
+      <div class="trade-form">
+        <div class="trade-field"><label>Price (USDT)</label><input type="text" class="trade-input" value="67,842.50" /></div>
+        <div class="trade-field"><label>Amount (BTC)</label><input type="text" class="trade-input" placeholder="0.00" /></div>
+        <div class="pct-row"><button class="pct-chip">25%</button><button class="pct-chip">50%</button><button class="pct-chip">75%</button><button class="pct-chip">100%</button></div>
+        <div style="display: flex; justify-content: space-between; font-size: 12px; color: rgba(0,0,0,0.4);"><span>Available</span><span>5,642 USDT</span></div>
+        <button class="buy-btn-m">Buy BTC</button>
+      </div>
+    </div>
+    <div class="bottom-nav">
+      <div class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>Home</div>
+      <div class="nav-item active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>Trade</div>
+      <div class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 1l4 4-4 4"></path><path d="M3 11V9a4 4 0 0 1 4-4h14"></path><path d="M7 23l-4-4 4-4"></path><path d="M21 13v2a4 4 0 0 1-4 4H3"></path></svg>Convert</div>
+      <div class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"></path><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"></path><path d="M18 12a2 2 0 0 0 0 4h4v-4z"></path></svg>Wallet</div>
+      <div class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path></svg>More</div>
+    </div>
+  </div>
+</div>
+
+<!-- SCREEN 3: P2P (Dark) -->
+<div>
+  <div class="phone-label">Convert — Dark Mode</div>
+  <div class="phone dark">
+    <div class="status-bar"><span>9:41</span><span class="status-icons"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9zm8 8l3 3 3-3a4.24 4.24 0 0 0-6 0zm-4-4l2 2c2.76-2.76 7.24-2.76 10 0l2-2C15.14 9.14 8.87 9.14 5 13z"/></svg><svg width="16" height="12" viewBox="0 0 28 13" fill="currentColor"><rect x="0" y="1" width="23" height="11" rx="1" stroke="currentColor" stroke-width="1" fill="none"/><rect x="2" y="3" width="16" height="7"/><rect x="24" y="4" width="3" height="5" rx="1"/></svg></span></div>
+    <div class="p2p-scroll" style="padding: 16px 20px;">
+      <div style="font-family: var(--font-heading); font-weight: 800; font-size: 16px; margin-bottom: 12px;">Convert Crypto</div>
+      <div class="p2p-filters" style="padding: 0; margin-bottom: 16px;"><button class="p2p-chip active">BTC</button><button class="p2p-chip">ETH</button><button class="p2p-chip">USDT</button><button class="p2p-chip">SOL</button></div>
+      <div style="margin-bottom: 12px;">
+        <div style="font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.4); margin-bottom: 4px;">YOU SEND</div>
+        <div style="display: flex; gap: 8px;"><input type="text" class="trade-input" value="1.0000" style="flex: 1; padding: 10px; font-size: 16px; font-weight: 800;" /><div style="padding: 10px 12px; background: rgba(255,255,255,0.06); font-weight: 800; font-size: 14px; display: flex; align-items: center;">BTC</div></div>
+      </div>
+      <div style="text-align: center; padding: 4px 0;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3375BB" stroke-width="2"><path d="M7 16V4m0 0L3 8m4-4l4 4M17 8v12m0 0l4-4m-4 4l-4-4"></path></svg></div>
+      <div style="margin-bottom: 12px;">
+        <div style="font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.4); margin-bottom: 4px;">YOU RECEIVE</div>
+        <div style="display: flex; gap: 8px;"><input type="text" class="trade-input" value="104,630,975" readonly style="flex: 1; padding: 10px; font-size: 16px; font-weight: 800; background: rgba(51,117,187,0.06);" /><div style="padding: 10px 12px; background: rgba(255,255,255,0.06); font-weight: 800; font-size: 14px; display: flex; align-items: center;">NGN</div></div>
+      </div>
+      <div style="padding: 8px 10px; background: rgba(51,117,187,0.08); font-size: 11px; margin-bottom: 12px; display: flex; justify-content: space-between;"><span style="color: rgba(255,255,255,0.5);">Rate</span><span style="font-weight: 600;">1 BTC = ₦104.6M</span></div>
+      <div style="font-size: 11px; display: flex; justify-content: space-between; color: rgba(255,255,255,0.4); margin-bottom: 6px;"><span>Fee (0.1%)</span><span>₦104,631</span></div>
+      <div style="font-size: 11px; display: flex; justify-content: space-between; color: rgba(255,255,255,0.4); margin-bottom: 12px;"><span>Receive to</span><span style="color: #10B981;">Access Bank ••89</span></div>
+      <button class="buy-btn-m" style="width: 100%; background: #10B981;">Convert to NGN</button>
+    </div>
+    <div class="bottom-nav">
+      <div class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>Home</div>
+      <div class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>Trade</div>
+      <div class="nav-item active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 1l4 4-4 4"></path><path d="M3 11V9a4 4 0 0 1 4-4h14"></path><path d="M7 23l-4-4 4-4"></path><path d="M21 13v2a4 4 0 0 1-4 4H3"></path></svg>Convert</div>
+      <div class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"></path><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"></path><path d="M18 12a2 2 0 0 0 0 4h4v-4z"></path></svg>Wallet</div>
+      <div class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path></svg>More</div>
+    </div>
+  </div>
+</div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:&quot;100%&quot;,&quot;height&quot;:&quot;100%&quot;}}">
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>
