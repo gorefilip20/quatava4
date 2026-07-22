@@ -1,14 +1,14 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import {
   ArrowUpDown,
   Globe,
   Shield,
-  Check,
   CreditCard,
   Smartphone,
   Wallet,
+  Loader2,
 } from "lucide-react";
 import { useConvertStore, type ConvertTab, type PaymentMethod } from "@/store/convert";
 import { LiveRatesSidebar } from "./components/live-rates-sidebar";
@@ -105,28 +105,74 @@ export default function ConvertClient() {
     swapCurrencies,
     rateCountdown,
     setRateCountdown,
+    rate,
+    isLoadingRate,
+    feePercentage,
+    fee,
+    fetchRate,
+    executeConversion,
+    fetchHistory,
+    rateError,
   } = useConvertStore();
 
-  const [elapsedSince, setElapsedSince] = useState(3);
+  const [elapsedSince, setElapsedSince] = useState(0);
+  const rateTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    const timer = setInterval(() => {
+    fetchRate();
+    fetchHistory();
+  }, []);
+
+  useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      fetchRate();
+    }, 500);
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, [sendCurrency, receiveCurrency, sendAmount]);
+
+  useEffect(() => {
+    if (rateTimerRef.current) clearInterval(rateTimerRef.current);
+    rateTimerRef.current = setInterval(() => {
       setRateCountdown(rateCountdown > 0 ? rateCountdown - 1 : 30);
-      setElapsedSince((prev) => (prev < 30 ? prev + 1 : 0));
+      setElapsedSince((prev) => prev + 1);
+      if (rateCountdown <= 0) {
+        fetchRate();
+        setElapsedSince(0);
+      }
     }, 1000);
-    return () => clearInterval(timer);
+    return () => {
+      if (rateTimerRef.current) clearInterval(rateTimerRef.current);
+    };
   }, [rateCountdown, setRateCountdown]);
 
   const handleSwap = useCallback(() => {
     swapCurrencies();
   }, [swapCurrencies]);
 
+  const handleConvert = useCallback(async () => {
+    const success = await executeConversion();
+    if (success) {
+      fetchRate();
+    }
+  }, [executeConversion, fetchRate]);
+
   const fiatSymbol =
     FIAT_OPTIONS.find((f) => f.value === receiveCurrency)?.symbol ?? "₦";
 
-  const formatRate = (rate: number) => {
-    return rate.toLocaleString("en-US", { minimumFractionDigits: 2 });
+  const formatRate = (r: number) => {
+    if (!r || r <= 0) return "...";
+    if (r >= 1000) {
+      return r.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+    return r.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 8 });
   };
+
+  const parsedSendAmount = parseFloat(sendAmount) || 0;
+  const feeAmount = fee || (parsedSendAmount * (feePercentage || 0)) / 100;
 
   return (
     <div>
@@ -158,17 +204,15 @@ export default function ConvertClient() {
           <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-4">
             {/* Main convert form */}
             <div>
-              {/* Country auto-detect banner */}
-              <div className="flex items-center gap-2 px-3 py-2 bg-[hsl(var(--primary)/0.08)] text-sm mb-3">
-                <Globe className="w-4 h-4 text-primary shrink-0" />
-                <span>
-                  Detected region: <strong>{detectedCountry}</strong> — Showing{" "}
-                  {receiveCurrency} rates.{" "}
-                  <a href="#" className="text-primary font-semibold ml-1">
-                    Change →
-                  </a>
-                </span>
-              </div>
+              {detectedCountry && (
+                <div className="flex items-center gap-2 px-3 py-2 bg-[hsl(var(--primary)/0.08)] text-sm mb-3">
+                  <Globe className="w-4 h-4 text-primary shrink-0" />
+                  <span>
+                    Detected region: <strong>{detectedCountry}</strong> — Showing{" "}
+                    {receiveCurrency} rates.
+                  </span>
+                </div>
+              )}
 
               {/* Convert card */}
               <div className="bg-card border border-border p-6">
@@ -180,8 +224,10 @@ export default function ConvertClient() {
                   <div className="flex-1">
                     <input
                       type="text"
+                      inputMode="decimal"
                       value={sendAmount}
                       onChange={(e) => setSendAmount(e.target.value)}
+                      placeholder="0.00"
                       className="w-full px-3.5 py-3 text-lg font-extrabold bg-background border border-border text-foreground tabular-nums focus:border-primary focus:outline-none"
                     />
                   </div>
@@ -192,6 +238,11 @@ export default function ConvertClient() {
                       className="w-full px-2.5 py-3 text-sm font-semibold bg-background border border-border text-foreground cursor-pointer focus:border-primary focus:outline-none"
                     >
                       {CRYPTO_OPTIONS.map((opt) => (
+                        <option key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </option>
+                      ))}
+                      {FIAT_OPTIONS.map((opt) => (
                         <option key={opt.value} value={opt.value}>
                           {opt.label}
                         </option>
@@ -218,7 +269,7 @@ export default function ConvertClient() {
                   <div className="flex-1">
                     <input
                       type="text"
-                      value={receiveAmount}
+                      value={isLoadingRate ? "..." : receiveAmount}
                       readOnly
                       className="w-full px-3.5 py-3 text-lg font-extrabold bg-[hsl(var(--primary)/0.03)] border border-border text-foreground tabular-nums"
                     />
@@ -234,6 +285,11 @@ export default function ConvertClient() {
                           {opt.label}
                         </option>
                       ))}
+                      {CRYPTO_OPTIONS.map((opt) => (
+                        <option key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </option>
+                      ))}
                     </select>
                   </div>
                 </div>
@@ -242,42 +298,57 @@ export default function ConvertClient() {
                 <div className="flex justify-between items-center p-3 mt-3 bg-[hsl(var(--primary)/0.08)] text-sm">
                   <div>
                     <span className="text-muted-foreground">Rate: </span>
-                    <span className="font-extrabold tabular-nums">
-                      1 {sendCurrency} = {fiatSymbol}
-                      {formatRate(104630975)}
-                    </span>
+                    {isLoadingRate ? (
+                      <Loader2 className="w-4 h-4 inline animate-spin text-primary" />
+                    ) : rateError ? (
+                      <span className="text-destructive text-xs">Unavailable</span>
+                    ) : (
+                      <span className="font-extrabold tabular-nums">
+                        1 {sendCurrency} = {formatRate(rate)} {receiveCurrency}
+                      </span>
+                    )}
                   </div>
                   <div className="text-xs text-muted-foreground">
-                    Updated {elapsedSince}s ago · Refreshes in {rateCountdown}s
+                    {rate > 0 && (
+                      <>Updated {elapsedSince}s ago &middot; Refreshes in {rateCountdown}s</>
+                    )}
                   </div>
                 </div>
 
                 {/* Fee breakdown */}
-                <div className="flex justify-between text-xs text-muted-foreground mt-3">
-                  <span>Network fee</span>
-                  <span className="font-semibold">
-                    0.0001 BTC (~{fiatSymbol}10,463)
-                  </span>
-                </div>
-                <div className="flex justify-between text-xs text-muted-foreground mt-1">
-                  <span>Platform fee (0.1%)</span>
-                  <span className="font-semibold">{fiatSymbol}104,631</span>
-                </div>
-                <div className="flex justify-between text-sm font-bold mt-2 pt-2 border-t border-border">
-                  <span>You receive</span>
-                  <span className="text-success font-extrabold tabular-nums">
-                    {fiatSymbol}104,515,881.00
-                  </span>
-                </div>
+                {parsedSendAmount > 0 && rate > 0 && (
+                  <>
+                    <div className="flex justify-between text-xs text-muted-foreground mt-3">
+                      <span>Platform fee ({feePercentage}%)</span>
+                      <span className="font-semibold">
+                        {feeAmount.toLocaleString("en-US", { maximumFractionDigits: 8 })} {sendCurrency}
+                      </span>
+                    </div>
+                    <div className="flex justify-between text-sm font-bold mt-2 pt-2 border-t border-border">
+                      <span>You receive</span>
+                      <span className="text-success font-extrabold tabular-nums">
+                        {receiveAmount} {receiveCurrency}
+                      </span>
+                    </div>
+                  </>
+                )}
 
                 {/* Convert button */}
                 <button
-                  disabled={isConverting}
-                  className="w-full py-3.5 text-[15px] font-extrabold bg-success text-white border-none cursor-pointer mt-4 hover:bg-[#059669] disabled:opacity-50 transition-colors"
+                  onClick={handleConvert}
+                  disabled={isConverting || isLoadingRate || !sendAmount || !rate}
+                  className="w-full py-3.5 text-[15px] font-extrabold bg-success text-white border-none cursor-pointer mt-4 hover:bg-[#059669] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
-                  {isConverting
-                    ? "Converting..."
-                    : `Convert ${sendAmount} ${sendCurrency} → ${receiveCurrency}`}
+                  {isConverting ? (
+                    <span className="flex items-center justify-center gap-2">
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Converting...
+                    </span>
+                  ) : sendAmount && rate ? (
+                    `Convert ${sendAmount} ${sendCurrency} → ${receiveCurrency}`
+                  ) : (
+                    "Enter amount to convert"
+                  )}
                 </button>
               </div>
 
@@ -324,10 +395,7 @@ export default function ConvertClient() {
                 <div className="bg-card border border-border p-6">
                   <div className="flex justify-between items-center mb-3">
                     <span className="font-extrabold text-sm">
-                      Bank Details — {detectedCountry} 🇳🇬
-                    </span>
-                    <span className="text-[11px] text-success font-semibold">
-                      ✓ Auto-detected
+                      Bank Details {detectedCountry && `— ${detectedCountry}`}
                     </span>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -340,6 +408,7 @@ export default function ConvertClient() {
                         onChange={(e) => setBankName(e.target.value)}
                         className="w-full px-3 py-2.5 text-sm bg-background border border-border text-foreground cursor-pointer focus:border-primary focus:outline-none"
                       >
+                        <option value="">Select bank</option>
                         {NIGERIAN_BANKS.map((bank) => (
                           <option key={bank} value={bank}>
                             {bank}
@@ -376,7 +445,7 @@ export default function ConvertClient() {
                   <div className="mt-3 text-[11px] text-muted-foreground flex items-start gap-1">
                     <Shield className="w-3 h-3 mt-0.5 shrink-0" />
                     Your bank details are encrypted and only used for this
-                    conversion. You can save them for future use.
+                    conversion.
                   </div>
                 </div>
               )}

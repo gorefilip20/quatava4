@@ -1,20 +1,29 @@
 "use client";
 
-import { Check } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Check, Loader2 } from "lucide-react";
+import { $fetch } from "@/lib/api";
 
-const NGN_RATES = [
-  { pair: "BTC/NGN", flag: "🇳🇬", price: "₦104.6M", change: "+2.3%", up: true },
-  { pair: "ETH/NGN", flag: "🇳🇬", price: "₦5.43M", change: "+1.9%", up: true },
-  { pair: "USDT/NGN", flag: "🇳🇬", price: "₦1,542", change: "0.0%", up: false },
-  { pair: "SOL/NGN", flag: "🇳🇬", price: "₦275K", change: "−0.9%", down: true },
+interface RateEntry {
+  pair: string;
+  flag: string;
+  price: string;
+  rate: number;
+}
+
+const CRYPTO_PAIRS = [
+  { from: "BTC", to: "NGN", toType: "FIAT", flag: "🇳🇬" },
+  { from: "ETH", to: "NGN", toType: "FIAT", flag: "🇳🇬" },
+  { from: "USDT", to: "NGN", toType: "FIAT", flag: "🇳🇬" },
+  { from: "SOL", to: "NGN", toType: "FIAT", flag: "🇳🇬" },
 ];
 
-const OTHER_RATES = [
-  { currency: "USD", flag: "🇺🇸", price: "$67,842", change: "+2.3%", up: true },
-  { currency: "GBP", flag: "🇬🇧", price: "£53,841", change: "+2.1%", up: true },
-  { currency: "EUR", flag: "🇪🇺", price: "€62,490", change: "+2.2%", up: true },
-  { currency: "MXN", flag: "🇲🇽", price: "$1.18M", change: "+2.5%", up: true },
-  { currency: "AED", flag: "🇦🇪", price: "249,109", change: "+2.3%", up: true },
+const OTHER_CURRENCIES = [
+  { currency: "USD", flag: "🇺🇸" },
+  { currency: "GBP", flag: "🇬🇧" },
+  { currency: "EUR", flag: "🇪🇺" },
+  { currency: "MXN", flag: "🇲🇽" },
+  { currency: "AED", flag: "🇦🇪" },
 ];
 
 const WHY_CONVERT = [
@@ -24,7 +33,85 @@ const WHY_CONVERT = [
   "Supports 6+ fiat currencies",
 ];
 
+function formatPrice(rate: number, currency: string): string {
+  const symbols: Record<string, string> = {
+    NGN: "₦",
+    USD: "$",
+    GBP: "£",
+    EUR: "€",
+    MXN: "$",
+    AED: "AED ",
+  };
+  const sym = symbols[currency] || "";
+
+  if (rate >= 1_000_000) {
+    return `${sym}${(rate / 1_000_000).toFixed(1)}M`;
+  }
+  if (rate >= 1_000) {
+    return `${sym}${rate.toLocaleString("en-US", { maximumFractionDigits: 0 })}`;
+  }
+  return `${sym}${rate.toLocaleString("en-US", { maximumFractionDigits: 2 })}`;
+}
+
 export function LiveRatesSidebar() {
+  const [ngnRates, setNgnRates] = useState<RateEntry[]>([]);
+  const [otherRates, setOtherRates] = useState<{ currency: string; flag: string; price: string }[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  async function fetchRates() {
+    setLoading(true);
+
+    const ngnResults: RateEntry[] = [];
+    for (const pair of CRYPTO_PAIRS) {
+      const { data } = await $fetch<{ rate: number }>({
+        url: "/api/finance/convert/rate",
+        method: "GET",
+        params: {
+          fromCurrency: pair.from,
+          fromType: "SPOT",
+          toCurrency: pair.to,
+          toType: pair.toType,
+        },
+        silent: true,
+      });
+      ngnResults.push({
+        pair: `${pair.from}/${pair.to}`,
+        flag: pair.flag,
+        price: data ? formatPrice(data.rate, pair.to) : "—",
+        rate: data?.rate || 0,
+      });
+    }
+    setNgnRates(ngnResults);
+
+    const otherResults: { currency: string; flag: string; price: string }[] = [];
+    for (const c of OTHER_CURRENCIES) {
+      const { data } = await $fetch<{ rate: number }>({
+        url: "/api/finance/convert/rate",
+        method: "GET",
+        params: {
+          fromCurrency: "BTC",
+          fromType: "SPOT",
+          toCurrency: c.currency,
+          toType: "FIAT",
+        },
+        silent: true,
+      });
+      otherResults.push({
+        currency: c.currency,
+        flag: c.flag,
+        price: data ? formatPrice(data.rate, c.currency) : "—",
+      });
+    }
+    setOtherRates(otherResults);
+    setLoading(false);
+  }
+
+  useEffect(() => {
+    fetchRates();
+    const interval = setInterval(fetchRates, 30000);
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <div className="space-y-4">
       {/* NGN rates */}
@@ -35,57 +122,59 @@ export function LiveRatesSidebar() {
             Updates every 30s
           </span>
         </div>
-        <div className="flex flex-col">
-          {NGN_RATES.map((rate) => (
-            <div
-              key={rate.pair}
-              className="grid grid-cols-3 gap-2 py-2.5 border-b border-border/50 last:border-b-0 text-sm items-center tabular-nums"
-            >
-              <div className="flex items-center gap-2 font-semibold">
-                <div className="w-6 h-6 flex items-center justify-center bg-[hsl(var(--primary)/0.08)] text-[13px]">
-                  {rate.flag}
-                </div>
-                {rate.pair}
-              </div>
-              <span className="font-semibold">{rate.price}</span>
-              <span
-                className={`text-xs ${
-                  rate.up
-                    ? "text-success"
-                    : (rate as any).down
-                      ? "text-destructive"
-                      : "text-muted-foreground"
-                }`}
+        {loading && !ngnRates.length ? (
+          <div className="flex items-center justify-center py-4 text-muted-foreground">
+            <Loader2 className="w-4 h-4 animate-spin mr-2" />
+            Loading rates...
+          </div>
+        ) : (
+          <div className="flex flex-col">
+            {ngnRates.map((rate) => (
+              <div
+                key={rate.pair}
+                className="grid grid-cols-2 gap-2 py-2.5 border-b border-border/50 last:border-b-0 text-sm items-center tabular-nums"
               >
-                {rate.change}
-              </span>
-            </div>
-          ))}
-        </div>
+                <div className="flex items-center gap-2 font-semibold">
+                  <div className="w-6 h-6 flex items-center justify-center bg-[hsl(var(--primary)/0.08)] text-[13px]">
+                    {rate.flag}
+                  </div>
+                  {rate.pair}
+                </div>
+                <span className="font-semibold text-right">{rate.price}</span>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Other currencies */}
       <div className="bg-card border border-border p-4">
         <div className="flex justify-between items-center mb-4">
-          <span className="font-extrabold text-sm">Other Currencies</span>
+          <span className="font-extrabold text-sm">BTC in Other Currencies</span>
         </div>
-        <div className="flex flex-col">
-          {OTHER_RATES.map((rate) => (
-            <div
-              key={rate.currency}
-              className="grid grid-cols-3 gap-2 py-2.5 border-b border-border/50 last:border-b-0 text-sm items-center tabular-nums"
-            >
-              <div className="flex items-center gap-2 font-semibold">
-                <div className="w-6 h-6 flex items-center justify-center bg-[hsl(var(--primary)/0.08)] text-[13px]">
-                  {rate.flag}
+        {loading && !otherRates.length ? (
+          <div className="flex items-center justify-center py-4 text-muted-foreground">
+            <Loader2 className="w-4 h-4 animate-spin mr-2" />
+            Loading...
+          </div>
+        ) : (
+          <div className="flex flex-col">
+            {otherRates.map((rate) => (
+              <div
+                key={rate.currency}
+                className="grid grid-cols-2 gap-2 py-2.5 border-b border-border/50 last:border-b-0 text-sm items-center tabular-nums"
+              >
+                <div className="flex items-center gap-2 font-semibold">
+                  <div className="w-6 h-6 flex items-center justify-center bg-[hsl(var(--primary)/0.08)] text-[13px]">
+                    {rate.flag}
+                  </div>
+                  {rate.currency}
                 </div>
-                {rate.currency}
+                <span className="font-semibold text-right">{rate.price}</span>
               </div>
-              <span className="font-semibold">{rate.price}</span>
-              <span className="text-xs text-success">{rate.change}</span>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Why Convert */}
