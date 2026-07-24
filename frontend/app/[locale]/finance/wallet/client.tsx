@@ -196,9 +196,9 @@ export function WalletDashboard() {
             <button
               key={action.label}
               onClick={() => router.push(action.href)}
-              className="flex items-center gap-3 p-3 bg-card border border-border cursor-pointer text-left hover:bg-[hsl(var(--primary)/0.06)] transition-colors"
+              className="flex items-center gap-3 p-3 bg-card border border-border cursor-pointer text-left hover:bg-[var(--quatava-blue-100)] dark:hover:bg-[rgba(51,117,187,0.1)] transition-colors"
             >
-              <div className="w-10 h-10 flex items-center justify-center bg-[hsl(var(--primary)/0.08)] text-primary shrink-0">
+              <div className="w-10 h-10 flex items-center justify-center bg-[var(--quatava-blue-100)] dark:bg-[rgba(51,117,187,0.15)] text-primary shrink-0">
                 <Icon className="w-5 h-5" />
               </div>
               <div>

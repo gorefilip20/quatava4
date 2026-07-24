@@ -20,21 +20,22 @@
   transition: none !important;
 }
 
-/* Add these new styles for light theme */
+/* Light theme borders — aligned with design spec divider color */
 :root:not(.dark) {
-  --border-color: rgba(228, 228, 231, 0.8);
-  --border-color-light: rgba(228, 228, 231, 0.5);
-  --table-border-color: rgba(228, 228, 231, 1);
-  --table-border-color-light: rgba(228, 228, 231, 0.7);
-  --panel-border-color: rgba(228, 228, 231, 1);
+  --border-color: color-mix(in srgb, #1a2332 14%, transparent);
+  --border-color-light: color-mix(in srgb, #1a2332 8%, transparent);
+  --table-border-color: color-mix(in srgb, #1a2332 14%, transparent);
+  --table-border-color-light: color-mix(in srgb, #1a2332 10%, transparent);
+  --panel-border-color: color-mix(in srgb, #1a2332 14%, transparent);
 }
 
+/* Dark theme borders — aligned with design spec */
 :root.dark {
-  --border-color: rgba(63, 63, 70, 0.5);
-  --border-color-light: rgba(39, 39, 42, 0.5);
-  --table-border-color: rgba(63, 63, 70, 0.8);
-  --table-border-color-light: rgba(39, 39, 42, 0.7);
-  --panel-border-color: rgba(63, 63, 70, 0.8);
+  --border-color: rgba(230, 237, 243, 0.1);
+  --border-color-light: rgba(230, 237, 243, 0.06);
+  --table-border-color: rgba(230, 237, 243, 0.1);
+  --table-border-color-light: rgba(230, 237, 243, 0.06);
+  --panel-border-color: rgba(230, 237, 243, 0.06);
 }
 
 /* Use CSS variables for borders */

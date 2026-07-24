@@ -115,7 +115,7 @@ export function LiveRatesSidebar() {
   return (
     <div className="space-y-4">
       {/* NGN rates */}
-      <div className="bg-card border border-border p-4">
+      <div className="bg-card dark:bg-[#161B22] border border-border dark:border-[rgba(230,237,243,0.06)] p-4">
         <div className="flex justify-between items-center mb-4">
           <span className="font-extrabold text-sm">Live Rates (NGN)</span>
           <span className="text-[11px] text-muted-foreground">
@@ -135,7 +135,7 @@ export function LiveRatesSidebar() {
                 className="grid grid-cols-2 gap-2 py-2.5 border-b border-border/50 last:border-b-0 text-sm items-center tabular-nums"
               >
                 <div className="flex items-center gap-2 font-semibold">
-                  <div className="w-6 h-6 flex items-center justify-center bg-[hsl(var(--primary)/0.08)] text-[13px]">
+                  <div className="w-6 h-6 flex items-center justify-center bg-[var(--quatava-blue-100)] dark:bg-[rgba(51,117,187,0.12)] text-[13px]">
                     {rate.flag}
                   </div>
                   {rate.pair}
@@ -148,7 +148,7 @@ export function LiveRatesSidebar() {
       </div>
 
       {/* Other currencies */}
-      <div className="bg-card border border-border p-4">
+      <div className="bg-card dark:bg-[#161B22] border border-border dark:border-[rgba(230,237,243,0.06)] p-4">
         <div className="flex justify-between items-center mb-4">
           <span className="font-extrabold text-sm">BTC in Other Currencies</span>
         </div>
@@ -165,7 +165,7 @@ export function LiveRatesSidebar() {
                 className="grid grid-cols-2 gap-2 py-2.5 border-b border-border/50 last:border-b-0 text-sm items-center tabular-nums"
               >
                 <div className="flex items-center gap-2 font-semibold">
-                  <div className="w-6 h-6 flex items-center justify-center bg-[hsl(var(--primary)/0.08)] text-[13px]">
+                  <div className="w-6 h-6 flex items-center justify-center bg-[var(--quatava-blue-100)] dark:bg-[rgba(51,117,187,0.12)] text-[13px]">
                     {rate.flag}
                   </div>
                   {rate.currency}
@@ -178,7 +178,7 @@ export function LiveRatesSidebar() {
       </div>
 
       {/* Why Convert */}
-      <div className="bg-card border border-border p-4">
+      <div className="bg-card dark:bg-[#161B22] border border-border dark:border-[rgba(230,237,243,0.06)] p-4">
         <div className="flex justify-between items-center mb-4">
           <span className="font-extrabold text-sm">Why Convert?</span>
         </div>

@@ -205,7 +205,7 @@ export default function ConvertClient() {
             {/* Main convert form */}
             <div>
               {detectedCountry && (
-                <div className="flex items-center gap-2 px-3 py-2 bg-[hsl(var(--primary)/0.08)] text-sm mb-3">
+                <div className="flex items-center gap-2 px-3 py-2 bg-[var(--quatava-blue-100)] dark:bg-[rgba(51,117,187,0.1)] text-sm mb-3">
                   <Globe className="w-4 h-4 text-primary shrink-0" />
                   <span>
                     Detected region: <strong>{detectedCountry}</strong> — Showing{" "}
@@ -215,9 +215,9 @@ export default function ConvertClient() {
               )}
 
               {/* Convert card */}
-              <div className="bg-card border border-border p-6">
+              <div className="bg-card dark:bg-[#161B22] border border-border p-6">
                 {/* You send */}
-                <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
+                <div className="text-xs font-semibold uppercase tracking-[0.06em] text-muted-foreground mb-2">
                   You send
                 </div>
                 <div className="flex gap-3 items-end">
@@ -228,14 +228,14 @@ export default function ConvertClient() {
                       value={sendAmount}
                       onChange={(e) => setSendAmount(e.target.value)}
                       placeholder="0.00"
-                      className="w-full px-3.5 py-3 text-lg font-extrabold bg-background border border-border text-foreground tabular-nums focus:border-primary focus:outline-none"
+                      className="w-full px-3.5 py-3 text-lg font-extrabold bg-background dark:bg-[#21262D] border border-border dark:border-[rgba(230,237,243,0.1)] text-foreground tabular-nums focus:border-primary focus:outline-none"
                     />
                   </div>
                   <div className="w-40">
                     <select
                       value={sendCurrency}
                       onChange={(e) => setSendCurrency(e.target.value)}
-                      className="w-full px-2.5 py-3 text-sm font-semibold bg-background border border-border text-foreground cursor-pointer focus:border-primary focus:outline-none"
+                      className="w-full px-2.5 py-3 text-sm font-semibold bg-background dark:bg-[#21262D] border border-border dark:border-[rgba(230,237,243,0.1)] text-foreground cursor-pointer focus:border-primary focus:outline-none"
                     >
                       {CRYPTO_OPTIONS.map((opt) => (
                         <option key={opt.value} value={opt.value}>
@@ -255,14 +255,14 @@ export default function ConvertClient() {
                 <div className="flex justify-center py-3">
                   <button
                     onClick={handleSwap}
-                    className="w-11 h-11 flex items-center justify-center bg-background border-2 border-border text-primary cursor-pointer hover:border-primary transition-transform hover:rotate-180 duration-200"
+                    className="w-11 h-11 flex items-center justify-center bg-background dark:bg-[#21262D] border-2 border-border dark:border-[rgba(230,237,243,0.1)] text-primary cursor-pointer hover:border-primary transition-transform hover:rotate-180 duration-200"
                   >
                     <ArrowUpDown className="w-5 h-5" />
                   </button>
                 </div>
 
                 {/* You receive */}
-                <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
+                <div className="text-xs font-semibold uppercase tracking-[0.06em] text-muted-foreground mb-2">
                   You receive
                 </div>
                 <div className="flex gap-3 items-end">
@@ -271,14 +271,14 @@ export default function ConvertClient() {
                       type="text"
                       value={isLoadingRate ? "..." : receiveAmount}
                       readOnly
-                      className="w-full px-3.5 py-3 text-lg font-extrabold bg-[hsl(var(--primary)/0.03)] border border-border text-foreground tabular-nums"
+                      className="w-full px-3.5 py-3 text-lg font-extrabold bg-[hsl(var(--primary)/0.03)] dark:bg-[rgba(51,117,187,0.06)] border border-border text-foreground tabular-nums"
                     />
                   </div>
                   <div className="w-40">
                     <select
                       value={receiveCurrency}
                       onChange={(e) => setReceiveCurrency(e.target.value)}
-                      className="w-full px-2.5 py-3 text-sm font-semibold bg-background border border-border text-foreground cursor-pointer focus:border-primary focus:outline-none"
+                      className="w-full px-2.5 py-3 text-sm font-semibold bg-background dark:bg-[#21262D] border border-border dark:border-[rgba(230,237,243,0.1)] text-foreground cursor-pointer focus:border-primary focus:outline-none"
                     >
                       {FIAT_OPTIONS.map((opt) => (
                         <option key={opt.value} value={opt.value}>
@@ -295,7 +295,7 @@ export default function ConvertClient() {
                 </div>
 
                 {/* Rate bar */}
-                <div className="flex justify-between items-center p-3 mt-3 bg-[hsl(var(--primary)/0.08)] text-sm">
+                <div className="flex justify-between items-center p-3 mt-3 bg-[var(--quatava-blue-100)] dark:bg-[rgba(51,117,187,0.1)] text-[13px]">
                   <div>
                     <span className="text-muted-foreground">Rate: </span>
                     {isLoadingRate ? (
@@ -308,7 +308,7 @@ export default function ConvertClient() {
                       </span>
                     )}
                   </div>
-                  <div className="text-xs text-muted-foreground">
+                  <div className="text-[11px] text-muted-foreground/40">
                     {rate > 0 && (
                       <>Updated {elapsedSince}s ago &middot; Refreshes in {rateCountdown}s</>
                     )}
@@ -360,17 +360,18 @@ export default function ConvertClient() {
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
                   {PAYMENT_METHODS.map((method) => {
                     const Icon = method.icon;
+                    const selected = paymentMethod === method.key;
                     return (
                       <button
                         key={method.key}
                         onClick={() => setPaymentMethod(method.key)}
                         className={`p-3 flex items-center gap-3 border-2 cursor-pointer transition-colors text-left ${
-                          paymentMethod === method.key
-                            ? "border-primary bg-[hsl(var(--primary)/0.06)]"
-                            : "border-border bg-card hover:border-[hsl(var(--primary)/0.3)]"
+                          selected
+                            ? "border-primary bg-[var(--quatava-blue-100)] dark:bg-[rgba(51,117,187,0.08)]"
+                            : "border-border bg-card dark:bg-[#161B22] hover:border-[var(--quatava-blue-300)] dark:hover:bg-[#21262D]"
                         }`}
                       >
-                        <div className="w-10 h-10 flex items-center justify-center bg-[hsl(var(--primary)/0.08)] text-primary shrink-0">
+                        <div className="w-10 h-10 flex items-center justify-center bg-[var(--quatava-blue-100)] dark:bg-[rgba(51,117,187,0.15)] text-primary shrink-0">
                           <Icon className="w-5 h-5" />
                         </div>
                         <div>
@@ -392,7 +393,7 @@ export default function ConvertClient() {
 
               {/* Bank details form */}
               {paymentMethod === "bank" && (
-                <div className="bg-card border border-border p-6">
+                <div className="bg-card dark:bg-[#161B22] border border-border p-6">
                   <div className="flex justify-between items-center mb-3">
                     <span className="font-extrabold text-sm">
                       Bank Details {detectedCountry && `— ${detectedCountry}`}
@@ -400,13 +401,13 @@ export default function ConvertClient() {
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div className="flex flex-col gap-1">
-                      <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                      <label className="text-[11px] font-semibold uppercase tracking-[0.04em] text-muted-foreground">
                         Bank Name
                       </label>
                       <select
                         value={bankName}
                         onChange={(e) => setBankName(e.target.value)}
-                        className="w-full px-3 py-2.5 text-sm bg-background border border-border text-foreground cursor-pointer focus:border-primary focus:outline-none"
+                        className="w-full px-3 py-2.5 text-[13px] bg-background dark:bg-[#21262D] border border-border dark:border-[rgba(230,237,243,0.1)] text-foreground cursor-pointer focus:border-primary focus:outline-none"
                       >
                         <option value="">Select bank</option>
                         {NIGERIAN_BANKS.map((bank) => (
@@ -417,7 +418,7 @@ export default function ConvertClient() {
                       </select>
                     </div>
                     <div className="flex flex-col gap-1">
-                      <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                      <label className="text-[11px] font-semibold uppercase tracking-[0.04em] text-muted-foreground">
                         Account Number
                       </label>
                       <input
@@ -425,11 +426,11 @@ export default function ConvertClient() {
                         value={accountNumber}
                         onChange={(e) => setAccountNumber(e.target.value)}
                         placeholder="Enter account number"
-                        className="w-full px-3 py-2.5 text-sm bg-background border border-border text-foreground focus:border-primary focus:outline-none"
+                        className="w-full px-3 py-2.5 text-[13px] bg-background dark:bg-[#21262D] border border-border dark:border-[rgba(230,237,243,0.1)] text-foreground focus:border-primary focus:outline-none"
                       />
                     </div>
                     <div className="flex flex-col gap-1 sm:col-span-2">
-                      <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                      <label className="text-[11px] font-semibold uppercase tracking-[0.04em] text-muted-foreground">
                         Account Name
                       </label>
                       <input
@@ -438,7 +439,7 @@ export default function ConvertClient() {
                         onChange={(e) => setAccountName(e.target.value)}
                         readOnly
                         placeholder="Auto-populated after verification"
-                        className="w-full px-3 py-2.5 text-sm bg-[hsl(var(--primary)/0.03)] border border-border text-foreground"
+                        className="w-full px-3 py-2.5 text-[13px] bg-[hsl(var(--primary)/0.03)] dark:bg-[rgba(51,117,187,0.06)] border border-border text-foreground"
                       />
                     </div>
                   </div>

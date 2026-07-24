@@ -17,7 +17,7 @@ export function AssetsTable() {
   ].filter((w: any) => w.balance > 0);
 
   return (
-    <div className="bg-card border border-border p-4">
+    <div className="bg-card dark:bg-[#161B22] border border-border p-4">
       <div className="flex justify-between items-center mb-4">
         <span className="font-extrabold text-sm tracking-tight">
           Your Assets
@@ -54,7 +54,7 @@ export function AssetsTable() {
             className="grid grid-cols-4 gap-3 py-2.5 items-center border-b border-border/60 text-sm tabular-nums hover:bg-foreground/[0.02] transition-colors"
           >
             <div className="flex items-center gap-2.5 font-semibold">
-              <div className="w-7 h-7 flex items-center justify-center text-[10px] font-extrabold bg-[hsl(var(--primary)/0.08)] text-[var(--quatava-blue-700)] dark:text-[hsl(var(--primary)/0.7)]">
+              <div className="w-7 h-7 flex items-center justify-center text-[10px] font-extrabold bg-[var(--quatava-blue-100)] dark:bg-[rgba(51,117,187,0.15)] text-[var(--quatava-blue-700)] dark:text-[var(--quatava-blue-300)]">
                 {wallet.currency}
               </div>
               {wallet.currency}

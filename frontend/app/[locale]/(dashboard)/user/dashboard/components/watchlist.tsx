@@ -63,7 +63,7 @@ export function Watchlist() {
   }, []);
 
   return (
-    <div className="bg-card border border-border p-4">
+    <div className="bg-card dark:bg-[#161B22] border border-border p-4">
       <div className="flex justify-between items-center mb-4">
         <span className="font-extrabold text-sm tracking-tight">Watchlist</span>
         <span className="text-[11px] text-muted-foreground">Live</span>
