@@ -75,7 +75,7 @@ interface ConvertState {
   fetchHistory: () => Promise<void>;
 }
 
-const FIAT_CURRENCIES = ["NGN", "USD", "EUR", "GBP", "MXN", "AED", "KES", "GHS", "ZAR", "INR", "JPY", "CNY"];
+const FIAT_CURRENCIES = ["BRL", "ARS", "COP", "CLP", "PEN", "MXN", "UYU", "USD", "EUR", "GBP", "NGN", "AED", "KES", "GHS", "ZAR", "INR", "JPY", "CNY"];
 
 function inferWalletType(currency: string): "SPOT" | "FIAT" {
   return FIAT_CURRENCIES.includes(currency.toUpperCase()) ? "FIAT" : "SPOT";
@@ -86,7 +86,7 @@ export const useConvertStore = create<ConvertState>((set, get) => ({
   sendAmount: "",
   sendCurrency: "BTC",
   sendType: "SPOT",
-  receiveCurrency: "NGN",
+  receiveCurrency: "BRL",
   receiveType: "FIAT",
   receiveAmount: "",
   rate: 0,

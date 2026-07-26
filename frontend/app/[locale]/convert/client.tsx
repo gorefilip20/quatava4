@@ -26,23 +26,28 @@ const CRYPTO_OPTIONS = [
 ];
 
 const FIAT_OPTIONS = [
-  { value: "NGN", label: "NGN — Naira", symbol: "₦", flag: "🇳🇬" },
+  { value: "BRL", label: "BRL — Real", symbol: "R$", flag: "🇧🇷" },
+  { value: "ARS", label: "ARS — Peso Argentino", symbol: "$", flag: "🇦🇷" },
+  { value: "COP", label: "COP — Peso Colombiano", symbol: "$", flag: "🇨🇴" },
+  { value: "CLP", label: "CLP — Peso Chileno", symbol: "$", flag: "🇨🇱" },
+  { value: "PEN", label: "PEN — Sol", symbol: "S/", flag: "🇵🇪" },
+  { value: "MXN", label: "MXN — Peso Mexicano", symbol: "$", flag: "🇲🇽" },
+  { value: "UYU", label: "UYU — Peso Uruguayo", symbol: "$U", flag: "🇺🇾" },
   { value: "USD", label: "USD — US Dollar", symbol: "$", flag: "🇺🇸" },
   { value: "EUR", label: "EUR — Euro", symbol: "€", flag: "🇪🇺" },
-  { value: "GBP", label: "GBP — Pound", symbol: "£", flag: "🇬🇧" },
-  { value: "MXN", label: "MXN — Peso", symbol: "$", flag: "🇲🇽" },
-  { value: "AED", label: "AED — Dirham", symbol: "د.إ", flag: "🇦🇪" },
 ];
 
-const NIGERIAN_BANKS = [
-  "Access Bank",
-  "GTBank",
-  "First Bank",
-  "UBA",
-  "Zenith Bank",
-  "Kuda Bank",
-  "OPay",
-];
+const BANKS_BY_CURRENCY: Record<string, string[]> = {
+  BRL: ["Banco do Brasil", "Itaú Unibanco", "Bradesco", "Caixa Econômica", "Santander Brasil", "Nubank", "Inter", "C6 Bank"],
+  ARS: ["Banco Nación", "Banco Galicia", "Banco Macro", "BBVA Argentina", "Santander Argentina", "Mercado Pago", "Brubank", "Ualá"],
+  COP: ["Bancolombia", "Davivienda", "Banco de Bogotá", "BBVA Colombia", "Nequi", "Banco de Occidente", "Scotiabank Colpatria"],
+  CLP: ["Banco de Chile", "BancoEstado", "Santander Chile", "BCI", "Scotiabank Chile", "BICE", "Banco Falabella"],
+  PEN: ["BCP", "BBVA Perú", "Interbank", "Scotiabank Perú", "BanBif", "Banco de la Nación", "Yape"],
+  MXN: ["BBVA México", "Banorte", "Citibanamex", "Santander México", "HSBC México", "Banco Azteca", "Nu México"],
+  UYU: ["BROU", "Santander Uruguay", "Itaú Uruguay", "Scotiabank Uruguay", "BBVA Uruguay", "Prex"],
+  USD: ["Chase", "Bank of America", "Wells Fargo", "Citibank"],
+  EUR: ["Deutsche Bank", "BNP Paribas", "ING", "Revolut"],
+};
 
 const TABS: { key: ConvertTab; label: string }[] = [
   { key: "convert", label: "Convert" },
@@ -68,7 +73,7 @@ const PAYMENT_METHODS: {
   {
     key: "mobile_money",
     name: "Mobile Money",
-    desc: "MTN, Airtel, etc.",
+    desc: "Mercado Pago, Nequi, etc.",
     fee: "~2 min · Free",
     icon: Smartphone,
   },
@@ -161,7 +166,9 @@ export default function ConvertClient() {
   }, [executeConversion, fetchRate]);
 
   const fiatSymbol =
-    FIAT_OPTIONS.find((f) => f.value === receiveCurrency)?.symbol ?? "₦";
+    FIAT_OPTIONS.find((f) => f.value === receiveCurrency)?.symbol ?? "$";
+
+  const availableBanks = BANKS_BY_CURRENCY[receiveCurrency] ?? BANKS_BY_CURRENCY[sendCurrency] ?? [];
 
   const formatRate = (r: number) => {
     if (!r || r <= 0) return "...";
@@ -410,7 +417,7 @@ export default function ConvertClient() {
                         className="w-full px-3 py-2.5 text-[13px] bg-background dark:bg-[#21262D] border border-border dark:border-[rgba(230,237,243,0.1)] text-foreground cursor-pointer focus:border-primary focus:outline-none"
                       >
                         <option value="">Select bank</option>
-                        {NIGERIAN_BANKS.map((bank) => (
+                        {availableBanks.map((bank) => (
                           <option key={bank} value={bank}>
                             {bank}
                           </option>

@@ -4,21 +4,31 @@ import { useState } from "react";
 import { Shield } from "lucide-react";
 
 const FIAT_OPTIONS = [
-  { value: "NGN", label: "Nigerian Naira (NGN)", symbol: "₦" },
+  { value: "BRL", label: "Brazilian Real (BRL)", symbol: "R$" },
+  { value: "ARS", label: "Argentine Peso (ARS)", symbol: "$" },
+  { value: "COP", label: "Colombian Peso (COP)", symbol: "$" },
+  { value: "CLP", label: "Chilean Peso (CLP)", symbol: "$" },
+  { value: "PEN", label: "Peruvian Sol (PEN)", symbol: "S/" },
+  { value: "MXN", label: "Mexican Peso (MXN)", symbol: "$" },
+  { value: "UYU", label: "Uruguayan Peso (UYU)", symbol: "$U" },
   { value: "USD", label: "US Dollar (USD)", symbol: "$" },
   { value: "EUR", label: "Euro (EUR)", symbol: "€" },
-  { value: "GBP", label: "British Pound (GBP)", symbol: "£" },
 ];
 
 const BANKS_BY_CURRENCY: Record<string, string[]> = {
-  NGN: ["Access Bank", "GTBank", "First Bank", "UBA", "Zenith Bank", "Kuda Bank", "OPay"],
+  BRL: ["Banco do Brasil", "Itaú Unibanco", "Bradesco", "Caixa Econômica", "Santander Brasil", "Nubank", "Inter", "C6 Bank"],
+  ARS: ["Banco Nación", "Banco Galicia", "Banco Macro", "BBVA Argentina", "Santander Argentina", "Mercado Pago", "Brubank", "Ualá"],
+  COP: ["Bancolombia", "Davivienda", "Banco de Bogotá", "BBVA Colombia", "Nequi", "Banco de Occidente", "Scotiabank Colpatria"],
+  CLP: ["Banco de Chile", "BancoEstado", "Santander Chile", "BCI", "Scotiabank Chile", "BICE", "Banco Falabella"],
+  PEN: ["BCP", "BBVA Perú", "Interbank", "Scotiabank Perú", "BanBif", "Banco de la Nación", "Yape"],
+  MXN: ["BBVA México", "Banorte", "Citibanamex", "Santander México", "HSBC México", "Banco Azteca", "Nu México"],
+  UYU: ["BROU", "Santander Uruguay", "Itaú Uruguay", "Scotiabank Uruguay", "BBVA Uruguay", "Prex"],
   USD: ["Chase", "Bank of America", "Wells Fargo", "Citibank"],
   EUR: ["Deutsche Bank", "BNP Paribas", "ING", "Revolut"],
-  GBP: ["Barclays", "HSBC", "Lloyds", "NatWest", "Monzo"],
 };
 
 export function WithdrawTab() {
-  const [currency, setCurrency] = useState("NGN");
+  const [currency, setCurrency] = useState("BRL");
   const [amount, setAmount] = useState("");
   const [bank, setBank] = useState("");
   const [accountNumber, setAccountNumber] = useState("");

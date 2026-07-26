@@ -12,35 +12,40 @@ interface RateEntry {
 }
 
 const CRYPTO_PAIRS = [
-  { from: "BTC", to: "NGN", toType: "FIAT", flag: "🇳🇬" },
-  { from: "ETH", to: "NGN", toType: "FIAT", flag: "🇳🇬" },
-  { from: "USDT", to: "NGN", toType: "FIAT", flag: "🇳🇬" },
-  { from: "SOL", to: "NGN", toType: "FIAT", flag: "🇳🇬" },
+  { from: "BTC", to: "BRL", toType: "FIAT", flag: "🇧🇷" },
+  { from: "ETH", to: "BRL", toType: "FIAT", flag: "🇧🇷" },
+  { from: "USDT", to: "BRL", toType: "FIAT", flag: "🇧🇷" },
+  { from: "SOL", to: "BRL", toType: "FIAT", flag: "🇧🇷" },
 ];
 
 const OTHER_CURRENCIES = [
-  { currency: "USD", flag: "🇺🇸" },
-  { currency: "GBP", flag: "🇬🇧" },
-  { currency: "EUR", flag: "🇪🇺" },
+  { currency: "ARS", flag: "🇦🇷" },
+  { currency: "COP", flag: "🇨🇴" },
+  { currency: "CLP", flag: "🇨🇱" },
+  { currency: "PEN", flag: "🇵🇪" },
   { currency: "MXN", flag: "🇲🇽" },
-  { currency: "AED", flag: "🇦🇪" },
+  { currency: "USD", flag: "🇺🇸" },
 ];
 
 const WHY_CONVERT = [
   "No middlemen — instant at market rate",
   "Direct to your bank in seconds",
   "No scam risk — fully automated",
-  "Supports 6+ fiat currencies",
+  "Supports 9+ fiat currencies across LATAM",
 ];
 
 function formatPrice(rate: number, currency: string): string {
   const symbols: Record<string, string> = {
-    NGN: "₦",
-    USD: "$",
-    GBP: "£",
-    EUR: "€",
+    BRL: "R$",
+    ARS: "$",
+    COP: "$",
+    CLP: "$",
+    PEN: "S/",
     MXN: "$",
-    AED: "AED ",
+    UYU: "$U",
+    USD: "$",
+    EUR: "€",
+    GBP: "£",
   };
   const sym = symbols[currency] || "";
 
@@ -54,14 +59,14 @@ function formatPrice(rate: number, currency: string): string {
 }
 
 export function LiveRatesSidebar() {
-  const [ngnRates, setNgnRates] = useState<RateEntry[]>([]);
+  const [brlRates, setBrlRates] = useState<RateEntry[]>([]);
   const [otherRates, setOtherRates] = useState<{ currency: string; flag: string; price: string }[]>([]);
   const [loading, setLoading] = useState(true);
 
   async function fetchRates() {
     setLoading(true);
 
-    const ngnResults: RateEntry[] = [];
+    const brlResults: RateEntry[] = [];
     for (const pair of CRYPTO_PAIRS) {
       const { data } = await $fetch<{ rate: number }>({
         url: "/api/finance/convert/rate",
@@ -74,14 +79,14 @@ export function LiveRatesSidebar() {
         },
         silent: true,
       });
-      ngnResults.push({
+      brlResults.push({
         pair: `${pair.from}/${pair.to}`,
         flag: pair.flag,
         price: data ? formatPrice(data.rate, pair.to) : "—",
         rate: data?.rate || 0,
       });
     }
-    setNgnRates(ngnResults);
+    setBrlRates(brlResults);
 
     const otherResults: { currency: string; flag: string; price: string }[] = [];
     for (const c of OTHER_CURRENCIES) {
@@ -117,19 +122,19 @@ export function LiveRatesSidebar() {
       {/* NGN rates */}
       <div className="bg-card dark:bg-[#161B22] border border-border dark:border-[rgba(230,237,243,0.06)] p-4">
         <div className="flex justify-between items-center mb-4">
-          <span className="font-extrabold text-sm">Live Rates (NGN)</span>
+          <span className="font-extrabold text-sm">Live Rates (BRL)</span>
           <span className="text-[11px] text-muted-foreground">
             Updates every 30s
           </span>
         </div>
-        {loading && !ngnRates.length ? (
+        {loading && !brlRates.length ? (
           <div className="flex items-center justify-center py-4 text-muted-foreground">
             <Loader2 className="w-4 h-4 animate-spin mr-2" />
             Loading rates...
           </div>
         ) : (
           <div className="flex flex-col">
-            {ngnRates.map((rate) => (
+            {brlRates.map((rate) => (
               <div
                 key={rate.pair}
                 className="grid grid-cols-2 gap-2 py-2.5 border-b border-border/50 last:border-b-0 text-sm items-center tabular-nums"

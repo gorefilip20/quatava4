@@ -13,7 +13,7 @@ const CRYPTO_OPTIONS = [
 
 export function BuyCryptoTab() {
   const [amount, setAmount] = useState("");
-  const [currency, setCurrency] = useState("USD");
+  const [currency, setCurrency] = useState("BRL");
   const [crypto, setCrypto] = useState("BTC");
   const [payMethod, setPayMethod] = useState<"card" | "bank">("card");
 
@@ -44,10 +44,15 @@ export function BuyCryptoTab() {
                 onChange={(e) => setCurrency(e.target.value)}
                 className="w-32 px-2.5 py-3 text-sm font-semibold bg-background border border-border text-foreground cursor-pointer focus:border-primary focus:outline-none"
               >
+                <option value="BRL">BRL</option>
+                <option value="ARS">ARS</option>
+                <option value="COP">COP</option>
+                <option value="CLP">CLP</option>
+                <option value="PEN">PEN</option>
+                <option value="MXN">MXN</option>
+                <option value="UYU">UYU</option>
                 <option value="USD">USD</option>
                 <option value="EUR">EUR</option>
-                <option value="GBP">GBP</option>
-                <option value="NGN">NGN</option>
               </select>
             </div>
           </div>
