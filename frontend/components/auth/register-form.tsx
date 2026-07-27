@@ -9,6 +9,7 @@ import {
   Mail,
   Lock,
   User,
+  Globe,
   CheckCircle2,
   AlertTriangle,
   Info,
@@ -100,6 +101,7 @@ export default function RegisterForm({
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
+  const [country, setCountry] = useState("BR");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -382,6 +384,7 @@ export default function RegisterForm({
         lastName,
         email,
         password,
+        country,
         ref: refCode || undefined,
         recaptchaToken,
       });
@@ -465,6 +468,7 @@ export default function RegisterForm({
     lastName: string;
     email: string;
     password: string;
+    country?: string;
     ref?: string;
     recaptchaToken: string | null;
   }) => {
@@ -483,6 +487,7 @@ export default function RegisterForm({
             lastName: userData.lastName,
             email: userData.email,
             password: userData.password,
+            country: userData.country,
             ref: userData.ref,
             recaptchaToken: userData.recaptchaToken,
           },
@@ -602,6 +607,7 @@ export default function RegisterForm({
         lastName: userData.lastName,
         email: userData.email,
         password: userData.password,
+        country: userData.country,
         ref: userData.ref,
       });
     }
@@ -820,6 +826,32 @@ export default function RegisterForm({
               className={`absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 transition-colors ${
                 emailFocused ? "text-primary" : "text-muted-foreground"
               }`}
+            />
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <div className="relative transition-all duration-300 form-field-animate rounded-lg ring-1 ring-input">
+            <select
+              value={country}
+              onChange={(e) => setCountry(e.target.value)}
+              className="w-full border-0 pl-10 py-[18px] bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 text-base text-foreground appearance-none cursor-pointer outline-none"
+              disabled={!!buttonLoading}
+            >
+              <option value="BR">Brazil</option>
+              <option value="AR">Argentina</option>
+              <option value="CO">Colombia</option>
+              <option value="CL">Chile</option>
+              <option value="PE">Peru</option>
+              <option value="MX">Mexico</option>
+              <option value="UY">Uruguay</option>
+              <option value="US">United States</option>
+              <option value="GB">United Kingdom</option>
+              <option value="ES">Spain</option>
+              <option value="PT">Portugal</option>
+            </select>
+            <Globe
+              className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground"
             />
           </div>
         </div>

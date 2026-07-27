@@ -120,9 +120,42 @@ export default function ConvertClient() {
     rateError,
   } = useConvertStore();
 
+  const { setDetectedCountry } = useConvertStore();
   const [elapsedSince, setElapsedSince] = useState(0);
   const rateTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const COUNTRY_TO_CURRENCY: Record<string, { currency: string; name: string }> = {
+    BR: { currency: "BRL", name: "Brazil" },
+    AR: { currency: "ARS", name: "Argentina" },
+    CO: { currency: "COP", name: "Colombia" },
+    CL: { currency: "CLP", name: "Chile" },
+    PE: { currency: "PEN", name: "Peru" },
+    MX: { currency: "MXN", name: "Mexico" },
+    UY: { currency: "UYU", name: "Uruguay" },
+    US: { currency: "USD", name: "United States" },
+  };
+
+  useEffect(() => {
+    const detectCountry = async () => {
+      try {
+        const res = await fetch("https://ipapi.co/json/", { signal: AbortSignal.timeout(5000) });
+        if (!res.ok) return;
+        const data = await res.json();
+        const countryCode = data?.country_code;
+        if (countryCode && COUNTRY_TO_CURRENCY[countryCode]) {
+          const match = COUNTRY_TO_CURRENCY[countryCode];
+          setDetectedCountry(match.name, match.currency);
+          if (!sendAmount) {
+            setReceiveCurrency(match.currency);
+          }
+        }
+      } catch {
+        // Geo detection is best-effort
+      }
+    };
+    detectCountry();
+  }, []);
 
   useEffect(() => {
     fetchRate();
@@ -215,7 +248,8 @@ export default function ConvertClient() {
                 <div className="flex items-center gap-2 px-3 py-2 bg-[var(--quatava-blue-100)] dark:bg-[rgba(51,117,187,0.1)] text-sm mb-3">
                   <Globe className="w-4 h-4 text-primary shrink-0" />
                   <span>
-                    Detected region: <strong>{detectedCountry}</strong> — Showing{" "}
+                    {FIAT_OPTIONS.find((f) => f.value === receiveCurrency)?.flag}{" "}
+                    Rates for <strong>{detectedCountry}</strong> — Showing{" "}
                     {receiveCurrency} rates.
                   </span>
                 </div>

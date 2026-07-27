@@ -198,8 +198,40 @@ export function UserDashboardShell({ children }: { children: ReactNode }) {
         )}
 
         {/* Main content */}
-        <main className="overflow-y-auto p-[clamp(16px,3vw,32px)]">{children}</main>
+        <main className="overflow-y-auto p-[clamp(16px,3vw,32px)] pb-20 lg:pb-[clamp(16px,3vw,32px)]">{children}</main>
       </div>
+
+      {/* Mobile Bottom Navigation */}
+      <nav className="fixed bottom-0 left-0 right-0 h-14 bg-background border-t-2 border-border flex items-stretch z-30 lg:hidden">
+        {[
+          { icon: Home, label: "Home", href: "/user/dashboard" },
+          { icon: Wallet, label: "Wallet", href: "/finance/wallet" },
+          { icon: Activity, label: "Trade", href: "/trade/BTCUSDT" },
+          { icon: RefreshCw, label: "Convert", href: "/convert" },
+          { icon: Settings, label: "More", href: "/user/profile" },
+        ].map((item) => {
+          const Icon = item.icon;
+          const active = isActive(pathname, item.href);
+          return (
+            <a
+              key={item.label}
+              href={item.href}
+              onClick={(e) => {
+                e.preventDefault();
+                router.push(item.href);
+              }}
+              className={`flex-1 flex flex-col items-center justify-center gap-0.5 text-[10px] font-semibold no-underline min-h-[44px] ${
+                active
+                  ? "text-primary"
+                  : "text-muted-foreground"
+              }`}
+            >
+              <Icon className="w-5 h-5" />
+              {item.label}
+            </a>
+          );
+        })}
+      </nav>
     </div>
   );
 }

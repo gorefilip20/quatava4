@@ -219,7 +219,7 @@ export default function DefaultHomePage() {
     {
       icon: <RefreshCw className="w-7 h-7" />,
       title: "Instant Convert",
-      desc: "Convert crypto to any local currency instantly at live market rates — NGN, USD, EUR, GBP, MXN, AED — direct to your bank.",
+      desc: "Convert crypto to BRL, ARS, COP, CLP, PEN, MXN, UYU instantly at live market rates — direct to your bank across Latin America.",
     },
     {
       icon: <DollarSign className="w-7 h-7" />,
@@ -278,7 +278,7 @@ export default function DefaultHomePage() {
               </span>
             </h1>
             <p className="text-lg leading-[42px] max-w-[58ch] mt-6 text-muted-foreground">
-              {getContent(pageContent, "hero.description", "Quatava is a next-generation cryptocurrency platform — spot trading, futures, instant convert, staking, NFT marketplace, and AI-powered investments. One account, every market, total control.")}
+              {getContent(pageContent, "hero.description", "Quatava is a next-generation cryptocurrency platform for Latin America — spot trading, futures, instant convert to BRL, ARS, COP and more, staking, and AI-powered investments. One account, every market, total control.")}
             </p>
             <div className="flex flex-wrap gap-3 mt-8">
               <Link
@@ -424,6 +424,44 @@ export default function DefaultHomePage() {
           </div>
         </section>
       )}
+
+      {/* SUPPORTED CURRENCIES */}
+      <section className="py-12 md:py-16">
+        <div className="max-w-[1200px] mx-auto px-5 md:px-[clamp(20px,5vw,72px)]">
+          <AnimatedSection>
+            <span className="block text-[13px] leading-[14px] tracking-[0.08em] uppercase text-primary font-medium mb-4">
+              Supported Currencies
+            </span>
+            <h2 className="text-[clamp(22px,2.5vw,30px)] font-extrabold tracking-[-0.02em] mb-8">
+              Convert crypto to local fiat across Latin America
+            </h2>
+          </AnimatedSection>
+          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-7 gap-4">
+            {[
+              { flag: "\u{1F1E7}\u{1F1F7}", code: "BRL", name: "Brazil" },
+              { flag: "\u{1F1E6}\u{1F1F7}", code: "ARS", name: "Argentina" },
+              { flag: "\u{1F1E8}\u{1F1F4}", code: "COP", name: "Colombia" },
+              { flag: "\u{1F1E8}\u{1F1F1}", code: "CLP", name: "Chile" },
+              { flag: "\u{1F1F5}\u{1F1EA}", code: "PEN", name: "Peru" },
+              { flag: "\u{1F1F2}\u{1F1FD}", code: "MXN", name: "Mexico" },
+              { flag: "\u{1F1FA}\u{1F1FE}", code: "UYU", name: "Uruguay" },
+            ].map((c, i) => (
+              <motion.div
+                key={c.code}
+                initial={{ opacity: 0, y: 15 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.4, delay: i * 0.06 }}
+                className="flex flex-col items-center gap-2 p-4 border border-border bg-card hover:bg-primary/[0.04] transition-colors"
+              >
+                <span className="text-3xl">{c.flag}</span>
+                <span className="font-extrabold text-sm">{c.code}</span>
+                <span className="text-[11px] text-muted-foreground">{c.name}</span>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
 
       {/* DIVIDER */}
       <div className="max-w-[1200px] mx-auto px-5 md:px-[clamp(20px,5vw,72px)]">
