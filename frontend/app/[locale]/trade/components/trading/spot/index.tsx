@@ -341,84 +341,103 @@ export default function TradingFormPanel({
   };
 
   return (
-    <div className="flex flex-col h-full bg-background dark:bg-black overflow-y-auto scrollbar-hide">
+    <div className="flex flex-col h-full bg-card overflow-y-auto scrollbar-hide">
       {/* Market type indicator - only show for Eco markets */}
       {isMarketEco && (
-        <div className="px-3 py-1.5 bg-emerald-500/10 border-b border-emerald-500/20 flex items-center">
-          <Leaf className="h-3.5 w-3.5 text-emerald-500 mr-1.5" />
-          <span className="text-xs font-medium text-emerald-600 dark:text-emerald-400">
+        <div className="px-3 py-1.5 bg-success/10 border-b border-success/20 flex items-center">
+          <Leaf className="h-3.5 w-3.5 text-success mr-1.5" />
+          <span className="text-xs font-medium text-success">
             {t("eco_market")}
           </span>
-          <Badge className="ml-auto bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 text-[10px]">
+          <Badge className="ml-auto bg-success/20 text-success border-success/30 text-[10px]">
             {t("low_fee")}
           </Badge>
         </div>
       )}
 
-      <div className="flex border-b border-border dark:border-zinc-800">
+      {/* Buy / Sell tabs */}
+      <div className="flex border-b border-border">
         <button
-          onClick={() => setTradingType("standard")}
+          onClick={() => {
+            setBuyMode(true);
+            setTradingType("standard");
+          }}
           className={cn(
-            "flex items-center justify-center flex-1 py-2 text-xs font-medium",
-            tradingType === "standard"
-              ? "text-foreground dark:text-white border-b-2 border-primary dark:border-blue-500"
-              : "text-muted-foreground dark:text-zinc-400"
+            "flex-1 py-2.5 text-center text-[13px] font-extrabold cursor-pointer bg-transparent border-none border-b-2",
+            buyMode && tradingType === "standard"
+              ? "text-success border-b-success"
+              : "text-muted-foreground border-b-transparent"
           )}
         >
-          {t("standard_trading")}
+          Buy
+        </button>
+        <button
+          onClick={() => {
+            setBuyMode(false);
+            setTradingType("standard");
+          }}
+          className={cn(
+            "flex-1 py-2.5 text-center text-[13px] font-extrabold cursor-pointer bg-transparent border-none border-b-2",
+            !buyMode && tradingType === "standard"
+              ? "text-destructive border-b-destructive"
+              : "text-muted-foreground border-b-transparent"
+          )}
+        >
+          Sell
         </button>
         <button
           onClick={() => setTradingType("ai")}
           className={cn(
-            "flex items-center justify-center flex-1 py-2 text-xs font-medium",
+            "flex-1 py-2.5 text-center text-[13px] font-extrabold cursor-pointer bg-transparent border-none border-b-2",
             tradingType === "ai"
-              ? "text-foreground dark:text-white border-b-2 border-primary dark:border-blue-500"
-              : "text-muted-foreground dark:text-zinc-400"
+              ? "text-primary border-b-primary"
+              : "text-muted-foreground border-b-transparent"
           )}
         >
-          <Sparkles className="h-3 w-3 mr-1" />
-          {t("ai_investment")}
+          <span className="flex items-center justify-center gap-1">
+            <Sparkles className="h-3 w-3" />
+            AI
+          </span>
         </button>
       </div>
 
-      {/* Available balance section */}
-      <BalanceDisplay
-        walletData={walletData}
-        isLoadingWallet={isLoadingWallet}
-        currency={currency}
-        pair={pair}
-        marketPrice={marketPrice}
-        pricePrecision={pricePrecision}
-        amountPrecision={amountPrecision}
-      />
-
       {tradingType === "standard" ? (
-        <Tabs
-          defaultValue="limit"
-          className="flex-1"
-          value={orderType}
-          onValueChange={(value) =>
-            setOrderType(value as "limit" | "market" | "stop")
-          }
-        >
-          <TabsList className="w-full grid grid-cols-3 rounded-none">
-            <TabTrigger value="limit">{t("Limit")}</TabTrigger>
-            <TabTrigger value="market">{t("Market")}</TabTrigger>
-            <TabTrigger value="stop">{t("Stop")}</TabTrigger>
-          </TabsList>
+        <>
+          {/* Limit / Market / Stop segmented control */}
+          <div className="flex mx-3 mt-3 border border-border">
+            {(["limit", "market", "stop"] as const).map((type) => (
+              <button
+                key={type}
+                onClick={() => setOrderType(type)}
+                className={cn(
+                  "flex-1 py-1.5 text-center text-[11px] font-semibold cursor-pointer border-none capitalize",
+                  orderType === type
+                    ? "bg-primary text-white"
+                    : "bg-transparent text-muted-foreground"
+                )}
+              >
+                {t(type.charAt(0).toUpperCase() + type.slice(1))}
+              </button>
+            ))}
+          </div>
 
-          <TabContent value="limit" className="p-2 space-y-2 min-h-[400px]">
-            <LimitOrderForm {...sharedProps} />
-          </TabContent>
+          {/* Available balance section */}
+          <BalanceDisplay
+            walletData={walletData}
+            isLoadingWallet={isLoadingWallet}
+            currency={currency}
+            pair={pair}
+            marketPrice={marketPrice}
+            pricePrecision={pricePrecision}
+            amountPrecision={amountPrecision}
+          />
 
-          <TabContent value="market" className="p-2 min-h-[400px]">
-            <MarketOrderForm {...sharedProps} />
-          </TabContent>
-
-          <TabContent value="stop" className="p-2 min-h-[400px]">
-            <StopOrderForm {...sharedProps} />
-          </TabContent>
-        </Tabs>
+          <div className="p-3 flex-1">
+            {orderType === "limit" && <LimitOrderForm {...sharedProps} />}
+            {orderType === "market" && <MarketOrderForm {...sharedProps} />}
+            {orderType === "stop" && <StopOrderForm {...sharedProps} />}
+          </div>
+        </>
       ) : (
         <AiInvestmentForm isEco={isMarketEco} symbol={symbol} />
       )}

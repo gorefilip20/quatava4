@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="_ds/modernist-40ac70d8-0d89-4811-b7e2-74ceb2bea2a2/styles.css">
+  <script src="_ds/modernist-40ac70d8-0d89-4811-b7e2-74ceb2bea2a2/_ds_bundle.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;800&display=swap');
+    :root {
+      --color-bg: #FAFBFD; --color-surface: #F0F2F5; --color-accent: #3375BB;
+      --color-accent-100: #EBF2FA; --color-accent-200: #C7DDEF; --color-accent-300: #8FBDE0;
+      --color-accent-400: #5A9BD4; --color-accent-500: #3375BB; --color-accent-600: #2A619E;
+      --color-accent-700: #1E4A7A; --color-accent-800: #153558; --color-accent-900: #0D2038;
+      --color-accent-2: #10B981;
+      --color-divider: color-mix(in srgb, #1a2332 14%, transparent);
+      --edge: clamp(16px, 3vw, 32px); --max-w: 1320px;
+    }
+    body { margin: 0; background: var(--color-bg); transition: background 0.3s, color 0.3s; }
+    a { color: var(--color-accent); } a:hover { color: var(--color-accent-600); }
+    body.dark {
+      --color-bg: #0D1117; --color-surface: #161B22; --color-text: #E6EDF3;
+      --color-divider: rgba(230,237,243,0.1); background: #0D1117; color: #E6EDF3;
+    }
+    body.dark .panel { background: #161B22; border-color: rgba(230,237,243,0.06); }
+    body.dark .nav-c { border-color: rgba(230,237,243,0.06); }
+    body.dark .sidebar { background: #161B22; border-color: rgba(230,237,243,0.06); }
+    body.dark .sidebar a { color: rgba(230,237,243,0.65); }
+    body.dark .sidebar a:hover, body.dark .sidebar a.active { color: #E6EDF3; }
+    body.dark .sidebar a.active { background: rgba(51,117,187,0.12); color: var(--color-accent-400); }
+    body.dark .convert-card { background: #161B22; border-color: rgba(230,237,243,0.06); }
+    body.dark .input-c { background: #21262D; border-color: rgba(230,237,243,0.1); color: #E6EDF3; }
+    body.dark select.input-c { background: #21262D; }
+    body.dark .swap-circle { background: #21262D; border-color: rgba(230,237,243,0.1); }
+    body.dark .rate-card { background: #161B22; border-color: rgba(230,237,243,0.06); }
+    body.dark .method-card { background: #161B22; border-color: rgba(230,237,243,0.06); }
+    body.dark .method-card:hover { background: #21262D; }
+    body.dark .method-card.selected { border-color: var(--color-accent); background: rgba(51,117,187,0.08); }
+    body.dark .bank-field label { color: rgba(230,237,243,0.45); }
+    body.dark .tab-c { color: rgba(230,237,243,0.5); }
+    body.dark .tab-c.active { color: #E6EDF3; }
+    body.dark .recent-row { border-color: rgba(230,237,243,0.05); }
+    body.dark .recent-row:hover { background: rgba(255,255,255,0.02); }
+    body.dark .currency-flag { background: #21262D; }
+
+    .nav-c { display: flex; align-items: center; gap: var(--space-4); height: 56px; padding: 0 var(--edge); border-bottom: 2px solid var(--color-divider); }
+    .q-logo { display: flex; align-items: center; gap: 8px; }
+    .q-mark { width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; background: var(--color-accent); color: #fff; font-family: var(--font-heading); font-weight: 800; font-size: 16px; }
+    .q-word { font-family: var(--font-heading); font-weight: 800; font-size: 17px; color: var(--color-text); }
+    .nav-right { margin-left: auto; display: flex; align-items: center; gap: var(--space-3); }
+    .nav-icon { width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; background: transparent; border: 1px solid var(--color-divider); color: var(--color-text); cursor: pointer; padding: 0; }
+    .nav-icon:hover { background: color-mix(in srgb, var(--color-text) 5%, transparent); }
+    .avatar { width: 30px; height: 30px; background: var(--color-accent); color: #fff; display: flex; align-items: center; justify-content: center; font-family: var(--font-heading); font-weight: 800; font-size: 13px; }
+
+    .dash-layout { display: grid; grid-template-columns: 220px 1fr; min-height: calc(100vh - 56px); }
+    @media (max-width: 900px) { .dash-layout { grid-template-columns: 1fr; } .sidebar { display: none; } }
+    .sidebar { background: var(--color-surface); border-right: 1px solid var(--color-divider); padding: var(--space-6) 0; display: flex; flex-direction: column; gap: var(--space-1); }
+    .sidebar-section { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: color-mix(in srgb, var(--color-text) 40%, transparent); padding: var(--space-4) var(--space-4) var(--space-2); }
+    .sidebar a { display: flex; align-items: center; gap: 10px; padding: 9px var(--space-4); font-size: 13px; color: color-mix(in srgb, var(--color-text) 70%, transparent); text-decoration: none; font-weight: 600; }
+    .sidebar a:hover { color: var(--color-text); background: color-mix(in srgb, var(--color-accent) 5%, transparent); }
+    .sidebar a.active { color: var(--color-accent); background: var(--color-accent-100); }
+    .sidebar a svg { width: 18px; height: 18px; flex-shrink: 0; }
+
+    .main { padding: var(--space-6) var(--edge); overflow-y: auto; }
+    .panel { background: var(--color-surface); border: 1px solid var(--color-divider); padding: var(--space-4); }
+    .panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-4); }
+    .panel-title { font-family: var(--font-heading); font-weight: 800; font-size: 14px; }
+    .panel-link { font-size: 12px; color: var(--color-accent); text-decoration: none; font-weight: 600; }
+    .text-green { color: #10B981; } .text-red { color: #EF4444; }
+
+    /* Page tabs */
+    .page-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-4); }
+    .page-title { font-family: var(--font-heading); font-weight: 800; font-size: 24px; letter-spacing: -0.01em; }
+    .tabs-c { display: flex; gap: 0; border-bottom: 2px solid var(--color-divider); margin-bottom: var(--space-6); }
+    .tab-c { padding: 12px 22px; font-size: 14px; font-weight: 800; font-family: var(--font-heading); color: color-mix(in srgb, var(--color-text) 50%, transparent); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -2px; background: none; border-top: none; border-left: none; border-right: none; }
+    .tab-c:hover { color: var(--color-text); }
+    .tab-c.active { color: var(--color-accent); border-bottom-color: var(--color-accent); }
+
+    /* Convert card */
+    .convert-layout { display: grid; grid-template-columns: 1fr 360px; gap: var(--space-4); }
+    @media (max-width: 1100px) { .convert-layout { grid-template-columns: 1fr; } }
+    .convert-card { background: var(--color-surface); border: 1px solid var(--color-divider); padding: var(--space-6); }
+    .convert-label { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: color-mix(in srgb, var(--color-text) 50%, transparent); margin-bottom: var(--space-2); }
+    .convert-row { display: flex; gap: var(--space-3); align-items: flex-end; }
+    .convert-field { flex: 1; }
+    .input-c { width: 100%; padding: 12px 14px; font-size: 18px; font-family: var(--font-heading); font-weight: 800; background: var(--color-bg); border: 1px solid var(--color-divider); color: var(--color-text); font-feature-settings: "tnum" 1; box-sizing: border-box; }
+    .input-c:focus { border-color: var(--color-accent); outline: none; }
+    select.input-c { font-size: 14px; padding: 12px 10px; cursor: pointer; font-weight: 600; appearance: auto; }
+    .currency-select { width: 160px; }
+    .currency-option { display: flex; align-items: center; gap: 8px; }
+    .currency-flag { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; background: var(--color-bg); font-size: 16px; flex-shrink: 0; }
+
+    /* Swap button */
+    .swap-row { display: flex; justify-content: center; padding: var(--space-3) 0; }
+    .swap-circle { width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; background: var(--color-bg); border: 2px solid var(--color-divider); cursor: pointer; color: var(--color-accent); padding: 0; transition: transform 0.2s; }
+    .swap-circle:hover { transform: rotate(180deg); border-color: var(--color-accent); }
+
+    /* Rate display */
+    .rate-bar { display: flex; justify-content: space-between; align-items: center; padding: var(--space-3); margin-top: var(--space-3); background: var(--color-accent-100); font-size: 13px; }
+    body.dark .rate-bar { background: rgba(51,117,187,0.1); }
+    .rate-label { color: color-mix(in srgb, var(--color-text) 55%, transparent); }
+    .rate-value { font-weight: 800; font-family: var(--font-heading); font-feature-settings: "tnum" 1; }
+    .rate-update { font-size: 11px; color: color-mix(in srgb, var(--color-text) 40%, transparent); }
+    .convert-btn { width: 100%; padding: 14px; font-size: 15px; font-weight: 800; font-family: var(--font-heading); background: var(--color-accent); color: #fff; border: none; cursor: pointer; margin-top: var(--space-4); }
+    .convert-btn:hover { background: var(--color-accent-600); }
+    .convert-btn.green { background: #10B981; }
+    .convert-btn.green:hover { background: #059669; }
+
+    /* Live rates sidebar */
+    .rate-card { background: var(--color-surface); border: 1px solid var(--color-divider); padding: var(--space-4); margin-bottom: var(--space-4); }
+    .rate-grid { display: flex; flex-direction: column; gap: 0; }
+    .rate-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; padding: 10px 0; border-bottom: 1px solid color-mix(in srgb, var(--color-divider) 50%, transparent); font-size: 13px; align-items: center; font-feature-settings: "tnum" 1; }
+    .rate-row:last-child { border-bottom: none; }
+    .rate-curr { display: flex; align-items: center; gap: 8px; font-weight: 600; }
+    .rate-flag { width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; background: var(--color-accent-100); font-size: 13px; }
+    body.dark .rate-flag { background: rgba(51,117,187,0.12); }
+
+    /* Payment methods */
+    .methods-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-3); margin-top: var(--space-3); margin-bottom: var(--space-4); }
+    @media (max-width: 640px) { .methods-grid { grid-template-columns: 1fr; } }
+    .method-card { padding: var(--space-3); background: var(--color-surface); border: 2px solid var(--color-divider); cursor: pointer; display: flex; align-items: center; gap: var(--space-3); transition: border-color 0.15s; }
+    .method-card:hover { border-color: var(--color-accent-300); }
+    .method-card.selected { border-color: var(--color-accent); background: var(--color-accent-100); }
+    body.dark .method-card.selected { background: rgba(51,117,187,0.08); }
+    .method-icon { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; background: var(--color-accent-100); color: var(--color-accent); flex-shrink: 0; }
+    body.dark .method-icon { background: rgba(51,117,187,0.15); }
+    .method-name { font-weight: 800; font-size: 13px; font-family: var(--font-heading); }
+    .method-desc { font-size: 11px; color: color-mix(in srgb, var(--color-text) 50%, transparent); }
+    .method-fee { font-size: 10px; color: #10B981; font-weight: 600; margin-top: 2px; }
+
+    /* Bank details form */
+    .bank-form { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); margin-top: var(--space-3); }
+    @media (max-width: 640px) { .bank-form { grid-template-columns: 1fr; } }
+    .bank-field { display: flex; flex-direction: column; gap: 4px; }
+    .bank-field.full { grid-column: 1 / -1; }
+    .bank-field label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: color-mix(in srgb, var(--color-text) 50%, transparent); }
+    .bank-input { padding: 10px 12px; font-size: 13px; background: var(--color-bg); border: 1px solid var(--color-divider); color: var(--color-text); font-family: inherit; }
+    body.dark .bank-input { background: #21262D; border-color: rgba(230,237,243,0.1); color: #E6EDF3; }
+    .bank-input:focus { border-color: var(--color-accent); outline: none; }
+    .country-detect { display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: var(--color-accent-100); font-size: 12px; margin-bottom: var(--space-3); }
+    body.dark .country-detect { background: rgba(51,117,187,0.1); }
+    .country-detect svg { color: var(--color-accent); flex-shrink: 0; }
+
+    /* Recent conversions */
+    .recent-row { display: grid; grid-template-columns: auto 2fr 1fr 1fr 1fr; gap: var(--space-3); padding: 12px 0; align-items: center; border-bottom: 1px solid color-mix(in srgb, var(--color-divider) 50%, transparent); font-size: 13px; }
+    .recent-row:hover { background: color-mix(in srgb, var(--color-text) 2%, transparent); }
+    .recent-badge { padding: 3px 8px; font-size: 10px; font-weight: 800; text-transform: uppercase; }
+    .recent-badge.convert { background: rgba(51,117,187,0.1); color: #3375BB; }
+    .recent-badge.buy { background: rgba(16,185,129,0.1); color: #10B981; }
+    .recent-badge.send { background: rgba(139,92,246,0.1); color: #8B5CF6; }
+    .status-pill { font-size: 11px; font-weight: 600; }
+    .status-pill.done { color: #10B981; }
+    .status-pill.pending { color: #F59E0B; }
+
+    /* Send form */
+    .send-form { max-width: 600px; }
+  </style>
+</helmet>
+
+<!-- NAV -->
+<nav class="nav-c">
+  <div class="q-logo"><div class="q-mark">Q</div><span class="q-word">Quatava</span></div>
+  <div class="nav-right">
+    <button type="button" class="nav-icon" onClick="{{ toggleTheme }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><sc-if value="{{ isDark }}" hint-placeholder-val="{{ false }}"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></sc-if><sc-if value="{{ isLight }}" hint-placeholder-val="{{ true }}"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></sc-if></svg></button>
+    <button type="button" class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg></button>
+    <div class="avatar">JD</div>
+  </div>
+</nav>
+
+<div class="dash-layout">
+  <aside class="sidebar">
+    <div class="sidebar-section">Main</div>
+    <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>Dashboard</a>
+    <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"></path><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"></path><path d="M18 12a2 2 0 0 0 0 4h4v-4z"></path></svg>Wallet</a>
+    <div class="sidebar-section">Trading</div>
+    <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>Spot Trading</a>
+    <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"></path><path d="m19 9-5 5-4-4-3 3"></path></svg>Futures</a>
+    <a href="#" class="active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 1l4 4-4 4"></path><path d="M3 11V9a4 4 0 0 1 4-4h14"></path><path d="M7 23l-4-4 4-4"></path><path d="M21 13v2a4 4 0 0 1-4 4H3"></path></svg>Convert</a>
+    <div class="sidebar-section">Invest</div>
+    <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>Staking</a>
+    <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>NFT Marketplace</a>
+    <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 6v6l4 2"></path></svg>AI Investment</a>
+    <div class="sidebar-section">Account</div>
+    <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path><circle cx="12" cy="12" r="3"></circle></svg>Settings</a>
+  </aside>
+
+  <main class="main">
+    <div class="page-head">
+      <h1 class="page-title">Convert</h1>
+    </div>
+
+    <!-- Tabs: Convert | Buy Crypto | Send -->
+    <div class="tabs-c">
+      <button class="tab-c active">Convert</button>
+      <button class="tab-c">Buy Crypto</button>
+      <button class="tab-c">Send</button>
+      <button class="tab-c">Withdraw to Bank</button>
+    </div>
+
+    <div class="convert-layout">
+      <!-- Main convert form -->
+      <div>
+        <!-- Country auto-detect -->
+        <div class="country-detect">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+          <span>Detected region: <strong>Nigeria</strong> — Showing NGN rates. <a href="#" style="margin-left: 4px;">Change →</a></span>
+        </div>
+
+        <div class="convert-card">
+          <!-- From -->
+          <div class="convert-label">You send</div>
+          <div class="convert-row">
+            <div class="convert-field">
+              <input type="text" class="input-c" value="1.0000" />
+            </div>
+            <div class="currency-select">
+              <select class="input-c">
+                <option>BTC — Bitcoin</option>
+                <option>ETH — Ethereum</option>
+                <option>SOL — Solana</option>
+                <option>USDT — Tether</option>
+                <option>XRP — Ripple</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Swap -->
+          <div class="swap-row">
+            <button class="swap-circle" type="button">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 16V4m0 0L3 8m4-4l4 4M17 8v12m0 0l4-4m-4 4l-4-4"></path></svg>
+            </button>
+          </div>
+
+          <!-- To -->
+          <div class="convert-label">You receive</div>
+          <div class="convert-row">
+            <div class="convert-field">
+              <input type="text" class="input-c" value="104,630,975.00" readonly style="background: color-mix(in srgb, var(--color-accent) 3%, var(--color-bg));" />
+            </div>
+            <div class="currency-select">
+              <select class="input-c">
+                <option>NGN — Naira</option>
+                <option>USD — US Dollar</option>
+                <option>EUR — Euro</option>
+                <option>GBP — Pound</option>
+                <option>MXN — Peso</option>
+                <option>AED — Dirham</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Rate info -->
+          <div class="rate-bar">
+            <div><span class="rate-label">Rate: </span><span class="rate-value">1 BTC = ₦104,630,975.00</span></div>
+            <div class="rate-update">Updated 3s ago · Refreshes in 27s</div>
+          </div>
+
+          <div style="display: flex; justify-content: space-between; font-size: 12px; color: color-mix(in srgb, var(--color-text) 50%, transparent); margin-top: var(--space-3);">
+            <span>Network fee</span><span style="font-weight: 600;">0.0001 BTC (~₦10,463)</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; font-size: 12px; color: color-mix(in srgb, var(--color-text) 50%, transparent); margin-top: var(--space-1);">
+            <span>Platform fee (0.1%)</span><span style="font-weight: 600;">₦104,631</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; font-size: 13px; font-weight: 700; margin-top: var(--space-2); padding-top: var(--space-2); border-top: 1px solid var(--color-divider);">
+            <span>You receive</span><span class="text-green" style="font-family: var(--font-heading); font-weight: 800;">₦104,515,881.00</span>
+          </div>
+
+          <button class="convert-btn green">Convert 1.0 BTC → NGN</button>
+        </div>
+
+        <!-- Payment method: where to receive -->
+        <div style="margin-top: var(--space-4);">
+          <div class="convert-label" style="margin-bottom: var(--space-3);">Receive funds to</div>
+          <div class="methods-grid">
+            <div class="method-card selected">
+              <div class="method-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"></rect><path d="M2 10h20"></path></svg></div>
+              <div><div class="method-name">Bank Account</div><div class="method-desc">Direct to your bank</div><div class="method-fee">Instant · Free</div></div>
+            </div>
+            <div class="method-card">
+              <div class="method-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg></div>
+              <div><div class="method-name">Mobile Money</div><div class="method-desc">MTN, Airtel, etc.</div><div class="method-fee">~2 min · Free</div></div>
+            </div>
+            <div class="method-card">
+              <div class="method-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"></path><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"></path><path d="M18 12a2 2 0 0 0 0 4h4v-4z"></path></svg></div>
+              <div><div class="method-name">Quatava Wallet</div><div class="method-desc">Keep as fiat balance</div><div class="method-fee">Instant · Free</div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bank details (auto-fetched by country) -->
+        <div class="convert-card" style="margin-top: 0;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-3);">
+            <span style="font-family: var(--font-heading); font-weight: 800; font-size: 14px;">Bank Details — Nigeria 🇳🇬</span>
+            <span style="font-size: 11px; color: #10B981; font-weight: 600;">✓ Auto-detected</span>
+          </div>
+          <div class="bank-form">
+            <div class="bank-field">
+              <label>Bank Name</label>
+              <select class="bank-input" style="width: 100%; cursor: pointer;">
+                <option>Access Bank</option>
+                <option>GTBank</option>
+                <option>First Bank</option>
+                <option>UBA</option>
+                <option>Zenith Bank</option>
+                <option>Kuda Bank</option>
+                <option>OPay</option>
+              </select>
+            </div>
+            <div class="bank-field">
+              <label>Account Number</label>
+              <input type="text" class="bank-input" value="012•••••89" />
+            </div>
+            <div class="bank-field full">
+              <label>Account Name</label>
+              <input type="text" class="bank-input" value="John Doe" readonly style="background: color-mix(in srgb, var(--color-accent) 4%, var(--color-bg));" />
+            </div>
+          </div>
+          <div style="margin-top: var(--space-3); font-size: 11px; color: color-mix(in srgb, var(--color-text) 45%, transparent);">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: -2px; margin-right: 4px;"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+            Your bank details are encrypted and only used for this conversion. You can save them for future use.
+          </div>
+        </div>
+      </div>
+
+      <!-- Right sidebar: live rates + recent -->
+      <div>
+        <div class="rate-card">
+          <div class="panel-header"><span class="panel-title">Live Rates (NGN)</span><span class="rate-update">Updates every 30s</span></div>
+          <div class="rate-grid">
+            <div class="rate-row"><div class="rate-curr"><div class="rate-flag">🇳🇬</div>BTC/NGN</div><span style="font-weight: 600;">₦104.6M</span><span class="text-green" style="font-size: 12px;">+2.3%</span></div>
+            <div class="rate-row"><div class="rate-curr"><div class="rate-flag">🇳🇬</div>ETH/NGN</div><span style="font-weight: 600;">₦5.43M</span><span class="text-green" style="font-size: 12px;">+1.9%</span></div>
+            <div class="rate-row"><div class="rate-curr"><div class="rate-flag">🇳🇬</div>USDT/NGN</div><span style="font-weight: 600;">₦1,542</span><span style="font-size: 12px; color: color-mix(in srgb, var(--color-text) 40%, transparent);">0.0%</span></div>
+            <div class="rate-row"><div class="rate-curr"><div class="rate-flag">🇳🇬</div>SOL/NGN</div><span style="font-weight: 600;">₦275K</span><span class="text-red" style="font-size: 12px;">−0.9%</span></div>
+          </div>
+        </div>
+
+        <div class="rate-card">
+          <div class="panel-header"><span class="panel-title">Other Currencies</span></div>
+          <div class="rate-grid">
+            <div class="rate-row"><div class="rate-curr"><div class="rate-flag">🇺🇸</div>USD</div><span style="font-weight: 600;">$67,842</span><span class="text-green" style="font-size: 12px;">+2.3%</span></div>
+            <div class="rate-row"><div class="rate-curr"><div class="rate-flag">🇬🇧</div>GBP</div><span style="font-weight: 600;">£53,841</span><span class="text-green" style="font-size: 12px;">+2.1%</span></div>
+            <div class="rate-row"><div class="rate-curr"><div class="rate-flag">🇪🇺</div>EUR</div><span style="font-weight: 600;">€62,490</span><span class="text-green" style="font-size: 12px;">+2.2%</span></div>
+            <div class="rate-row"><div class="rate-curr"><div class="rate-flag">🇲🇽</div>MXN</div><span style="font-weight: 600;">$1.18M</span><span class="text-green" style="font-size: 12px;">+2.5%</span></div>
+            <div class="rate-row"><div class="rate-curr"><div class="rate-flag">🇦🇪</div>AED</div><span style="font-weight: 600;">249,109</span><span class="text-green" style="font-size: 12px;">+2.3%</span></div>
+          </div>
+        </div>
+
+        <div class="rate-card">
+          <div class="panel-header"><span class="panel-title">Why Convert?</span></div>
+          <div style="display: flex; flex-direction: column; gap: var(--space-3); font-size: 13px;">
+            <div style="display: flex; gap: 10px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2" style="flex-shrink: 0; margin-top: 2px;"><polyline points="20 6 9 17 4 12"></polyline></svg><span>No middlemen — instant at market rate</span></div>
+            <div style="display: flex; gap: 10px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2" style="flex-shrink: 0; margin-top: 2px;"><polyline points="20 6 9 17 4 12"></polyline></svg><span>Direct to your bank in seconds</span></div>
+            <div style="display: flex; gap: 10px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2" style="flex-shrink: 0; margin-top: 2px;"><polyline points="20 6 9 17 4 12"></polyline></svg><span>No scam risk — fully automated</span></div>
+            <div style="display: flex; gap: 10px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2" style="flex-shrink: 0; margin-top: 2px;"><polyline points="20 6 9 17 4 12"></polyline></svg><span>Supports 6+ fiat currencies</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent conversions -->
+    <div class="panel" style="margin-top: var(--space-4);">
+      <div class="panel-header"><span class="panel-title">Recent Conversions</span><a href="#" class="panel-link">View All →</a></div>
+      <div class="recent-row">
+        <span class="recent-badge convert">Convert</span>
+        <span style="font-weight: 600;">0.5 BTC → ₦52,315,487</span>
+        <span style="font-feature-settings: 'tnum' 1;">Access Bank ••89</span>
+        <span style="font-size: 12px; color: color-mix(in srgb, var(--color-text) 45%, transparent);">Jul 22, 2026</span>
+        <span class="status-pill done">✓ Completed</span>
+      </div>
+      <div class="recent-row">
+        <span class="recent-badge buy">Buy</span>
+        <span style="font-weight: 600;">2,000 USDT via Card</span>
+        <span style="font-feature-settings: 'tnum' 1;">Visa ••4521</span>
+        <span style="font-size: 12px; color: color-mix(in srgb, var(--color-text) 45%, transparent);">Jul 21, 2026</span>
+        <span class="status-pill done">✓ Completed</span>
+      </div>
+      <div class="recent-row">
+        <span class="recent-badge send">Send</span>
+        <span style="font-weight: 600;">0.25 ETH → 0x8f2…3a1</span>
+        <span style="font-feature-settings: 'tnum' 1;">External wallet</span>
+        <span style="font-size: 12px; color: color-mix(in srgb, var(--color-text) 45%, transparent);">Jul 20, 2026</span>
+        <span class="status-pill done">✓ Completed</span>
+      </div>
+      <div class="recent-row">
+        <span class="recent-badge convert">Convert</span>
+        <span style="font-weight: 600;">1,500 USDT → £972.45</span>
+        <span style="font-feature-settings: 'tnum' 1;">Barclays ••12</span>
+        <span style="font-size: 12px; color: color-mix(in srgb, var(--color-text) 45%, transparent);">Jul 19, 2026</span>
+        <span class="status-pill pending">⏳ Pending</span>
+      </div>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:&quot;100%&quot;,&quot;height&quot;:&quot;100%&quot;}}">
+class Component extends DCLogic {
+  state = { dark: false };
+  componentDidMount() {
+    const saved = localStorage.getItem('quatava-theme');
+    if (saved === 'dark') {
+      this.setState({ dark: true });
+      document.body.classList.add('dark');
+    }
+  }
+  renderVals() {
+    const { dark } = this.state;
+    return {
+      isDark: dark,
+      isLight: !dark,
+      toggleTheme: () => {
+        const next = !this.state.dark;
+        this.setState({ dark: next });
+        document.body.classList.toggle('dark', next);
+        localStorage.setItem('quatava-theme', next ? 'dark' : 'light');
+      }
+    };
+  }
+}
+</script>
+</body>
+</html>

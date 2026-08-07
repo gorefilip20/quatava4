@@ -3,6 +3,6 @@
 import type { ReactNode } from "react";
 import { UserDashboardShell } from "@/components/layout/user-dashboard-shell";
 
-export default function FinanceLayout({ children }: { children: ReactNode }) {
+export default function UserLayout({ children }: { children: ReactNode }) {
   return <UserDashboardShell>{children}</UserDashboardShell>;
 }

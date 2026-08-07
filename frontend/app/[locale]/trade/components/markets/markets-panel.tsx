@@ -680,7 +680,7 @@ export default function MarketsPanel({
   };
 
   return (
-    <div className="h-full flex flex-col bg-background dark:bg-zinc-950 overflow-hidden">
+    <div className="h-full flex flex-col bg-card overflow-hidden">
       <Tabs
         value={activeTab}
         className="w-full flex flex-col h-full overflow-hidden"

@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="_ds/modernist-40ac70d8-0d89-4811-b7e2-74ceb2bea2a2/styles.css">
+  <script src="_ds/modernist-40ac70d8-0d89-4811-b7e2-74ceb2bea2a2/_ds_bundle.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;800&display=swap');
+    :root {
+      --color-bg: #FAFBFD; --color-surface: #F0F2F5; --color-accent: #3375BB;
+      --color-accent-100: #EBF2FA; --color-accent-200: #C7DDEF; --color-accent-300: #8FBDE0;
+      --color-accent-400: #5A9BD4; --color-accent-500: #3375BB; --color-accent-600: #2A619E;
+      --color-accent-700: #1E4A7A; --color-accent-800: #153558; --color-accent-900: #0D2038;
+      --color-accent-2: #10B981;
+      --color-divider: color-mix(in srgb, #1a2332 14%, transparent);
+      --edge: clamp(16px, 3vw, 32px); --max-w: 1320px;
+    }
+    body { margin: 0; background: var(--color-bg); transition: background 0.3s, color 0.3s; }
+    a { color: var(--color-accent); } a:hover { color: var(--color-accent-600); }
+    body.dark {
+      --color-bg: #0D1117; --color-surface: #161B22; --color-text: #E6EDF3;
+      --color-divider: rgba(230,237,243,0.1); background: #0D1117; color: #E6EDF3;
+    }
+    body.dark .panel { background: #161B22; border-color: rgba(230,237,243,0.06); }
+    body.dark .nav-w { border-color: rgba(230,237,243,0.06); }
+    body.dark .sidebar { background: #161B22; border-color: rgba(230,237,243,0.06); }
+    body.dark .sidebar a { color: rgba(230,237,243,0.65); }
+    body.dark .sidebar a:hover, body.dark .sidebar a.active { color: #E6EDF3; }
+    body.dark .sidebar a.active { background: rgba(51,117,187,0.12); color: var(--color-accent-400); }
+    body.dark .wallet-tab { color: rgba(230,237,243,0.5); }
+    body.dark .wallet-tab.active { color: #E6EDF3; }
+    body.dark .asset-row:hover { background: rgba(255,255,255,0.02); }
+    body.dark .action-card { background: #161B22; border-color: rgba(230,237,243,0.06); }
+    body.dark .action-card:hover { background: #21262D; }
+    body.dark .input-w { background: #21262D; border-color: rgba(230,237,243,0.1); color: #E6EDF3; }
+    body.dark .tx-row { border-color: rgba(230,237,243,0.05); }
+    body.dark .alloc-item { border-color: rgba(230,237,243,0.06); }
+
+    .nav-w { display: flex; align-items: center; gap: var(--space-4); height: 56px; padding: 0 var(--edge); border-bottom: 2px solid var(--color-divider); }
+    .q-logo { display: flex; align-items: center; gap: 8px; }
+    .q-mark { width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; background: var(--color-accent); color: #fff; font-family: var(--font-heading); font-weight: 800; font-size: 16px; }
+    .q-word { font-family: var(--font-heading); font-weight: 800; font-size: 17px; color: var(--color-text); }
+    .nav-right { margin-left: auto; display: flex; align-items: center; gap: var(--space-3); }
+    .nav-icon { width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; background: transparent; border: 1px solid var(--color-divider); color: var(--color-text); cursor: pointer; padding: 0; }
+    .nav-icon:hover { background: color-mix(in srgb, var(--color-text) 5%, transparent); }
+    .avatar { width: 30px; height: 30px; background: var(--color-accent); color: #fff; display: flex; align-items: center; justify-content: center; font-family: var(--font-heading); font-weight: 800; font-size: 13px; }
+
+    .dash-layout { display: grid; grid-template-columns: 220px 1fr; min-height: calc(100vh - 56px); }
+    @media (max-width: 900px) { .dash-layout { grid-template-columns: 1fr; } .sidebar { display: none; } }
+    .sidebar { background: var(--color-surface); border-right: 1px solid var(--color-divider); padding: var(--space-6) 0; display: flex; flex-direction: column; gap: var(--space-1); }
+    .sidebar-section { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: color-mix(in srgb, var(--color-text) 40%, transparent); padding: var(--space-4) var(--space-4) var(--space-2); }
+    .sidebar a { display: flex; align-items: center; gap: 10px; padding: 9px var(--space-4); font-size: 13px; color: color-mix(in srgb, var(--color-text) 70%, transparent); text-decoration: none; font-weight: 600; }
+    .sidebar a:hover { color: var(--color-text); background: color-mix(in srgb, var(--color-accent) 5%, transparent); }
+    .sidebar a.active { color: var(--color-accent); background: var(--color-accent-100); }
+    .sidebar a svg { width: 18px; height: 18px; flex-shrink: 0; }
+
+    .main { padding: var(--space-6) var(--edge); overflow-y: auto; }
+    .panel { background: var(--color-surface); border: 1px solid var(--color-divider); padding: var(--space-4); }
+    .panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-4); }
+    .panel-title { font-family: var(--font-heading); font-weight: 800; font-size: 14px; }
+    .panel-link { font-size: 12px; color: var(--color-accent); text-decoration: none; font-weight: 600; }
+    .text-green { color: #10B981; } .text-red { color: #EF4444; }
+
+    /* Balance overview */
+    .wallet-overview { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: var(--space-4); margin-bottom: var(--space-4); }
+    .wallet-stat { padding: var(--space-4); background: var(--color-surface); border: 1px solid var(--color-divider); }
+    body.dark .wallet-stat { background: #161B22; border-color: rgba(230,237,243,0.06); }
+    .ws-label { font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; color: color-mix(in srgb, var(--color-text) 50%, transparent); margin-bottom: var(--space-2); }
+    .ws-value { font-family: var(--font-heading); font-weight: 800; font-size: 28px; font-feature-settings: "tnum" 1; }
+    .ws-change { font-size: 13px; margin-top: var(--space-1); }
+
+    /* Action buttons */
+    .wallet-actions { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-3); margin-bottom: var(--space-4); }
+    .action-card { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-3) var(--space-4); background: var(--color-surface); border: 1px solid var(--color-divider); cursor: pointer; }
+    .action-card:hover { background: var(--color-accent-100); }
+    .action-icon { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; background: var(--color-accent-100); color: var(--color-accent); flex-shrink: 0; }
+    body.dark .action-icon { background: rgba(51,117,187,0.15); }
+    .action-label { font-weight: 800; font-size: 13px; font-family: var(--font-heading); }
+    .action-desc { font-size: 11px; color: color-mix(in srgb, var(--color-text) 50%, transparent); }
+
+    /* Wallet tabs */
+    .wallet-tabs { display: flex; gap: 0; border-bottom: 2px solid var(--color-divider); margin-bottom: var(--space-4); }
+    .wallet-tab { padding: 10px 18px; font-size: 13px; font-weight: 800; font-family: var(--font-heading); color: color-mix(in srgb, var(--color-text) 55%, transparent); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -2px; background: none; border-top: none; border-left: none; border-right: none; }
+    .wallet-tab:hover { color: var(--color-text); }
+    .wallet-tab.active { color: var(--color-accent); border-bottom-color: var(--color-accent); }
+
+    /* Asset table */
+    .asset-head { display: grid; grid-template-columns: 2.5fr 1fr 1fr 1fr 1fr 120px; gap: var(--space-3); padding: 8px 0; font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: color-mix(in srgb, var(--color-text) 45%, transparent); border-bottom: 2px solid var(--color-divider); }
+    .asset-row { display: grid; grid-template-columns: 2.5fr 1fr 1fr 1fr 1fr 120px; gap: var(--space-3); padding: 14px 0; align-items: center; border-bottom: 1px solid color-mix(in srgb, var(--color-divider) 60%, transparent); font-size: 13px; font-feature-settings: "tnum" 1; }
+    .asset-row:hover { background: color-mix(in srgb, var(--color-text) 2%, transparent); }
+    .asset-name { display: flex; align-items: center; gap: 12px; font-weight: 600; }
+    .asset-icon { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800; background: var(--color-accent-100); color: var(--color-accent-700); }
+    body.dark .asset-icon { background: rgba(51,117,187,0.15); color: var(--color-accent-300); }
+    .asset-sub { font-size: 11px; color: color-mix(in srgb, var(--color-text) 45%, transparent); font-weight: 400; }
+    .asset-actions { display: flex; gap: var(--space-2); }
+    .asset-btn { padding: 5px 10px; font-size: 11px; font-weight: 600; background: none; border: 1px solid var(--color-divider); color: var(--color-text); cursor: pointer; font-family: inherit; }
+    .asset-btn:hover { border-color: var(--color-accent); color: var(--color-accent); }
+    body.dark .asset-btn { border-color: rgba(230,237,243,0.12); color: #E6EDF3; }
+
+    /* Allocation chart */
+    .alloc-grid { display: grid; grid-template-columns: 200px 1fr; gap: var(--space-6); align-items: center; }
+    .alloc-ring { width: 180px; height: 180px; position: relative; }
+    .alloc-ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+    .alloc-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    .alloc-center-val { font-family: var(--font-heading); font-weight: 800; font-size: 22px; }
+    .alloc-center-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; color: color-mix(in srgb, var(--color-text) 45%, transparent); }
+    .alloc-list { display: flex; flex-direction: column; gap: var(--space-2); }
+    .alloc-item { display: flex; align-items: center; gap: var(--space-3); padding: 8px 0; border-bottom: 1px solid color-mix(in srgb, var(--color-divider) 40%, transparent); font-size: 13px; }
+    .alloc-dot { width: 10px; height: 10px; flex-shrink: 0; }
+    .alloc-pct { margin-left: auto; font-weight: 600; font-feature-settings: "tnum" 1; }
+
+    /* Transaction history */
+    .tx-head { display: grid; grid-template-columns: auto 2fr 1fr 1fr 1fr; gap: var(--space-3); padding: 8px 0; font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: color-mix(in srgb, var(--color-text) 45%, transparent); border-bottom: 2px solid var(--color-divider); }
+    .tx-row { display: grid; grid-template-columns: auto 2fr 1fr 1fr 1fr; gap: var(--space-3); padding: 12px 0; align-items: center; border-bottom: 1px solid color-mix(in srgb, var(--color-divider) 50%, transparent); font-size: 13px; }
+    .tx-badge { padding: 3px 8px; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; }
+    .tx-badge.deposit { background: rgba(16,185,129,0.1); color: #10B981; }
+    .tx-badge.withdraw { background: rgba(239,68,68,0.1); color: #EF4444; }
+    .tx-badge.swap { background: rgba(51,117,187,0.1); color: #3375BB; }
+    .tx-badge.stake { background: rgba(139,92,246,0.1); color: #8B5CF6; }
+    .tx-status { font-size: 11px; }
+    .tx-status.completed { color: #10B981; }
+    .tx-status.pending { color: #F59E0B; }
+
+    @media (max-width: 1100px) { .wallet-overview { grid-template-columns: 1fr; } .wallet-actions { grid-template-columns: repeat(2, 1fr); } .asset-head, .asset-row { grid-template-columns: 2fr 1fr 1fr 100px; } .asset-head > :nth-child(4), .asset-row > :nth-child(4), .asset-head > :nth-child(5), .asset-row > :nth-child(5) { display: none; } .alloc-grid { grid-template-columns: 1fr; } .tx-head, .tx-row { grid-template-columns: auto 2fr 1fr 1fr; } .tx-head > :last-child, .tx-row > :last-child { display: none; } }
+    @media (max-width: 640px) { .wallet-actions { grid-template-columns: 1fr; } .asset-head, .asset-row { grid-template-columns: 2fr 1fr 80px; } .asset-head > :nth-child(3), .asset-row > :nth-child(3) { display: none; } }
+  </style>
+</helmet>
+
+<!-- NAV -->
+<nav class="nav-w">
+  <div class="q-logo"><div class="q-mark">Q</div><span class="q-word">Quatava</span></div>
+  <div class="nav-right">
+    <button type="button" class="nav-icon" onClick="{{ toggleTheme }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><sc-if value="{{ isDark }}" hint-placeholder-val="{{ false }}"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></sc-if><sc-if value="{{ isLight }}" hint-placeholder-val="{{ true }}"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></sc-if></svg></button>
+    <button type="button" class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg></button>
+    <div class="avatar">JD</div>
+  </div>
+</nav>
+
+<div class="dash-layout">
+  <aside class="sidebar">
+    <div class="sidebar-section">Main</div>
+    <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>Dashboard</a>
+    <a href="#" class="active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"></path><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"></path><path d="M18 12a2 2 0 0 0 0 4h4v-4z"></path></svg>Wallet</a>
+    <div class="sidebar-section">Trading</div>
+    <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>Spot Trading</a>
+    <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"></path><path d="m19 9-5 5-4-4-3 3"></path></svg>Futures</a>
+    <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 1l4 4-4 4"></path><path d="M3 11V9a4 4 0 0 1 4-4h14"></path><path d="M7 23l-4-4 4-4"></path><path d="M21 13v2a4 4 0 0 1-4 4H3"></path></svg>Convert</a>
+    <div class="sidebar-section">Invest</div>
+    <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>Staking</a>
+    <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>NFT Marketplace</a>
+  </aside>
+
+  <main class="main">
+    <!-- Balance overview -->
+    <div class="wallet-overview">
+      <div class="wallet-stat">
+        <div class="ws-label">Total Balance</div>
+        <div class="ws-value">$124,831.40</div>
+        <div class="ws-change text-green">+$4,231.80 (3.5%) ↑</div>
+      </div>
+      <div class="wallet-stat">
+        <div class="ws-label">Available Balance</div>
+        <div class="ws-value">$98,420.60</div>
+        <div class="ws-change" style="color: color-mix(in srgb, var(--color-text) 45%, transparent);">Excludes locked & staked</div>
+      </div>
+      <div class="wallet-stat">
+        <div class="ws-label">Staking Rewards (MTD)</div>
+        <div class="ws-value" style="color: #10B981;">+$342.18</div>
+        <div class="ws-change text-green">APY: 8.2%</div>
+      </div>
+    </div>
+
+    <!-- Quick actions -->
+    <div class="wallet-actions">
+      <div class="action-card">
+        <div class="action-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"></path></svg></div>
+        <div><div class="action-label">Deposit</div><div class="action-desc">Add funds to your account</div></div>
+      </div>
+      <div class="action-card">
+        <div class="action-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17l9.2-9.2M17 17V7H7"></path></svg></div>
+        <div><div class="action-label">Withdraw</div><div class="action-desc">Send to external wallet</div></div>
+      </div>
+      <div class="action-card">
+        <div class="action-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 1l4 4-4 4"></path><path d="M3 11V9a4 4 0 0 1 4-4h14"></path><path d="M7 23l-4-4 4-4"></path><path d="M21 13v2a4 4 0 0 1-4 4H3"></path></svg></div>
+        <div><div class="action-label">Transfer</div><div class="action-desc">Internal account transfer</div></div>
+      </div>
+      <div class="action-card">
+        <div class="action-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg></div>
+        <div><div class="action-label">Stake</div><div class="action-desc">Earn rewards on holdings</div></div>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="wallet-tabs">
+      <button class="wallet-tab active">Assets</button>
+      <button class="wallet-tab">Allocation</button>
+      <button class="wallet-tab">Transactions</button>
+    </div>
+
+    <!-- Assets list -->
+    <div class="panel" style="margin-bottom: var(--space-4);">
+      <div class="asset-head">
+        <span>Asset</span><span>Balance</span><span>Value (USD)</span><span>Price</span><span>24h</span><span>Actions</span>
+      </div>
+      <div class="asset-row">
+        <div class="asset-name"><div class="asset-icon">BTC</div><div>Bitcoin<div class="asset-sub">BTC</div></div></div>
+        <span>1.4523</span><span style="font-weight: 600;">$98,562.00</span><span>$67,842.50</span><span class="text-green">+2.34%</span>
+        <div class="asset-actions"><button class="asset-btn">Trade</button><button class="asset-btn">Send</button></div>
+      </div>
+      <div class="asset-row">
+        <div class="asset-name"><div class="asset-icon">ETH</div><div>Ethereum<div class="asset-sub">ETH</div></div></div>
+        <span>4.2100</span><span style="font-weight: 600;">$14,826.78</span><span>$3,521.80</span><span class="text-green">+1.87%</span>
+        <div class="asset-actions"><button class="asset-btn">Trade</button><button class="asset-btn">Send</button></div>
+      </div>
+      <div class="asset-row">
+        <div class="asset-name"><div class="asset-icon">SOL</div><div>Solana<div class="asset-sub">SOL</div></div></div>
+        <span>32.500</span><span style="font-weight: 600;">$5,799.63</span><span>$178.45</span><span class="text-red">−0.92%</span>
+        <div class="asset-actions"><button class="asset-btn">Trade</button><button class="asset-btn">Send</button></div>
+      </div>
+      <div class="asset-row">
+        <div class="asset-name"><div class="asset-icon">USDT</div><div>Tether<div class="asset-sub">USDT</div></div></div>
+        <span>5,642.00</span><span style="font-weight: 600;">$5,642.00</span><span>$1.00</span><span style="color: color-mix(in srgb, var(--color-text) 40%, transparent);">0.00%</span>
+        <div class="asset-actions"><button class="asset-btn">Trade</button><button class="asset-btn">Send</button></div>
+      </div>
+      <div class="asset-row">
+        <div class="asset-name"><div class="asset-icon">XRP</div><div>Ripple<div class="asset-sub">XRP</div></div></div>
+        <span>1,200.00</span><span style="font-weight: 600;">$748.08</span><span>$0.6234</span><span class="text-green">+4.12%</span>
+        <div class="asset-actions"><button class="asset-btn">Trade</button><button class="asset-btn">Send</button></div>
+      </div>
+    </div>
+
+    <!-- Allocation + Transactions side by side -->
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4);">
+      <div class="panel">
+        <div class="panel-header"><span class="panel-title">Portfolio Allocation</span></div>
+        <div class="alloc-grid">
+          <div class="alloc-ring">
+            <svg viewBox="0 0 36 36">
+              <circle cx="18" cy="18" r="15.5" fill="none" stroke-width="3.5" stroke="var(--color-accent)" stroke-dasharray="61 39" stroke-dashoffset="0"/>
+              <circle cx="18" cy="18" r="15.5" fill="none" stroke-width="3.5" stroke="#5A9BD4" stroke-dasharray="12 88" stroke-dashoffset="-61"/>
+              <circle cx="18" cy="18" r="15.5" fill="none" stroke-width="3.5" stroke="#10B981" stroke-dasharray="8 92" stroke-dashoffset="-73"/>
+              <circle cx="18" cy="18" r="15.5" fill="none" stroke-width="3.5" stroke="#F59E0B" stroke-dasharray="6 94" stroke-dashoffset="-81"/>
+              <circle cx="18" cy="18" r="15.5" fill="none" stroke-width="3.5" stroke="#8B5CF6" stroke-dasharray="13 87" stroke-dashoffset="-87"/>
+            </svg>
+            <div class="alloc-center">
+              <span class="alloc-center-val">5</span>
+              <span class="alloc-center-label">Assets</span>
+            </div>
+          </div>
+          <div class="alloc-list">
+            <div class="alloc-item"><div class="alloc-dot" style="background: var(--color-accent);"></div><span>Bitcoin</span><span class="alloc-pct">61%</span></div>
+            <div class="alloc-item"><div class="alloc-dot" style="background: #5A9BD4;"></div><span>Ethereum</span><span class="alloc-pct">12%</span></div>
+            <div class="alloc-item"><div class="alloc-dot" style="background: #10B981;"></div><span>Solana</span><span class="alloc-pct">8%</span></div>
+            <div class="alloc-item"><div class="alloc-dot" style="background: #F59E0B;"></div><span>Tether</span><span class="alloc-pct">6%</span></div>
+            <div class="alloc-item"><div class="alloc-dot" style="background: #8B5CF6;"></div><span>Others</span><span class="alloc-pct">13%</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-header"><span class="panel-title">Recent Transactions</span><a href="#" class="panel-link">View All →</a></div>
+        <div class="tx-row">
+          <span class="tx-badge deposit">Deposit</span>
+          <span style="font-weight: 600;">+0.25 BTC</span>
+          <span>$16,960</span>
+          <span class="tx-status completed">Completed</span>
+        </div>
+        <div class="tx-row">
+          <span class="tx-badge swap">Swap</span>
+          <span style="font-weight: 600;">2.0 ETH → 38 SOL</span>
+          <span>$7,043</span>
+          <span class="tx-status completed">Completed</span>
+        </div>
+        <div class="tx-row">
+          <span class="tx-badge withdraw">Withdraw</span>
+          <span style="font-weight: 600;">−$1,200 USDT</span>
+          <span>$1,200</span>
+          <span class="tx-status pending">Pending</span>
+        </div>
+        <div class="tx-row">
+          <span class="tx-badge stake">Stake</span>
+          <span style="font-weight: 600;">+0.012 ETH reward</span>
+          <span>$42.26</span>
+          <span class="tx-status completed">Completed</span>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:&quot;100%&quot;,&quot;height&quot;:&quot;100%&quot;}}">
+class Component extends DCLogic {
+  state = { dark: false };
+  componentDidMount() {
+    const saved = localStorage.getItem('quatava-theme');
+    if (saved === 'dark') {
+      this.setState({ dark: true });
+      document.body.classList.add('dark');
+    }
+  }
+  renderVals() {
+    const { dark } = this.state;
+    return {
+      isDark: dark,
+      isLight: !dark,
+      toggleTheme: () => {
+        const next = !this.state.dark;
+        this.setState({ dark: next });
+        document.body.classList.toggle('dark', next);
+        localStorage.setItem('quatava-theme', next ? 'dark' : 'light');
+      }
+    };
+  }
+}
+</script>
+</body>
+</html>

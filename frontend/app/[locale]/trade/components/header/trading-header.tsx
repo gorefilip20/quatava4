@@ -312,141 +312,101 @@ export default function TradingHeader({
   const presetKeys = layoutPresets ? Object.keys(layoutPresets) : [];
 
   return (
-    <div className="flex items-center justify-between px-2 py-1 border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950">
-      {/* Left section - Back button and Symbol with Star */}
-      <div className="flex items-center space-x-1 md:space-x-2 flex-1 min-w-0">
-        <Button 
-          variant="ghost" 
-          size="icon" 
-          className="h-7 w-7 shrink-0" 
-          onClick={handleBackToHome}
-        >
-          <ArrowLeft className="h-4 w-4" />
-        </Button>
+    <div className="flex items-center gap-4 px-3 py-2 border-b-2 border-border bg-card">
+      {/* Pair selector */}
+      <button
+        type="button"
+        onClick={handleBackToHome}
+        className="flex items-center gap-2 px-3 py-1.5 bg-background border border-border cursor-pointer font-extrabold text-base"
+      >
+        <Star
+          className={cn(
+            "h-3.5 w-3.5 shrink-0",
+            isFavorite && "text-yellow-400 fill-yellow-400"
+          )}
+          onClick={(e) => {
+            e.stopPropagation();
+            toggleFavorite();
+          }}
+        />
+        {displaySymbol}
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="6 9 12 15 18 9" /></svg>
+      </button>
 
-        <div className="flex items-center min-w-0">
-          {/* Star icon before symbol */}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-7 w-7 mr-1 shrink-0"
-            onClick={toggleFavorite}
-          >
-            <Star
-              className={cn(
-                "h-4 w-4",
-                isFavorite && "text-yellow-400 fill-yellow-400"
-              )}
-            />
-          </Button>
-
-          <div className="font-semibold text-sm mr-2 truncate">
-            {displaySymbol}
-          </div>
-          <div className="bg-zinc-100 dark:bg-zinc-800 text-xs px-1.5 py-0.5 rounded shrink-0 hidden sm:block">
-            {marketType === "futures" ? "Futures" : "Spot"}
-          </div>
-        </div>
+      {/* Price stat */}
+      <div className="flex flex-col gap-0.5">
+        <span className="text-[10px] uppercase tracking-[0.06em] text-muted-foreground">Price</span>
+        <span className={cn("text-[13px] font-semibold tabular-nums", isPositive ? "text-success" : "text-destructive")}>
+          {price}
+        </span>
       </div>
 
-      {/* Middle section - Price information - Enhanced for mobile */}
-      <div className="flex items-center space-x-2 md:space-x-3 shrink-0">
-        {/* Mobile-first ticker display */}
-        <div className="flex flex-col items-end sm:items-center">
-          <div className="font-bold text-base sm:text-sm text-zinc-900 dark:text-white">
-            {price}
-          </div>
-          <div
-            className={cn(
-              "text-sm sm:text-xs font-medium",
-              isPositive ? "text-green-500" : "text-red-500"
-            )}
-          >
-            {priceChange}
-          </div>
-        </div>
-
-        {/* Desktop additional info */}
-        <div className="hidden lg:flex items-center text-xs text-zinc-500">
-          <div>
-            <div>{t("24h_vol")}</div>
-            <div className="font-medium">{volume}</div>
-          </div>
-        </div>
-
-        {/* Mobile compact volume display */}
-        <div className="flex lg:hidden flex-col items-end text-xs text-zinc-500 dark:text-zinc-400">
-          <div className="text-[10px] opacity-75">{t("24h_vol")}</div>
-          <div className="font-medium text-xs">{volume}</div>
-        </div>
+      {/* 24h Change stat */}
+      <div className="hidden sm:flex flex-col gap-0.5">
+        <span className="text-[10px] uppercase tracking-[0.06em] text-muted-foreground">24h Change</span>
+        <span className={cn("text-[13px] font-semibold tabular-nums", isPositive ? "text-success" : "text-destructive")}>
+          {priceChange}
+        </span>
       </div>
 
-      {/* Right section - Layout controls, theme toggle, fullscreen */}
-      <div className="flex items-center space-x-1 md:space-x-2 shrink-0 pl-2">
+      {/* Volume stat */}
+      <div className="hidden md:flex flex-col gap-0.5">
+        <span className="text-[10px] uppercase tracking-[0.06em] text-muted-foreground">Volume</span>
+        <span className="text-[13px] font-semibold tabular-nums">{volume}</span>
+      </div>
+
+      {/* Market type badge */}
+      <div className="hidden sm:flex">
+        <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 bg-[hsl(var(--primary)/0.08)] text-primary">
+          {marketType === "futures" ? "Futures" : "Spot"}
+        </span>
+      </div>
+
+      {/* Right controls */}
+      <div className="flex items-center gap-2 ml-auto">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-7 text-xs hidden md:flex"
+            <button
+              type="button"
+              className="hidden md:flex items-center gap-1 px-2 py-1 text-xs font-semibold bg-transparent border border-border cursor-pointer text-muted-foreground hover:text-foreground"
             >
-              <LayoutGrid className="h-3.5 w-3.5 mr-1" />
-              <span className="hidden lg:inline">
-                {currentPreset || "Default"}
-              </span>
-              <span className="lg:hidden">{t("trading_pro")}</span>
-            </Button>
+              <LayoutGrid className="h-3.5 w-3.5" />
+              <span className="hidden lg:inline">{currentPreset || "Default"}</span>
+            </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             {presetKeys.map((preset) => (
               <DropdownMenuItem
                 key={preset}
                 onClick={() => handlePresetSelect(preset)}
-                className={cn(
-                  "text-xs cursor-pointer",
-                  currentPreset === preset && "bg-zinc-100 dark:bg-zinc-800"
-                )}
+                className={cn("text-xs cursor-pointer", currentPreset === preset && "bg-primary/10")}
               >
                 {preset}
               </DropdownMenuItem>
             ))}
             <DropdownMenuSeparator />
-            <DropdownMenuItem
-              onClick={() => setSaveDialogOpen(true)}
-              className="text-xs cursor-pointer"
-            >
+            <DropdownMenuItem onClick={() => setSaveDialogOpen(true)} className="text-xs cursor-pointer">
               <Save className="h-3.5 w-3.5 mr-1" />
               {t("save_current_layout")}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
 
-        <Button
-          variant="outline"
-          size="icon"
-          className="h-7 w-7"
+        <button
+          type="button"
+          className="w-8 h-8 flex items-center justify-center bg-transparent border border-border cursor-pointer text-foreground hover:bg-foreground/5"
           onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-          aria-label="Toggle theme"
         >
-          {theme === "dark" ? (
-            <Sun className="h-3.5 w-3.5" />
-          ) : (
-            <Moon className="h-3.5 w-3.5" />
-          )}
-        </Button>
+          {theme === "dark" ? <Sun className="h-3.5 w-3.5" /> : <Moon className="h-3.5 w-3.5" />}
+        </button>
 
-        <Button
-          variant="outline"
-          size="icon"
-          className="h-7 w-7 hidden sm:flex"
+        <button
+          type="button"
+          className="w-8 h-8 hidden sm:flex items-center justify-center bg-transparent border border-border cursor-pointer text-foreground hover:bg-foreground/5"
           onClick={toggleFullscreen}
         >
-          {isFullscreen ? (
-            <Minimize2 className="h-3.5 w-3.5" />
-          ) : (
-            <Maximize2 className="h-3.5 w-3.5" />
-          )}
-        </Button>
+          {isFullscreen ? <Minimize2 className="h-3.5 w-3.5" /> : <Maximize2 className="h-3.5 w-3.5" />}
+        </button>
       </div>
 
       {/* Save Layout Dialog */}

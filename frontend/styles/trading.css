@@ -5,8 +5,8 @@
 
 /* Hide scrollbar for IE, Edge and Firefox */
 .scrollbar-hide {
-  -ms-overflow-style: none; /* IE and Edge */
-  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
 /* Trading interface elements */
@@ -25,23 +25,23 @@
 
 /* Trading history footer styles */
 .trading-history-footer {
-  background: linear-gradient(to right, #1a1d29, #131722);
-  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.2);
+  background: hsl(var(--card));
+  border-top: 1px solid hsl(var(--border));
   transition: all 0.3s ease;
 }
 
 .trading-history-footer:hover {
-  background: linear-gradient(to right, #1e2235, #171b2a);
+  background: hsl(var(--muted));
 }
 
 .trading-history-toggle {
-  background: rgba(30, 33, 48, 0.8);
-  border: 1px solid rgba(42, 46, 57, 0.8);
+  background: hsl(var(--card));
+  border: 1px solid hsl(var(--border));
   transition: all 0.2s ease;
 }
 
 .trading-history-toggle:hover {
-  background: rgba(36, 39, 56, 0.9);
+  background: hsl(var(--muted));
   transform: scale(1.05);
 }
 
@@ -61,10 +61,10 @@
 
 /* Glass morphism effects */
 .glass-morphism {
-  background: rgba(30, 33, 48, 0.8);
+  background: hsl(var(--card) / 0.9);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid hsl(var(--border));
 }
 
 /* Button press effect */
@@ -121,8 +121,7 @@
 }
 
 .scrollbar-thumb-gray-500::-webkit-scrollbar-thumb {
-  background-color: rgba(100, 100, 100, 0.5);
-  border-radius: 3px;
+  background-color: hsl(var(--muted-foreground) / 0.3);
 }
 
 .scrollbar-track-transparent::-webkit-scrollbar-track {
