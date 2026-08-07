@@ -185,7 +185,7 @@ export function LiveRatesSidebar() {
       {/* Why Convert */}
       <div className="bg-card dark:bg-[#161B22] border border-border dark:border-[rgba(230,237,243,0.06)] p-4">
         <div className="flex justify-between items-center mb-4">
-          <span className="font-extrabold text-sm">Why Convert?</span>
+          <span className="font-extrabold text-sm">Why Convert with Quatava?</span>
         </div>
         <div className="flex flex-col gap-3 text-sm">
           {WHY_CONVERT.map((reason, i) => (

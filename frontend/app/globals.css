@@ -66,6 +66,8 @@
   }
 }
 
+* { font-variant-numeric: tabular-nums; }
+
 @layer base {
   :root {
     --background: 228 33% 99%;
