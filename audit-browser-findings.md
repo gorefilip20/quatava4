@@ -52,3 +52,7 @@ The remaining browser notification is a live market-data connection warning beca
 ## Bright premium UI verification
 
 The production homepage and market explorer now render on a bright warm-white canvas with deep navy typography, emerald action states, and restrained indigo/violet accents. The browser confirmed readable hero copy, portfolio card, market filters, market rows, search input, and CTA controls. The shared header is light by default, and the main trade shell inherits the shared light background token while preserving the optional dark mode toggle.
+
+## Conversion and transfer hardening verification
+
+The transfer route previously displayed a raw `Invalid response format` banner when the backend was unavailable. The transfer store now degrades to a clean account-required state. Cross-currency conversions no longer fall back to a misleading 1:1 estimate: if a verified live rate is unavailable, the receive amount is blank, an explanatory warning is shown, and the completion action is blocked. The optimized `/en/finance/transfer` route was reloaded successfully after this change.

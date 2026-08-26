@@ -564,3 +564,10 @@ All features cannot be certified as working perfectly from a repository build al
 | `/en/market` | HTTP 200; bright market explorer renders fallback data and filters/search controls |
 | `/en/trade?symbol=BTCUSDT` | HTTP 200; symbol normalization and bright trade shell route remain intact |
 | Repository whitespace check | Passing |
+
+
+## Conversion implementation update — 26 Aug 2026
+
+The transfer flow now treats cross-currency conversion as a verified-rate operation. When the exchange-rate endpoint returns an invalid, missing, zero, or unavailable rate, the receive amount is cleared, a clear warning is shown, and both the UI validation and store submission boundary block completion. Same-currency transfers continue to use a 1:1 rate, while client-to-client transfers retain their existing same-currency behavior. Transfer initialization no longer exposes a raw `Invalid response format` banner when the account backend is unavailable; it presents a clean account-required state instead.
+
+The final frontend production build passed after these changes. The backend production TypeScript build remains passing from the current release baseline. The optimized transfer route was reloaded successfully and no longer showed the raw API-format error.

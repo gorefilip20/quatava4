@@ -68,6 +68,7 @@ export function TransferForm() {
     estimatedReceiveAmount,
     transferFee,
     exchangeRate,
+    conversionError,
     loading,
     error,
     setError,
@@ -180,10 +181,13 @@ export function TransferForm() {
     }
 
     if (transferType === "wallet") {
+      const sameCurrency = fromCurrency === toCurrency;
+      const rateReady = sameCurrency || (exchangeRate !== null && conversionError === null && estimatedReceiveAmount > 0);
       return (
         toWalletType &&
         toCurrency &&
-        toWalletType !== fromWalletType // Prevent same wallet type transfers
+        toWalletType !== fromWalletType &&
+        rateReady
       );
     } else if (transferType === "client") {
       return (
@@ -888,15 +892,19 @@ export function TransferForm() {
                           </div>
                         )}
 
+                        {conversionError && transferType === "wallet" && fromCurrency !== toCurrency && (
+                          <Alert className="border-amber-200 bg-amber-50 text-amber-800">
+                            <AlertDescription>{conversionError}</AlertDescription>
+                          </Alert>
+                        )}
+
                         <div className="flex justify-between border-t border-zinc-200 dark:border-zinc-700 pt-2">
                           <span className="text-zinc-900 dark:text-zinc-100 font-semibold">
                             {t("recipient_receives")}
                           </span>
                           <span className="font-semibold text-green-600 dark:text-green-400">
-                            {estimatedReceiveAmount.toFixed(8)}{" "}
-                            {transferType === "wallet"
-                              ? toCurrency
-                              : fromCurrency}
+                            {estimatedReceiveAmount > 0 ? estimatedReceiveAmount.toFixed(8) : "—"}{" "}
+                            {transferType === "wallet" ? toCurrency : fromCurrency}
                           </span>
                         </div>
                       </div>
