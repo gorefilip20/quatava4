@@ -1059,7 +1059,7 @@ export default function TradingLayout() {
   if (isMobile) {
     return (
       <LayoutProvider>
-        <div className="flex flex-col h-screen-mobile w-full bg-black overflow-hidden">
+        <div className="flex flex-col h-screen-mobile w-full bg-background overflow-hidden">
           <TradingHeader
             currentSymbol={currentSymbol}
             onSymbolChange={handleSymbolChange}
@@ -1079,7 +1079,7 @@ export default function TradingLayout() {
 
   return (
     <LayoutProvider>
-      <div className="flex flex-col h-screen w-full bg-black">
+      <div className="flex flex-col h-screen w-full bg-background">
         <TradingHeader
           currentSymbol={currentSymbol}
           onSymbolChange={handleSymbolChange}

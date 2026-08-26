@@ -544,3 +544,23 @@ The frontend type-check remains a large-repository diagnostic and was stopped af
 
 
 The trading terminal was also hardened at the shared `market-service` boundary. When live market discovery is unavailable, the terminal now keeps a valid BTC/USDT context and renders curated market rows, while chart and orderbook panels clearly remain in a waiting-for-live-data state. The browser verified `/en/trade?symbol=BTCUSDT` normalizing to `/en/trade?symbol=BTC-USDT&type=spot`, and the local optimized server returned HTTP 200 for the landing, market, and trade routes.
+
+
+## Bright UI and currency capability update — 26 Aug 2026
+
+The default product direction is now light rather than dark. The shared root tokens use warm white surfaces, deep navy text, emerald primary actions, and indigo/violet accents. The homepage, market explorer, shared desktop header, mobile navigation defaults, sidebar defaults, and trade shell containers were updated so the same bright direction is visible across the key public and trading surfaces. Production browser verification showed the homepage and market explorer rendering with readable contrast and working controls.
+
+The repository does not support arbitrary conversion of every currency into a user’s local currency. It does support authenticated cross-wallet exchange-rate calculation across configured FIAT, SPOT, ECO, and FUTURES wallet types. Fiat prices come from the configured currency table and crypto prices come from the exchange or internal matching engine; the endpoint calculates a USD-denominated ratio. There is no verified automatic country/locale detection, universal fiat coverage, guaranteed cash-out rail, or single provider-backed local-currency conversion flow. Conversion is therefore supported for configured and priced currencies, not "any currency" by default.
+
+All features cannot be certified as working perfectly from a repository build alone. The frontend and backend compile, and the key public routes and market interactions were verified. Real-money functionality still requires credentialed staging tests for live exchange execution, wallet accounting, deposits, withdrawals, fiat rails, KYC/AML, provider webhooks, ledger reconciliation, and failure recovery.
+
+## Bright-theme verification evidence
+
+| Check | Result |
+| --- | --- |
+| Frontend production build | Passing after the light-theme changes |
+| Backend production TypeScript build | Passing |
+| `/en` | HTTP 200; bright homepage renders with readable light surfaces and emerald actions |
+| `/en/market` | HTTP 200; bright market explorer renders fallback data and filters/search controls |
+| `/en/trade?symbol=BTCUSDT` | HTTP 200; symbol normalization and bright trade shell route remain intact |
+| Repository whitespace check | Passing |

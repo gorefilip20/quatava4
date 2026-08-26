@@ -20,7 +20,7 @@ import MobileSidebar from "@/components/partials/sidebar";
 import CustomMobileMenu from "./custom-mobile-menu";
 
 const siteName = process.env.NEXT_PUBLIC_SITE_NAME || "Quatava";
-const defaultTheme = process.env.NEXT_PUBLIC_DEFAULT_THEME || "dark";
+const defaultTheme = process.env.NEXT_PUBLIC_DEFAULT_THEME || "light";
 
 interface SiteHeaderProps {
   menu?: "user" | MenuItem[];
@@ -74,41 +74,41 @@ export const SiteHeader: React.FC<SiteHeaderProps> = ({
         className={cn(
           "fixed inset-x-0 top-0 z-50 border-b transition-all duration-300",
           isScrolled
-            ? "border-white/[0.08] bg-[#07090d]/92 shadow-[0_10px_40px_rgba(0,0,0,0.22)] backdrop-blur-2xl"
-            : "border-transparent bg-[#07090d]/55 backdrop-blur-xl",
+            ? "border-slate-200/80 bg-white/95 shadow-[0_10px_40px_rgba(15,23,42,0.10)] backdrop-blur-2xl"
+            : "border-slate-200/70 bg-white/85 backdrop-blur-xl",
         )}
       >
         <div className="mx-auto flex h-[72px] max-w-[1360px] items-center justify-between gap-5 px-5 sm:px-8">
           <div className="flex min-w-0 items-center gap-4 xl:gap-9">
             {!isDesktop && <MobileMenuHandler />}
             {isCustomMenu && isInAdminArea && (
-              <Link href={backButtonHref} className="rounded-lg p-2 text-slate-500 transition hover:bg-white/[0.06] hover:text-white">
+              <Link href={backButtonHref} className="rounded-lg p-2 text-slate-600 transition hover:bg-slate-100 hover:text-slate-950">
                 <ChevronLeft className="h-4 w-4" />
               </Link>
             )}
             <Link href="/" className="group flex shrink-0 items-center gap-2.5">
-              <span className="relative flex h-8 w-8 items-center justify-center overflow-hidden rounded-[10px] bg-[#39e29b] text-[#06110d] shadow-[0_0_22px_rgba(57,226,155,0.22)] transition group-hover:scale-105">
-                <span className="absolute h-5 w-5 rotate-45 rounded-[5px] border-[3px] border-[#06110d]" />
-                <span className="relative h-1.5 w-1.5 rounded-full bg-[#06110d]" />
+              <span className="relative flex h-8 w-8 items-center justify-center overflow-hidden rounded-[10px] bg-[#047857] text-white shadow-[0_0_22px_rgba(4,120,87,0.18)] transition group-hover:scale-105">
+                <span className="absolute h-5 w-5 rotate-45 rounded-[5px] border-[3px] border-white" />
+                <span className="relative h-1.5 w-1.5 rounded-full bg-white" />
               </span>
-              <span className="hidden text-[15px] font-semibold tracking-[-0.03em] text-white sm:inline">{siteName}</span>
-              {title && <span className="hidden border-l border-white/10 pl-4 text-xs text-slate-500 lg:inline">{title}</span>}
+              <span className="hidden text-[15px] font-semibold tracking-[-0.03em] text-slate-950 sm:inline">{siteName}</span>
+              {title && <span className="hidden border-l border-slate-200 pl-4 text-xs text-slate-500 lg:inline">{title}</span>}
             </Link>
-            {isDesktop && !isCustomMenu && <div className="h-6 w-px bg-white/[0.09]" />}
+            {isDesktop && !isCustomMenu && <div className="h-6 w-px bg-slate-200" />}
             {isDesktop && <div className="min-w-0"><MainMenu menu={menu} /></div>}
           </div>
 
           <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
             {rightControls && <div className="hidden items-center lg:flex">{rightControls}</div>}
             {hasPermission("access.admin") && (
-              <Link href={userEquivalentPath} className="hidden items-center gap-2 rounded-lg border border-white/[0.08] px-3 py-2 text-xs font-semibold text-slate-400 transition hover:border-white/20 hover:bg-white/[0.05] hover:text-white sm:flex">
+              <Link href={userEquivalentPath} className="hidden items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-600 transition hover:border-slate-300 hover:bg-slate-50 hover:text-slate-950 sm:flex">
                 <Settings className="h-3.5 w-3.5" />
                 <span className="hidden xl:inline">{isInAdminArea ? t("User") : t("Admin")}</span>
               </Link>
             )}
             <div className="hidden md:block"><LanguageSelector variant="compact" /></div>
             {layoutSwitcherEnabled && (
-              <button type="button" aria-label="Toggle theme" onClick={() => setTheme(theme === "dark" ? "light" : "dark")} className="hidden h-9 w-9 items-center justify-center rounded-lg border border-white/[0.08] text-slate-400 transition hover:bg-white/[0.06] hover:text-white md:flex">
+              <button type="button" aria-label="Toggle theme" onClick={() => setTheme(theme === "dark" ? "light" : "dark")} className="hidden h-9 w-9 items-center justify-center rounded-lg border border-slate-200 text-slate-600 transition hover:bg-slate-100 hover:text-slate-950 md:flex">
                 <AnimatePresence mode="wait" initial={false}>
                   {isDark ? <motion.span key="sun" initial={{ opacity: 0, rotate: -45 }} animate={{ opacity: 1, rotate: 0 }} exit={{ opacity: 0, rotate: 45 }}><Sun className="h-4 w-4" /></motion.span> : <motion.span key="moon" initial={{ opacity: 0, rotate: 45 }} animate={{ opacity: 1, rotate: 0 }} exit={{ opacity: 0, rotate: -45 }}><Moon className="h-4 w-4" /></motion.span>}
                 </AnimatePresence>

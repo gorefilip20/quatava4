@@ -17,7 +17,7 @@ import { NotificationBell } from "../header/notification-bell";
 import LanguageSelector from "../header/language-selector";
 import { Button } from "@/components/ui/button";
 
-const defaultTheme = process.env.NEXT_PUBLIC_DEFAULT_THEME || "dark";
+const defaultTheme = process.env.NEXT_PUBLIC_DEFAULT_THEME || "light";
 
 const MobileSidebar = ({ className, menu = "user" }: { className?: string; menu?: "user" | "admin" | any[] }) => {
   const { mobileMenu, setMobileMenu } = useSidebar();

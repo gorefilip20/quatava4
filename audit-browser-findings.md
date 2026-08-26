@@ -48,3 +48,7 @@ The production Gainers filter was also verified interactively. With search clear
 The production `/en/trade?symbol=BTCUSDT` route now normalizes to `/en/trade?symbol=BTC-USDT&type=spot`, preserves the BTC/USDT selection, and renders the fallback market sidebar with BNB, BTC, ETH, SOL, and XRP. The chart and orderbook correctly show a waiting-for-market-data state without a backend rather than the previous no-symbol error. Authenticated balances remain zero and the order form stays gated by the real backend, which is the correct safety behavior for a preview environment.
 
 The remaining browser notification is a live market-data connection warning because the backend/WebSocket service is not running in the sandbox. It is not a fake trade success path: the terminal exposes the symbol, side, order type, amount, and price controls but does not submit an order without a live authenticated API.
+
+## Bright premium UI verification
+
+The production homepage and market explorer now render on a bright warm-white canvas with deep navy typography, emerald action states, and restrained indigo/violet accents. The browser confirmed readable hero copy, portfolio card, market filters, market rows, search input, and CTA controls. The shared header is light by default, and the main trade shell inherits the shared light background token while preserving the optional dark mode toggle.

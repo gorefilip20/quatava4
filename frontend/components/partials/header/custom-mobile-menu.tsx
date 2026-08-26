@@ -21,7 +21,7 @@ import { Icon } from "@iconify/react";
 
 // MenuItem interface is defined globally in types/menu.d.ts
 
-const defaultTheme = process.env.NEXT_PUBLIC_DEFAULT_THEME || "dark";
+const defaultTheme = process.env.NEXT_PUBLIC_DEFAULT_THEME || "light";
 
 interface CustomMobileMenuProps {
   className?: string;
