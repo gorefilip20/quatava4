@@ -46,6 +46,7 @@ export const metadata = {
 
 export default async (data: Handler) => {
   const { user, body } = data;
+  if (!user) throw createError(401, "Unauthorized access");
   const { displayName, bio, banner, profilePublic } = body;
 
   // Find or create creator profile

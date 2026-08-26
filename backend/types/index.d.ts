@@ -156,6 +156,7 @@ type includeModel = {
   where?: WhereOptions;
   
   includeModels?: includeModel[];
+  include?: includeModel[];
   through?: {
     model?: ModelStatic<Model<any, any>>;
     attributes: string[];
@@ -166,6 +167,7 @@ type includeModel = {
 
 type WhereOptions = {
   [key: string]: any;
+  [key: symbol]: any;
 };
 
 interface ExtendedIncludeOptions extends IncludeOptions {

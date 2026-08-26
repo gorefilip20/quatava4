@@ -41,6 +41,7 @@ export const metadata = {
 
 export default async (data: Handler) => {
   const { user } = data;
+  if (!user) throw createError(401, "Unauthorized access");
 
   // Find or create creator profile
   let creatorProfile = await models.nftCreator.findOne({

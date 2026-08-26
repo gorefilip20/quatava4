@@ -3,11 +3,13 @@ import { logError } from "@b/utils/logger";
 export interface ErrorOptions {
   statusCode: number;
   message: string;
+  details?: unknown;
 }
 
 export class CustomError extends Error {
   statusCode: number;
   message: string;
+  details?: unknown;
 
   constructor(statusCode: number, message: string);
   constructor(options: ErrorOptions);
@@ -18,6 +20,7 @@ export class CustomError extends Error {
     super(message);
     this.statusCode = statusCode;
     this.message = message;
+    this.details = typeof arg1 === "object" ? arg1.details : undefined;
 
     Object.setPrototypeOf(this, new.target.prototype);
   }

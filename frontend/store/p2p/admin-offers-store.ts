@@ -240,10 +240,3 @@ export const adminOffersStore = create<AdminOffersState>((set, get) => ({
     return data;
   },
 }));
-t().offer?.id === id) {
-      await get().getOfferById(id);
-    }
-    
-    return data;
-  },
-}));

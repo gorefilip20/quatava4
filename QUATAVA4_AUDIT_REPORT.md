@@ -507,3 +507,40 @@
 | Frontend Stores | ⚠️ Partial — 30+ bypass issues | 75% |
 | Frontend Pages | ✅ Complete | 95% |
 | Blockchain Integrations | ✅ Complete | 90% |
+
+
+# Post-audit product hardening addendum — 26 August 2026
+
+## Executive summary
+
+The repository has been upgraded from a visually inconsistent, backend-dependent public shell into a coherent crypto finance product surface. The public landing page, site header, market explorer, locale routing, shared error contract, authenticated NFT creator endpoints, and strict backend query typing were reviewed and hardened. The most important product decision was to make market discovery useful during first boot and maintenance windows without pretending that preview data is an executable balance or settlement record.
+
+| Area | Result | Evidence |
+| --- | --- | --- |
+| Public landing page | Redesigned into a dark graphite trading-terminal experience with portfolio preview, trust signals, market pulse, and conversion paths | `/frontend/app/[locale]/home.tsx` |
+| Global visual system | Reworked to a graphite, indigo, and neon-green finance palette with consistent spacing, surfaces, borders, and typography | `/frontend/app/globals.css` |
+| Header and navigation | Rebuilt as a compact fintech header while preserving auth, locale, notifications, theme, menu filtering, and mobile behavior | `/frontend/components/partials/header/site-header.tsx` |
+| Locale routing | Removed the `/en/en` redirect loop when no `.env` file is present | `/frontend/i18n/routing.ts`, `/frontend/middlewares/auth.ts` |
+| Market explorer | Replaced the blank backend-dependent state with a fallback-backed, searchable, filterable, sortable market surface that adopts live ticker data when configured | `/frontend/app/[locale]/market/page.tsx` |
+| Backend build | Passing after adding the missing include type, symbol-keyed query support, structured error details, auth guards, and strict boolean parsing | `pnpm --filter backend build` |
+| Frontend production build | Passing with the optimized Next.js route manifest | `NODE_OPTIONS='--max-old-space-size=8192' pnpm --filter frontend build` |
+| Browser verification | Production `/en` and `/en/market` routes render; search and Gainers filter were interactively verified | `audit-browser-findings.md` |
+
+## Functional verification
+
+The optimized production server was exercised through the public browser proxy rather than relying only on static compilation. The localized landing route rendered the full product surface and its primary `/en/register`, `/en/market`, and `/en/trade?symbol=...` links. The Top gainers control hydrated in production and reordered the market links. On the market explorer, typing `SOL` reduced the data set to exactly one Solana row, while clearing the query and selecting Gainers reduced the six-market fallback set to five positive-change assets.
+
+The development server initially produced an unresponsive filter state because the temporary cross-origin proxy blocked the Next.js development HMR resource. This was isolated from the product code by reproducing the same interactions successfully against the optimized production server. The development HMR caveat is recorded in `audit-browser-findings.md` and should not be used as a release verdict.
+
+## Backend hardening
+
+The backend TypeScript build exposed a set of real correctness risks in NFT creator and collection handlers. Authenticated endpoints now explicitly reject missing users before dereferencing `user.id`. The shared `includeModel` type now supports nested Sequelize `include` arrays, `WhereOptions` supports symbol operators such as `Op.or`, the error contract carries optional structured `details`, and string query booleans are parsed without incompatible comparisons.
+
+## Remaining release gates
+
+The product is not ready to process real customer funds solely because the repository builds. Before enabling deposits, withdrawals, or live trading in production, operators must configure the database, Redis, session and authentication secrets, blockchain RPC endpoints, provider credentials, queue workers, webhook signing secrets, KYC services, and monitoring. Staging should explicitly test ledger reconciliation, idempotent webhook handling, withdrawal approvals, rate limits, 2FA enforcement, KYC gating, and failure alerts.
+
+The frontend type-check remains a large-repository diagnostic and was stopped after consuming the available heap for several minutes without producing a result. The successful production build and clean backend build are the release checks currently passing; the type-check should be split into project-area checks or supported with a CI runner sized for the full graph before enabling it as a blocking gate.
+
+
+The trading terminal was also hardened at the shared `market-service` boundary. When live market discovery is unavailable, the terminal now keeps a valid BTC/USDT context and renders curated market rows, while chart and orderbook panels clearly remain in a waiting-for-live-data state. The browser verified `/en/trade?symbol=BTCUSDT` normalizing to `/en/trade?symbol=BTC-USDT&type=spot`, and the local optimized server returned HTTP 200 for the landing, market, and trade routes.

@@ -41,8 +41,8 @@ export default async (data: Handler) => {
     if (query.ownerId) where.ownerId = query.ownerId;
     if (query.status) where.status = query.status;
     if (query.rarity) where.rarity = query.rarity;
-    if (query.isMinted !== undefined) where.isMinted = query.isMinted === "true" || query.isMinted === true;
-    if (query.isListed !== undefined) where.isListed = query.isListed === "true" || query.isListed === true;
+    if (query.isMinted !== undefined) where.isMinted = query.isMinted === "true";
+    if (query.isListed !== undefined) where.isListed = query.isListed === "true";
     
     // Category filter via collection
     if (query.categoryId) {

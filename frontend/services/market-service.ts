@@ -1,6 +1,14 @@
 import { isExtensionAvailable } from "@/lib/extensions";
 
 // Market data service to centralize market data fetching and sharing
+const FALLBACK_MARKETS = [
+  { id: "preview-btc", currency: "BTC", pair: "USDT", symbol: "BTC/USDT", displaySymbol: "BTC/USDT", price: 109482.18, change: 2.84, volume: 42.8e9, status: true, isPreview: true, metadata: { precision: { price: 2, amount: 6 } } },
+  { id: "preview-eth", currency: "ETH", pair: "USDT", symbol: "ETH/USDT", displaySymbol: "ETH/USDT", price: 4028.64, change: 1.96, volume: 18.4e9, status: true, isPreview: true, metadata: { precision: { price: 2, amount: 5 } } },
+  { id: "preview-sol", currency: "SOL", pair: "USDT", symbol: "SOL/USDT", displaySymbol: "SOL/USDT", price: 248.12, change: 5.42, volume: 6.8e9, status: true, isPreview: true, metadata: { precision: { price: 2, amount: 3 } } },
+  { id: "preview-bnb", currency: "BNB", pair: "USDT", symbol: "BNB/USDT", displaySymbol: "BNB/USDT", price: 712.38, change: -0.74, volume: 2.9e9, status: true, isPreview: true, metadata: { precision: { price: 2, amount: 3 } } },
+  { id: "preview-xrp", currency: "XRP", pair: "USDT", symbol: "XRP/USDT", displaySymbol: "XRP/USDT", price: 2.31, change: 3.18, volume: 2.2e9, status: true, isPreview: true, metadata: { precision: { price: 4, amount: 1 } } },
+];
+
 class MarketService {
   private static instance: MarketService;
 
@@ -70,7 +78,7 @@ class MarketService {
   public async getFuturesMarkets(): Promise<any[]> {
     // Check if futures extension is available
     if (!isExtensionAvailable("futures")) {
-      return [];
+      return FALLBACK_MARKETS.map((market) => ({ ...market, type: "futures" }));
     }
 
     // Return cached data if already fetched
@@ -200,13 +208,13 @@ class MarketService {
           .sort((a, b) => a.symbol.localeCompare(b.symbol));
 
         
-        return deduplicatedMarkets;
+        return deduplicatedMarkets.length ? deduplicatedMarkets : FALLBACK_MARKETS;
       }
 
-      return [];
+      return FALLBACK_MARKETS;
     } catch (error) {
       console.error("Error fetching spot markets:", error);
-      return [];
+      return FALLBACK_MARKETS;
     }
   }
 
@@ -238,10 +246,10 @@ class MarketService {
         return data.data;
       }
 
-      return [];
+      return FALLBACK_MARKETS.map((market) => ({ ...market, type: "futures" }));
     } catch (error) {
       console.error("Error fetching futures markets:", error);
-      return [];
+      return FALLBACK_MARKETS.map((market) => ({ ...market, type: "futures" }));
     }
   }
 

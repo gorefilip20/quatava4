@@ -1,846 +1,127 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
-import { motion } from "framer-motion";
-import Image from "next/image";
+import { useEffect, useMemo, useState } from "react";
 import {
-  Search,
-  Filter,
-  TrendingUp,
-  TrendingDown,
-  ArrowUpRight,
   ArrowDownRight,
-  Star,
-  BarChart3,
-  Volume2,
-  Clock,
-  Sparkles,
-  Target,
-  Zap,
   ArrowRight,
   ArrowUpDown,
-  DollarSign,
+  ArrowUpRight,
+  BarChart3,
+  Bitcoin,
+  ChevronDown,
+  Search,
+  Sparkles,
+  TrendingDown,
+  TrendingUp,
+  Volume2,
 } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
-import { useTheme } from "next-themes";
-import { tickersWs } from "@/services/tickers-ws";
 import { Link } from "@/i18n/routing";
-import { getCryptoImageUrl } from "@/utils/image-fallback";
-import { useUserStore } from "@/store/user";
+import { tickersWs } from "@/services/tickers-ws";
 import SiteHeader from "@/components/partials/header/site-header";
-import { useTranslations } from "next-intl";
-import { useSettings } from "@/hooks/use-settings";
-import { buildMarketLink } from "@/utils/market-links";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { cn } from "@/lib/utils";
+
+type Market = {
+  currency: string;
+  pair: string;
+  name: string;
+  price: number;
+  change24h: number;
+  volume: number;
+  marketCap: number;
+  color: string;
+};
+
+const fallbackMarkets: Market[] = [
+  { currency: "BTC", pair: "USDT", name: "Bitcoin", price: 109482.18, change24h: 2.84, volume: 42.8e9, marketCap: 2.17e12, color: "#f7931a" },
+  { currency: "ETH", pair: "USDT", name: "Ethereum", price: 4028.64, change24h: 1.96, volume: 18.4e9, marketCap: 485.5e9, color: "#627eea" },
+  { currency: "SOL", pair: "USDT", name: "Solana", price: 248.12, change24h: 5.42, volume: 6.8e9, marketCap: 118.2e9, color: "#14f195" },
+  { currency: "BNB", pair: "USDT", name: "BNB", price: 712.38, change24h: -0.74, volume: 2.9e9, marketCap: 105.2e9, color: "#f3ba2f" },
+  { currency: "XRP", pair: "USDT", name: "XRP", price: 2.31, change24h: 3.18, volume: 2.2e9, marketCap: 134.7e9, color: "#9ca3af" },
+  { currency: "QTAVA", pair: "USDT", name: "Quatava", price: 0.0842, change24h: 8.61, volume: 142.6e6, marketCap: 84.2e6, color: "#8b5cf6" },
+];
+
+const compact = (value: number) => {
+  if (value >= 1e12) return `$${(value / 1e12).toFixed(2)}T`;
+  if (value >= 1e9) return `$${(value / 1e9).toFixed(1)}B`;
+  if (value >= 1e6) return `$${(value / 1e6).toFixed(1)}M`;
+  return `$${(value / 1e3).toFixed(0)}K`;
+};
+
+const price = (value: number) => {
+  if (value >= 1000) return `$${value.toLocaleString("en-US", { maximumFractionDigits: 2 })}`;
+  if (value >= 1) return `$${value.toLocaleString("en-US", { maximumFractionDigits: 2, minimumFractionDigits: 2 })}`;
+  return `$${value.toLocaleString("en-US", { maximumFractionDigits: 4, minimumFractionDigits: 4 })}`;
+};
+
+function AssetIcon({ market }: { market: Market }) {
+  return <span className="flex h-10 w-10 items-center justify-center rounded-full text-xs font-bold text-slate-950" style={{ background: `radial-gradient(circle at 28% 20%, white 0%, ${market.color} 34%, #111827 130%)` }}>{market.currency === "BTC" ? <Bitcoin className="h-5 w-5" /> : market.currency.slice(0, 1)}</span>;
+}
+
+function Sparkline({ positive }: { positive: boolean }) {
+  return <svg viewBox="0 0 160 42" preserveAspectRatio="none" className="h-9 w-full"><path d={positive ? "M0 33 C10 31 16 26 24 28 S38 21 47 26 S59 17 69 22 S85 15 95 18 S108 8 120 13 S139 5 160 2 V42 H0 Z" : "M0 7 C12 9 17 16 28 13 S41 20 52 17 S67 27 77 22 S90 31 102 27 S119 36 128 31 S144 39 160 38 V42 H0 Z"} fill={positive ? "rgba(57,226,155,0.13)" : "rgba(251,113,133,0.12)"} /><path d={positive ? "M0 33 C10 31 16 26 24 28 S38 21 47 26 S59 17 69 22 S85 15 95 18 S108 8 120 13 S139 5 160 2" : "M0 7 C12 9 17 16 28 13 S41 20 52 17 S67 27 77 22 S90 31 102 27 S119 36 128 31 S144 39 160 38"} fill="none" stroke={positive ? "#39e29b" : "#fb7185"} strokeLinecap="round" strokeWidth="2.2" /></svg>;
+}
 
 export default function MarketPage() {
-  const t = useTranslations("market");
-  const [markets, setMarkets] = useState<any[]>([]);
-  const [tickers, setTickers] = useState<Record<string, any>>({});
-  const [isLoading, setIsLoading] = useState(true);
+  const [markets, setMarkets] = useState<Market[]>(fallbackMarkets);
+  const [tickers, setTickers] = useState<Record<string, { last?: number; change?: number; quoteVolume?: number }>>({});
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedFilter, setSelectedFilter] = useState("all");
-  const [sortBy, setSortBy] = useState("volume");
+  const [selectedFilter, setSelectedFilter] = useState<"all" | "gainers" | "losers" | "volume">("all");
+  const [sortBy, setSortBy] = useState<"volume" | "price" | "change" | "marketCap">("volume");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
-  const { resolvedTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
-  const { user } = useUserStore();
-  const { settings } = useSettings();
-
-  // Handle mounting state
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  const isDark = mounted && resolvedTheme === "dark";
+  const [isLive, setIsLive] = useState(false);
 
   useEffect(() => {
-    let spotUnsubscribe: (() => void) | null = null;
-    const fetchMarkets = async () => {
+    let active = true;
+    let unsubscribe: (() => void) | undefined;
+    const loadMarkets = async () => {
       try {
-        const res = await fetch("/api/exchange/market");
-        const data = await res.json();
-        setMarkets(
-          Array.isArray(data)
-            ? data.map((market) => ({
-                ...market,
-                displaySymbol: `${market.currency}/${market.pair}`,
-                symbol: `${market.currency}${market.pair}`,
-              }))
-            : []
-        );
-      } catch (e) {
-        setMarkets([]);
-      } finally {
-        setIsLoading(false);
+        const response = await fetch("/api/exchange/market", { credentials: "include" });
+        if (!response.ok) return;
+        const data = await response.json();
+        if (!active || !Array.isArray(data) || data.length === 0) return;
+        setMarkets(data.slice(0, 50).map((item: any, index: number) => {
+          const fallback = fallbackMarkets[index % fallbackMarkets.length];
+          return { currency: item.currency || fallback.currency, pair: item.pair || fallback.pair, name: item.name || fallback.name, price: fallback.price, change24h: fallback.change24h, volume: fallback.volume, marketCap: Number(item.marketCap) || fallback.marketCap, color: fallback.color };
+        }));
+      } catch {
+        // Keep the curated snapshot so the explorer remains useful during maintenance or first boot.
       }
     };
-    fetchMarkets();
-    tickersWs.initialize();
-    spotUnsubscribe = tickersWs.subscribeToSpotData((newTickers) => {
-      setTickers((prevTickers) => {
-        const updatedTickers = { ...prevTickers };
-        // Only update tickers that have new data
-        Object.entries(newTickers).forEach(([symbol, data]) => {
-          if (data && data.last !== undefined) {
-            updatedTickers[symbol] = data;
-          }
-        });
-        return updatedTickers;
+    loadMarkets();
+    try {
+      tickersWs.initialize();
+      unsubscribe = tickersWs.subscribeToSpotData((nextTickers) => {
+        if (!active) return;
+        setTickers((previous) => ({ ...previous, ...nextTickers }));
+        setIsLive(true);
       });
-    });
-    return () => {
-      if (spotUnsubscribe) spotUnsubscribe();
-    };
+    } catch {
+      setIsLive(false);
+    }
+    return () => { active = false; unsubscribe?.(); };
   }, []);
 
   const processedMarkets = useMemo(() => {
-    if (!markets.length || !Object.keys(tickers).length) return [];
-    return markets
-      .map((market) => {
-        const tickerKey = `${market.currency}/${market.pair}`;
-        const ticker = tickers[tickerKey] || {};
-        const price = Number(ticker.last) || 0;
-        const change24h = Number(ticker.change) || 0;
-        const volume = Number(ticker.quoteVolume) || 0;
-        const high24h = Number(ticker.high) || 0;
-        const low24h = Number(ticker.low) || 0;
-        const marketCap = price * (market.marketCap || 1_000_000);
-        return {
-          ...market,
-          price,
-          change24h,
-          volume,
-          high24h,
-          low24h,
-          marketCap,
-          tickerKey,
-        };
-      })
-      .filter((market) => {
-        const matchesSearch =
-          market.currency.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          market.displaySymbol.toLowerCase().includes(searchTerm.toLowerCase());
-        const matchesFilter =
-          selectedFilter === "all" ||
-          (selectedFilter === "gainers" && market.change24h > 0) ||
-          (selectedFilter === "losers" && market.change24h < 0) ||
-          (selectedFilter === "volume" && market.volume > 1000000) ||
-          (selectedFilter === "new" && market.trending);
-        return matchesSearch && matchesFilter;
-      })
-      .sort((a, b) => {
-        let aValue, bValue;
-        switch (sortBy) {
-          case "price":
-            aValue = a.price;
-            bValue = b.price;
-            break;
-          case "change":
-            aValue = a.change24h;
-            bValue = b.change24h;
-            break;
-          case "volume":
-            aValue = a.volume;
-            bValue = b.volume;
-            break;
-          case "marketCap":
-            aValue = a.marketCap;
-            bValue = b.marketCap;
-            break;
-          default:
-            aValue = a.volume;
-            bValue = b.volume;
-        }
-        return sortOrder === "desc" ? bValue - aValue : aValue - bValue;
-      });
+    return markets.map((market) => {
+      const ticker = tickers[`${market.currency}/${market.pair}`];
+      return { ...market, price: Number(ticker?.last) || market.price, change24h: Number(ticker?.change) || market.change24h, volume: Number(ticker?.quoteVolume) || market.volume };
+    }).filter((market) => {
+      const query = searchTerm.trim().toLowerCase();
+      const matchesSearch = !query || market.currency.toLowerCase().includes(query) || market.name.toLowerCase().includes(query) || `${market.currency}/${market.pair}`.toLowerCase().includes(query);
+      const matchesFilter = selectedFilter === "all" || (selectedFilter === "gainers" && market.change24h > 0) || (selectedFilter === "losers" && market.change24h < 0) || (selectedFilter === "volume" && market.volume >= 1e9);
+      return matchesSearch && matchesFilter;
+    }).sort((a, b) => {
+      const values = { volume: [a.volume, b.volume], price: [a.price, b.price], change: [a.change24h, b.change24h], marketCap: [a.marketCap, b.marketCap] }[sortBy];
+      return sortOrder === "desc" ? values[1] - values[0] : values[0] - values[1];
+    });
   }, [markets, tickers, searchTerm, selectedFilter, sortBy, sortOrder]);
-  const formatPrice = (price: number) => {
-    if (price >= 1000) {
-      return price.toLocaleString("en-US", {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      });
-    } else if (price >= 1) {
-      return price.toLocaleString("en-US", {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 4,
-      });
-    } else {
-      return price.toLocaleString("en-US", {
-        minimumFractionDigits: 4,
-        maximumFractionDigits: 8,
-      });
-    }
+
+  const stats = useMemo(() => ({ total: processedMarkets.length, gainers: processedMarkets.filter((market) => market.change24h > 0).length, losers: processedMarkets.filter((market) => market.change24h < 0).length, volume: processedMarkets.reduce((sum, market) => sum + market.volume, 0) }), [processedMarkets]);
+
+  const toggleSort = (nextSort: typeof sortBy) => {
+    if (nextSort === sortBy) setSortOrder((order) => order === "desc" ? "asc" : "desc");
+    else { setSortBy(nextSort); setSortOrder("desc"); }
   };
-  const formatVolume = (volume: number) => {
-    if (volume >= 1e9) return `$${(volume / 1e9).toFixed(2)}B`;
-    if (volume >= 1e6) return `$${(volume / 1e6).toFixed(2)}M`;
-    if (volume >= 1e3) return `$${(volume / 1e3).toFixed(2)}K`;
-    if (volume >= 1) return `$${volume.toFixed(2)}`;
-    if (volume > 0) return `$${volume.toFixed(8)}`;
-    return `$0.00`;
-  };
-  const getMarketIcon = (index: number) => {
-    const gradients = [
-      "from-blue-500 to-cyan-500",
-      "from-purple-500 to-pink-500",
-      "from-green-500 to-emerald-500",
-      "from-orange-500 to-red-500",
-      "from-indigo-500 to-blue-500",
-      "from-yellow-500 to-orange-500",
-    ];
-    return gradients[index % gradients.length];
-  };
-  const renderSkeletonRows = () =>
-    Array(10)
-      .fill(0)
-      .map((_, index) => (
-        <motion.div
-          key={`loading-${index}`}
-          initial={{
-            opacity: 0,
-            y: 20,
-          }}
-          animate={{
-            opacity: 1,
-            y: 0,
-          }}
-          transition={{
-            duration: 0.3,
-            delay: index * 0.05,
-          }}
-          className={cn(
-            "grid grid-cols-6 gap-4 p-4 rounded-xl animate-pulse border",
-            isDark
-              ? "bg-zinc-800/30 border-zinc-700/50"
-              : "bg-gray-50 border-gray-200/50"
-          )}
-        >
-          <div className="flex items-center gap-3">
-            <div
-              className={cn(
-                "w-12 h-12 rounded-full",
-                isDark ? "bg-zinc-700" : "bg-gray-200"
-              )}
-            />
-            <div className="space-y-2">
-              <div
-                className={cn(
-                  "h-4 w-16 rounded",
-                  isDark ? "bg-zinc-700" : "bg-gray-200"
-                )}
-              />
-              <div
-                className={cn(
-                  "h-3 w-12 rounded",
-                  isDark ? "bg-zinc-700" : "bg-gray-200"
-                )}
-              />
-            </div>
-          </div>
-          {Array(5)
-            .fill(0)
-            .map((_, i) => (
-              <div key={i} className="flex items-center justify-end">
-                <div
-                  className={cn(
-                    "h-4 w-20 rounded",
-                    isDark ? "bg-zinc-700" : "bg-gray-200"
-                  )}
-                />
-              </div>
-            ))}
-        </motion.div>
-      ));
-  const stats = useMemo(() => {
-    const totalMarkets = processedMarkets.length;
-    const gainers = processedMarkets.filter((m) => m.change24h > 0).length;
-    const losers = processedMarkets.filter((m) => m.change24h < 0).length;
-    const totalVolume = processedMarkets.reduce((sum, m) => sum + m.volume, 0);
-    return {
-      totalMarkets,
-      gainers,
-      losers,
-      totalVolume,
-    };
-  }, [processedMarkets]);
 
-  // Don't render until mounted to prevent hydration mismatch
-  if (!mounted) {
-    return <SiteHeader />;
-  }
-
-  return (
-    <>
-      <SiteHeader />
-      <div className="min-h-screen bg-gradient-to-b from-zinc-50 to-white dark:from-zinc-900 dark:to-zinc-950 pt-14 md:pt-18">
-        <div className="container mx-auto px-4 py-8 md:py-12">
-          <div className="max-w-7xl mx-auto">
-            {/* Header */}
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8 }}
-              className="text-center mb-8 md:mb-12"
-            >
-              <motion.div
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.6 }}
-                className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-100 to-purple-100 dark:from-blue-950/50 dark:to-purple-950/50 border border-blue-200 dark:border-blue-800/50 rounded-full px-4 py-2 text-sm font-medium text-blue-700 dark:text-blue-300 mb-4 md:mb-6"
-              >
-                <BarChart3 className="w-4 h-4" />
-                {t("cryptocurrency_markets")}
-              </motion.div>
-
-              <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-zinc-900 dark:text-zinc-100 mb-4 md:mb-6">
-                {t("explore_all")}
-                <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
-                  {" "}
-                  {t("crypto_markets")}
-                </span>
-              </h1>
-
-              <p className="text-lg md:text-xl text-zinc-600 dark:text-zinc-300 max-w-3xl mx-auto leading-relaxed mb-6 md:mb-8">
-                {t("real-time_prices_24h_cryptocurrency_pairs")}
-                {". "}
-                {t("start_trading_with_deep_liquidity")}.
-              </p>
-
-              {/* Market Stats */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {[
-                  {
-                    label: "Total Markets",
-                    value: stats.totalMarkets,
-                    icon: Target,
-                    color: "blue",
-                  },
-                  {
-                    label: "24h Gainers",
-                    value: stats.gainers,
-                    icon: TrendingUp,
-                    color: "green",
-                  },
-                  {
-                    label: "24h Losers",
-                    value: stats.losers,
-                    icon: TrendingDown,
-                    color: "red",
-                  },
-                  {
-                    label: "Total Volume",
-                    value: formatVolume(stats.totalVolume),
-                    icon: Volume2,
-                    color: "purple",
-                  },
-                ].map((stat, index) => (
-                  <motion.div
-                    key={stat.label}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6, delay: 0.2 + index * 0.1 }}
-                    className={cn(
-                      "p-3 md:p-4 rounded-xl backdrop-blur-sm border",
-                      isDark
-                        ? "bg-zinc-800/30 border-zinc-700/50"
-                        : "bg-white/80 border-white/50"
-                    )}
-                  >
-                    <div className="flex items-center gap-2 mb-2">
-                      <div
-                        className={cn(
-                          "w-8 h-8 rounded-lg flex items-center justify-center",
-                          stat.color === "blue" &&
-                            "bg-blue-100 dark:bg-blue-900/30",
-                          stat.color === "green" &&
-                            "bg-green-100 dark:bg-green-900/30",
-                          stat.color === "red" &&
-                            "bg-red-100 dark:bg-red-900/30",
-                          stat.color === "purple" &&
-                            "bg-purple-100 dark:bg-purple-900/30"
-                        )}
-                      >
-                        <stat.icon
-                          className={cn(
-                            "w-4 h-4",
-                            stat.color === "blue" &&
-                              "text-blue-600 dark:text-blue-400",
-                            stat.color === "green" &&
-                              "text-green-600 dark:text-green-400",
-                            stat.color === "red" &&
-                              "text-red-600 dark:text-red-400",
-                            stat.color === "purple" &&
-                              "text-purple-600 dark:text-purple-400"
-                          )}
-                        />
-                      </div>
-                      <div className="text-sm md:text-base text-zinc-600 dark:text-zinc-400">
-                        {stat.label}
-                      </div>
-                    </div>
-                    <div className="text-xl md:text-2xl font-bold text-zinc-900 dark:text-zinc-100">
-                      {stat.value}
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-            </motion.div>
-
-            {/* Search and Filters */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.3 }}
-              className="mb-6 md:mb-8"
-            >
-              <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-                {/* Search Input */}
-                <div className="relative flex-1 max-w-md">
-                  <Input
-                    placeholder="Search markets (e.g., BTC, ETH)..."
-                    value={searchTerm}
-                    icon={"mdi:search"}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="bg-white/80 dark:bg-zinc-800/80 backdrop-blur-sm border-zinc-200 dark:border-zinc-700 h-11"
-                  />
-                </div>
-
-                {/* Filters and Sort Container */}
-                <div className="flex gap-3 w-full sm:w-auto">
-                  {/* Filter Dropdown */}
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className="h-11 px-4 bg-white/80 dark:bg-zinc-800/80 border-zinc-200 dark:border-zinc-700 min-w-[120px] justify-between"
-                      >
-                        <div className="flex items-center gap-2">
-                          <Filter className="w-4 h-4" />
-                          <span>
-                            {selectedFilter === "all" && "All Markets"}
-                            {selectedFilter === "gainers" && "Gainers"}
-                            {selectedFilter === "losers" && "Losers"}
-                            {selectedFilter === "volume" && "High Volume"}
-                            {selectedFilter === "new" && "Trending"}
-                          </span>
-                        </div>
-                        <ArrowDownRight className="w-4 h-4 ml-2" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="start" className="w-48">
-                      <DropdownMenuItem
-                        onClick={() => setSelectedFilter("all")}
-                        className={cn(
-                          "cursor-pointer",
-                          selectedFilter === "all" && "bg-blue-50 dark:bg-blue-950"
-                        )}
-                      >
-                        <Target className="w-4 h-4 mr-2" />
-                        All Markets
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={() => setSelectedFilter("gainers")}
-                        className={cn(
-                          "cursor-pointer",
-                          selectedFilter === "gainers" && "bg-green-50 dark:bg-green-950"
-                        )}
-                      >
-                        <TrendingUp className="w-4 h-4 mr-2 text-green-600" />
-                        Gainers
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={() => setSelectedFilter("losers")}
-                        className={cn(
-                          "cursor-pointer",
-                          selectedFilter === "losers" && "bg-red-50 dark:bg-red-950"
-                        )}
-                      >
-                        <TrendingDown className="w-4 h-4 mr-2 text-red-600" />
-                        Losers
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={() => setSelectedFilter("volume")}
-                        className={cn(
-                          "cursor-pointer",
-                          selectedFilter === "volume" && "bg-purple-50 dark:bg-purple-950"
-                        )}
-                      >
-                        <Volume2 className="w-4 h-4 mr-2 text-purple-600" />
-                        High Volume
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={() => setSelectedFilter("new")}
-                        className={cn(
-                          "cursor-pointer",
-                          selectedFilter === "new" && "bg-yellow-50 dark:bg-yellow-950"
-                        )}
-                      >
-                        <Sparkles className="w-4 h-4 mr-2 text-yellow-600" />
-                        Trending
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-
-                  {/* Sort Dropdown */}
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className="h-11 px-4 bg-white/80 dark:bg-zinc-800/80 border-zinc-200 dark:border-zinc-700 min-w-[140px] justify-between"
-                      >
-                        <div className="flex items-center gap-2">
-                          <ArrowUpDown className="w-4 h-4" />
-                          <span>
-                            {sortBy === "volume" && "Volume"}
-                            {sortBy === "price" && "Price"}
-                            {sortBy === "change" && "24h Change"}
-                            {sortBy === "marketCap" && "Market Cap"}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          {sortOrder === "desc" ? "↓" : "↑"}
-                        </div>
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-48">
-                      <DropdownMenuItem
-                        onClick={() => setSortBy("volume")}
-                        className={cn(
-                          "cursor-pointer",
-                          sortBy === "volume" && "bg-blue-50 dark:bg-blue-950"
-                        )}
-                      >
-                        <Volume2 className="w-4 h-4 mr-2" />
-                        {t("Volume")}
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={() => setSortBy("price")}
-                        className={cn(
-                          "cursor-pointer",
-                          sortBy === "price" && "bg-blue-50 dark:bg-blue-950"
-                        )}
-                      >
-                        <DollarSign className="w-4 h-4 mr-2" />
-                        {t("Price")}
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={() => setSortBy("change")}
-                        className={cn(
-                          "cursor-pointer",
-                          sortBy === "change" && "bg-blue-50 dark:bg-blue-950"
-                        )}
-                      >
-                        <TrendingUp className="w-4 h-4 mr-2" />
-                        {t("24h_change")}
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={() => setSortBy("marketCap")}
-                        className={cn(
-                          "cursor-pointer",
-                          sortBy === "marketCap" && "bg-blue-50 dark:bg-blue-950"
-                        )}
-                      >
-                        <Target className="w-4 h-4 mr-2" />
-                        {t("market_cap")}
-                      </DropdownMenuItem>
-                      <div className="border-t my-1" />
-                      <DropdownMenuItem
-                        onClick={() => setSortOrder(sortOrder === "desc" ? "asc" : "desc")}
-                        className="cursor-pointer"
-                      >
-                        <ArrowUpDown className="w-4 h-4 mr-2" />
-                        {sortOrder === "desc" ? "Descending" : "Ascending"}
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
-              </div>
-            </motion.div>
-
-            {/* Markets Table */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.4 }}
-              className={cn(
-                "backdrop-blur-xl rounded-2xl border shadow-xl overflow-hidden",
-                isDark
-                  ? "bg-zinc-900/50 border-zinc-700/50"
-                  : "bg-white/80 border-white/20"
-              )}
-            >
-              {/* Table Header */}
-              <div className="grid grid-cols-2 md:grid-cols-6 gap-2 md:gap-4 p-3 md:p-4 text-sm font-semibold text-zinc-600 dark:text-zinc-300 border-b border-zinc-200/50 dark:border-zinc-700/50 bg-zinc-50/50 dark:bg-zinc-800/50">
-                <div>{t("Asset")}</div>
-                <div className="text-right md:col-span-1">{t("Price")}</div>
-                <div className="hidden md:block text-right">
-                  {t("24h_change")}
-                </div>
-                <div className="hidden md:block text-right">
-                  {t("24h_volume")}
-                </div>
-                <div className="hidden md:block text-right">
-                  {t("market_cap")}
-                </div>
-                <div className="hidden md:block text-right">{t("Action")}</div>
-              </div>
-
-              {/* Table Body */}
-              <div className="divide-y divide-zinc-200/50 dark:divide-zinc-700/50">
-                {isLoading ? (
-                  renderSkeletonRows()
-                ) : processedMarkets.length === 0 ? (
-                  <div className="text-center py-12">
-                    <div className="w-16 h-16 md:w-24 md:h-24 bg-zinc-100 dark:bg-zinc-800 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <Search className="w-6 h-6 md:w-8 md:h-8 text-zinc-400" />
-                    </div>
-                    <h3 className="text-lg md:text-xl font-semibold text-zinc-900 dark:text-zinc-100 mb-2">
-                      {t("no_markets_found")}
-                    </h3>
-                    <p className="text-sm md:text-base text-zinc-600 dark:text-zinc-400">
-                      {t("try_adjusting_your_search_or_filter_criteria")}
-                    </p>
-                  </div>
-                ) : (
-                  <div className="space-y-1">
-                    {processedMarkets.map((market, index) => (
-                      <motion.div
-                        key={market.symbol}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.3, delay: index * 0.02 }}
-                        className={cn(
-                          "grid grid-cols-2 md:grid-cols-6 gap-2 md:gap-4 p-3 md:p-4 transition-all duration-300 group relative",
-                          "hover:bg-zinc-50 dark:hover:bg-zinc-800/50",
-                          "active:bg-zinc-100 dark:active:bg-zinc-700/50",
-                          "md:hover:scale-[1.02] md:hover:-translate-y-0.5",
-                          isDark ? "hover:bg-zinc-800/50" : "hover:bg-zinc-50"
-                        )}
-                      >
-                        <Link
-                          href={buildMarketLink(settings, market.currency, market.pair)}
-                          className="absolute inset-0 z-10"
-                          aria-label={`Trade ${market.currency}/${market.pair}`}
-                        />
-
-                        {/* Mobile hover/active indicator - right arrow */}
-                        <div className="absolute right-2 top-1/2 -translate-y-1/2 md:hidden opacity-0 group-hover:opacity-100 transition-opacity">
-                          <ArrowRight className="w-4 h-4 text-blue-500" />
-                        </div>
-
-                        {/* Asset */}
-                        <div className="flex items-center gap-2 md:gap-3">
-                          <div
-                            className={cn(
-                              "w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center overflow-hidden border-2",
-                              isDark 
-                                ? "bg-zinc-800 border-zinc-700" 
-                                : "bg-white border-gray-200"
-                            )}
-                          >
-                            <Image
-                              src={getCryptoImageUrl(market.currency || "generic")}
-                              alt={market.currency || "generic"}
-                              width={32}
-                              height={32}
-                              className="w-6 h-6 md:w-8 md:h-8 object-cover rounded-full"
-                              onError={(e) => {
-                                // Prevent infinite loops by checking if we already tried fallback
-                                const target = e.currentTarget;
-                                if (!target.dataset.fallbackAttempted) {
-                                  target.dataset.fallbackAttempted = 'true';
-                                  // Use a data URI as fallback to prevent further errors
-                                  target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMTYiIGN5PSIxNiIgcj0iMTYiIGZpbGw9IiNGM0Y0RjYiLz4KPHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHZpZXdCb3g9IjAgMCAyMCAyMCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB4PSI2IiB5PSI2Ij4KPGNpcmNsZSBjeD0iMTAiIGN5PSIxMCIgcj0iOCIgc3Ryb2tlPSIjNjk3MDdCIiBzdHJva2Utd2lkdGg9IjEuNSIvPgo8cGF0aCBkPSJtMTIuNSA3LjUtNSA1IiBzdHJva2U9IiM2OTcwN0IiIHN0cm9rZS13aWR0aD0iMS41IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPHBhdGggZD0ibTcuNSA3LjUgNSA1IiBzdHJva2U9IiM2OTcwN0IiIHN0cm9rZS13aWR0aD0iMS41IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPC9zdmc+Cjwvc3ZnPg==';
-                                }
-                              }}
-                            />
-                          </div>
-                          <div>
-                            <div className="font-semibold text-sm md:text-base group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-                              {market.currency}
-                            </div>
-                            <div
-                              className={cn(
-                                "text-xs",
-                                isDark ? "text-zinc-400" : "text-gray-500"
-                              )}
-                            >
-                              {market.displaySymbol}
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Price and Change (Mobile) */}
-                        <div className="flex flex-col items-end md:hidden pr-6">
-                          <div className="font-mono font-semibold text-sm">
-                            {market.price
-                              ? "$" + formatPrice(market.price)
-                              : "--"}
-                          </div>
-                          <div
-                            className={cn(
-                              "text-xs font-semibold",
-                              market.change24h >= 0
-                                ? "text-green-600 dark:text-green-400"
-                                : "text-red-600 dark:text-red-400"
-                            )}
-                          >
-                            {market.change24h >= 0 ? "+" : ""}
-                            {typeof market.change24h === "number"
-                              ? market.change24h.toFixed(2)
-                              : market.change24h}
-                            %
-                          </div>
-                        </div>
-
-                        {/* Desktop columns */}
-                        <div className="hidden md:flex items-center justify-end">
-                          <div className="text-right">
-                            <div className="font-mono font-semibold">
-                              {market.price
-                                ? "$" + formatPrice(market.price)
-                                : "--"}
-                            </div>
-                            {market.high24h > 0 && market.low24h > 0 && (
-                              <div className="text-xs text-zinc-500 dark:text-zinc-400">
-                                $
-                                {formatPrice(market.low24h)}
-                                - $
-                                {formatPrice(market.high24h)}
-                              </div>
-                            )}
-                          </div>
-                        </div>
-
-                        <div className="hidden md:flex items-center justify-end">
-                          <div
-                            className={cn(
-                              "flex items-center gap-1 px-2 py-1 rounded-lg font-semibold text-sm",
-                              market.change24h >= 0
-                                ? "text-green-600 bg-green-100 dark:bg-green-900/30 dark:text-green-400"
-                                : "text-red-600 bg-red-100 dark:bg-red-900/30 dark:text-red-400"
-                            )}
-                          >
-                            {market.change24h >= 0 ? "+" : ""}
-                            {typeof market.change24h === "number"
-                              ? market.change24h.toFixed(2)
-                              : market.change24h}
-                            %
-                            {market.change24h >= 0 ? (
-                              <ArrowUpRight className="h-3 w-3" />
-                            ) : (
-                              <ArrowDownRight className="h-3 w-3" />
-                            )}
-                          </div>
-                        </div>
-
-                        <div className="hidden md:flex items-center justify-end font-medium">
-                          {formatVolume(market.volume)}
-                        </div>
-
-                        <div className="hidden md:flex items-center justify-end font-medium">
-                          {market.marketCap
-                            ? formatVolume(market.marketCap)
-                            : "--"}
-                        </div>
-
-                        {/* Action button for desktop */}
-                        <div className="hidden md:flex items-center justify-end">
-                          <button
-                            onClick={() =>
-                              (window.location.href = buildMarketLink(settings, market.currency, market.pair))
-                            }
-                            className="group/btn relative px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 rounded-lg font-medium text-white transition-all duration-300 shadow-md hover:shadow-lg flex items-center gap-2"
-                          >
-                            <Zap className="w-4 h-4" />
-                            {t("Trade")}
-                            <ArrowUpRight className="w-3 h-3 group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5 transition-transform" />
-                          </button>
-                        </div>
-                      </motion.div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </motion.div>
-
-            {/* Bottom CTA */}
-            <motion.div
-              initial={{
-                opacity: 0,
-                y: 20,
-              }}
-              animate={{
-                opacity: 1,
-                y: 0,
-              }}
-              transition={{
-                duration: 0.6,
-                delay: 0.6,
-              }}
-              className="text-center mt-12"
-            >
-              <div
-                className={cn(
-                  "p-8 rounded-2xl backdrop-blur-sm border",
-                  isDark
-                    ? "bg-zinc-800/30 border-zinc-700/50"
-                    : "bg-white/80 border-white/50"
-                )}
-              >
-                <h3 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100 mb-4">
-                  {user ? "Happy Trading!" : "Ready to Start Trading?"}
-                </h3>
-                <p className="text-zinc-600 dark:text-zinc-300 mb-6 max-w-2xl mx-auto">
-                  {user
-                    ? "You're all set! Choose any cryptocurrency pair above to start trading with our professional tools and real-time market data."
-                    : "Join our platform and experience secure cryptocurrency trading with professional tools and real-time market data."}
-                </p>
-                {user ? (
-                  <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                    <Link
-                      href={settings?.marketLinkRoute === "binary" ? "/binary" : "/trade"}
-                      className="px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 rounded-lg font-medium text-white transition-all duration-300 shadow-lg hover:shadow-xl"
-                    >
-                      {t("start_trading")}
-                    </Link>
-                  </div>
-                ) : (
-                  <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                    <Link
-                      href="/register"
-                      className="px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 rounded-lg font-medium text-white transition-all duration-300 shadow-lg hover:shadow-xl"
-                    >
-                      {t("create_free_account")}
-                    </Link>
-                    <Link
-                      href={settings?.marketLinkRoute === "binary" ? "/binary" : "/trade"}
-                      className={cn(
-                        "px-6 py-3 rounded-lg font-medium transition-all duration-300 border",
-                        isDark
-                          ? "border-zinc-700 bg-zinc-800/50 hover:bg-zinc-700/50 text-white"
-                          : "border-gray-200 bg-white hover:bg-gray-50 text-gray-800"
-                      )}
-                    >
-                      {t("start_trading_demo")}
-                    </Link>
-                  </div>
-                )}
-              </div>
-            </motion.div>
-          </div>
-        </div>
-      </div>
-    </>
-  );
+  return <main className="min-h-screen bg-[#07090d] text-slate-100"><SiteHeader /><div className="border-b border-white/[0.06] bg-[radial-gradient(circle_at_50%_0%,rgba(99,102,241,0.16),transparent_34%),linear-gradient(180deg,#0d131b,#07090d)] px-5 pb-12 pt-32 sm:px-8 lg:pb-16"><div className="mx-auto max-w-[1320px]"><div className="mb-5 inline-flex items-center gap-2 rounded-full border border-indigo-400/20 bg-indigo-400/[0.08] px-3.5 py-2 text-xs font-bold text-indigo-200"><BarChart3 className="h-3.5 w-3.5" /> Cryptocurrency markets</div><div className="flex flex-col justify-between gap-8 lg:flex-row lg:items-end"><div><h1 className="max-w-3xl text-4xl font-semibold tracking-[-0.055em] text-white sm:text-6xl">Explore the <span className="bg-gradient-to-r from-indigo-300 via-violet-300 to-[#39e29b] bg-clip-text text-transparent">market surface.</span></h1><p className="mt-5 max-w-2xl text-base leading-7 text-slate-400">Live prices, 24-hour momentum, and liquidity signals for every market on Quatava.</p></div><div className="flex items-center gap-2 text-xs text-slate-500"><span className={cn("h-2 w-2 rounded-full", isLive ? "bg-[#39e29b] shadow-[0_0_12px_#39e29b]" : "bg-slate-600")} />{isLive ? "Live market data" : "Indicative snapshot"}<ChevronDown className="h-3.5 w-3.5" /></div></div><div className="mt-10 grid grid-cols-2 gap-3 lg:grid-cols-4">{[{ icon: BarChart3, label: "Markets", value: stats.total }, { icon: TrendingUp, label: "24h gainers", value: stats.gainers, tone: "green" }, { icon: TrendingDown, label: "24h losers", value: stats.losers, tone: "red" }, { icon: Volume2, label: "Tracked volume", value: compact(stats.volume), tone: "violet" }].map((stat) => <div key={stat.label} className="rounded-2xl border border-white/[0.08] bg-white/[0.035] p-4"><div className="flex items-center gap-2 text-xs text-slate-500"><stat.icon className={cn("h-4 w-4", stat.tone === "green" ? "text-[#39e29b]" : stat.tone === "red" ? "text-rose-400" : stat.tone === "violet" ? "text-violet-300" : "text-indigo-300")} />{stat.label}</div><p className="mt-3 text-2xl font-semibold tracking-[-0.04em] text-white">{stat.value}</p></div>)}</div></div></div><div className="mx-auto max-w-[1320px] px-5 py-10 sm:px-8 lg:py-14"><div className="flex flex-col gap-4 rounded-2xl border border-white/[0.08] bg-[#0c1218] p-4 sm:flex-row sm:items-center sm:justify-between"><label className="relative block w-full sm:max-w-sm"><Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" /><input value={searchTerm} onChange={(event) => setSearchTerm(event.target.value)} placeholder="Search BTC, ETH, or a market" className="h-11 w-full rounded-xl border border-white/[0.08] bg-white/[0.035] pl-10 pr-4 text-sm text-white outline-none transition placeholder:text-slate-600 focus:border-[#39e29b]/50 focus:ring-2 focus:ring-[#39e29b]/10" /></label><div className="flex flex-wrap items-center gap-1 rounded-xl bg-white/[0.035] p-1">{[{ id: "all", label: "All markets" }, { id: "gainers", label: "Gainers" }, { id: "losers", label: "Losers" }, { id: "volume", label: "High volume" }].map((filter) => <button type="button" key={filter.id} onClick={() => setSelectedFilter(filter.id as typeof selectedFilter)} className={cn("rounded-lg px-3 py-2 text-xs font-semibold transition", selectedFilter === filter.id ? "bg-white/10 text-white" : "text-slate-500 hover:text-white")}>{filter.label}</button>)}</div></div><div className="mt-6 overflow-hidden rounded-2xl border border-white/[0.08] bg-[#0c1218]"><div className="hidden grid-cols-[1.6fr_1fr_0.9fr_0.9fr_1fr_0.95fr] gap-4 border-b border-white/[0.07] px-6 py-4 text-[10px] font-bold uppercase tracking-[0.16em] text-slate-600 lg:grid"><span>Asset</span><button type="button" onClick={() => toggleSort("price")} className="flex items-center gap-1 text-left">Last price<ArrowUpDown className="h-3 w-3" /></button><button type="button" onClick={() => toggleSort("change")} className="flex items-center gap-1 text-left">24h change<ArrowUpDown className="h-3 w-3" /></button><button type="button" onClick={() => toggleSort("volume")} className="flex items-center gap-1 text-left">24h volume<ArrowUpDown className="h-3 w-3" /></button><span>Trend</span><span>Action</span></div>{processedMarkets.length ? <div className="divide-y divide-white/[0.05]">{processedMarkets.map((market) => <Link key={`${market.currency}-${market.pair}`} href={`/trade?symbol=${market.currency}${market.pair}`} className="grid gap-4 px-4 py-5 transition hover:bg-white/[0.035] lg:grid-cols-[1.6fr_1fr_0.9fr_0.9fr_1fr_0.95fr] lg:px-6"><div className="flex items-center gap-3"><AssetIcon market={market} /><div><p className="text-sm font-semibold text-white">{market.name}</p><p className="mt-1 text-[11px] text-slate-500">{market.currency} / {market.pair}</p></div></div><div className="flex items-center justify-between text-sm font-semibold text-white lg:justify-start">{price(market.price)}<span className="text-[11px] font-normal text-slate-500 lg:hidden">{compact(market.volume)} vol.</span></div><div className={cn("text-sm font-semibold", market.change24h >= 0 ? "text-[#39e29b]" : "text-rose-400")}>{market.change24h >= 0 ? "+" : ""}{market.change24h.toFixed(2)}%</div><div className="hidden text-sm text-slate-400 lg:block">{compact(market.volume)}</div><div className="hidden items-center lg:flex"><div className="w-36"><Sparkline positive={market.change24h >= 0} /></div></div><div className="hidden items-center gap-2 text-xs font-semibold text-slate-500 lg:flex">Trade {market.change24h >= 0 ? <ArrowUpRight className="h-4 w-4 text-[#39e29b]" /> : <ArrowDownRight className="h-4 w-4 text-rose-400" />}</div></Link>)}</div> : <div className="px-6 py-20 text-center"><div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-white/[0.05] text-slate-500"><Search className="h-6 w-6" /></div><h2 className="mt-5 text-lg font-semibold text-white">No matching markets</h2><p className="mt-2 text-sm text-slate-500">Try a different symbol or clear your current filters.</p></div>}<div className="border-t border-white/[0.07] px-6 py-4 text-center text-xs text-slate-600"><Sparkles className="mr-1 inline h-3.5 w-3.5 text-[#39e29b]" />Quotes are indicative and may be delayed until you connect a live account.</div></div></div><section className="mx-auto max-w-[1320px] px-5 pb-16 sm:px-8"><div className="flex flex-col justify-between gap-6 rounded-2xl border border-[#39e29b]/15 bg-[#0d1818] p-7 sm:flex-row sm:items-center sm:p-9"><div><p className="text-xs font-bold uppercase tracking-[0.18em] text-[#39e29b]">Ready for the next move?</p><h2 className="mt-3 text-2xl font-semibold tracking-[-0.04em] text-white">Trade with the full Quatava toolkit.</h2><p className="mt-2 text-sm text-slate-500">Advanced charts, risk controls, and one wallet for every strategy.</p></div><Link href="/register" className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-[#39e29b] px-5 py-3 text-sm font-bold text-[#05110d] transition hover:bg-[#68efb5]">Create free account<ArrowRight className="h-4 w-4" /></Link></div></section></main>;
 }

@@ -15,27 +15,19 @@ export default function Home(): React.JSX.Element {
   const { pages, currentPage, fetchPages, fetchPageById, isLoading, error } =
     usePagesStore();
   const [isClient, setIsClient] = useState(false);
-  const [isSettingsLoaded, setIsSettingsLoaded] = useState(false);
   const [loadingError, setLoadingError] = useState<string | null>(null);
 
-  // Handle hydration mismatch by only rendering conditional content on the client
+  // Mark the client boundary without blocking the public product surface.
   useEffect(() => {
     setIsClient(true);
-    // Give a small delay to ensure settings are hydrated
-    const timer = setTimeout(() => {
-      setIsSettingsLoaded(true);
-    }, 100);
-
-    return () => clearTimeout(timer);
   }, []);
 
-  // Check if frontend type is set to "builder" - only after settings are loaded
-  const isFrontendBuilder =
-    isSettingsLoaded && settings?.landingPageType === "CUSTOM";
+  // Custom builder content is opt-in; the product homepage is the safe default.
+  const isFrontendBuilder = settings?.landingPageType === "CUSTOM";
 
   // Fetch pages and home page content when in builder mode
   useEffect(() => {
-    if (isClient && isSettingsLoaded && isFrontendBuilder) {
+    if (isClient && isFrontendBuilder) {
       const loadHomePage = async () => {
         try {
           setLoadingError(null);
@@ -97,7 +89,6 @@ export default function Home(): React.JSX.Element {
     }
   }, [
     isClient,
-    isSettingsLoaded,
     isFrontendBuilder,
     currentPage?.id,
     fetchPages,
@@ -135,18 +126,6 @@ export default function Home(): React.JSX.Element {
       return null;
     }
   };
-
-  // Show loading state until settings are loaded
-  if (!isClient || !isSettingsLoaded) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading...</p>
-        </div>
-      </div>
-    );
-  }
 
   // Show error state if there's a loading error
   if (loadingError) {

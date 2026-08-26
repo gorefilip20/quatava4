@@ -53,6 +53,7 @@ export const metadata = {
 
 export default async (data: Handler) => {
   const { user, query } = data;
+  if (!user) throw createError(401, "Unauthorized access");
   const period = query?.period || "30d";
 
   // Find creator profile

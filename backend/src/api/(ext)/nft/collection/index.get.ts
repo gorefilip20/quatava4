@@ -119,7 +119,7 @@ export default async function (data: Handler) {
     const offset = (pageNum - 1) * limitNum;
 
     // Build where clause
-    const where: Record<string, any> = {};
+    const where: Record<string | symbol, any> = {};
 
     if (search) {
       where[Op.or] = [
@@ -146,7 +146,7 @@ export default async function (data: Handler) {
     }
 
     if (isVerified !== undefined) {
-      where.isVerified = isVerified === "true" || isVerified === true;
+      where.isVerified = isVerified === "true";
     }
 
     // Build order

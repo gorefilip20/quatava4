@@ -1,3 +1,19 @@
 packages:
   - "frontend"
   - "backend"
+allowBuilds:
+  '@parcel/watcher': true
+  '@reown/appkit': true
+  argon2: true
+  bcrypt: true
+  bigint-buffer: true
+  bufferutil: true
+  ccxt: true
+  esbuild: true
+  keccak: true
+  msgpackr-extract: true
+  protobufjs: true
+  sharp: true
+  unrs-resolver: true
+  utf-8-validate: true
+  zeromq: true
