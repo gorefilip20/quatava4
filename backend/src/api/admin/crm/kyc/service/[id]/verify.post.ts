@@ -5,6 +5,7 @@ import fs from "fs/promises";
 import path from "path";
 import { InlineDataPart, FileDataPart } from "@google/generative-ai";
 import { RedisSingleton } from "@b/utils/redis";
+import { evaluateSandboxKycDecision } from "@b/utils/sandbox";
 
 // Metadata for the endpoint
 export const metadata = {
@@ -160,6 +161,14 @@ export default async (data: {
       verificationResponse = await verifyWithSumSub(application, level);
     } else if (service.type === "GEMINI") {
       verificationResponse = await verifyWithGemini(application, level);
+    } else if (service.type === "SANDBOX") {
+      if (process.env.SANDBOX_MODE !== "true") {
+        throw createError({
+          statusCode: 403,
+          message: "Sandbox KYC is disabled outside SANDBOX_MODE",
+        });
+      }
+      verificationResponse = evaluateSandboxKycDecision(application.data);
     } else {
       throw createError({
         statusCode: 400,

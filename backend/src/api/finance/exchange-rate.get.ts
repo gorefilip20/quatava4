@@ -14,6 +14,7 @@ import {
   getSpotPriceInUSD,
   getEcoPriceInUSD,
 } from "./currency/utils";
+import { calculateVerifiedExchangeRate } from "@b/utils/sandbox";
 
 export const metadata: OperationObject = {
   summary: "Get exchange rate between two currencies",
@@ -151,7 +152,7 @@ export default async (data: Handler) => {
 
     // Calculate exchange rate: 1 fromCurrency = X toCurrency
     // Example: EUR ($1.05) to POL ($0.14) = 1.05 / 0.14 = 7.5 POL per EUR
-    const rate = fromPriceUSD / toPriceUSD;
+    const rate = calculateVerifiedExchangeRate(fromPriceUSD, toPriceUSD);
 
     return {
       rate,

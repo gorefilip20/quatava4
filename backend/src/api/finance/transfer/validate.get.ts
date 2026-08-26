@@ -85,9 +85,9 @@ export default async (data: Handler) => {
     // Check if recipient exists and is not the same as sender
     const recipient = await models.user.findOne({
       where: {
-        uuid: uuid,
+        id: uuid,
       },
-      attributes: ["id", "uuid", "firstName", "lastName", "email", "status"],
+      attributes: ["id", "firstName", "lastName", "email", "status"],
     });
 
     if (!recipient) {
@@ -117,7 +117,7 @@ export default async (data: Handler) => {
       exists: true,
       recipient: {
         id: recipient.id,
-        uuid: recipient.uuid,
+        uuid: recipient.id,
         firstName: recipient.firstName,
         lastName: recipient.lastName,
         email: recipient.email,

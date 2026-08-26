@@ -571,3 +571,26 @@ All features cannot be certified as working perfectly from a repository build al
 The transfer flow now treats cross-currency conversion as a verified-rate operation. When the exchange-rate endpoint returns an invalid, missing, zero, or unavailable rate, the receive amount is cleared, a clear warning is shown, and both the UI validation and store submission boundary block completion. Same-currency transfers continue to use a 1:1 rate, while client-to-client transfers retain their existing same-currency behavior. Transfer initialization no longer exposes a raw `Invalid response format` banner when the account backend is unavailable; it presents a clean account-required state instead.
 
 The final frontend production build passed after these changes. The backend production TypeScript build remains passing from the current release baseline. The optimized transfer route was reloaded successfully and no longer showed the raw API-format error.
+
+
+## Sandbox acceptance implementation — 26 Aug 2026
+
+An opt-in, non-production sandbox has been added for repeatable acceptance testing. Setting `SANDBOX_MODE=true` with a non-production `NODE_ENV` enables a guarded seeder that creates two deterministic users, funded database-only FIAT and SPOT wallets, active sandbox fiat rates for representative regional currencies, an approved KYC application, and a pending KYC application. The seeder refuses to run when `NODE_ENV=production`.
+
+The KYC admin verification flow now supports a `SANDBOX` provider only when sandbox mode is enabled. `PASS`, `FAIL`, and `PENDING` decisions persist through the existing verification-result and application-status lifecycle; no real document vendor is bypassed in production. The recipient validator now resolves the user primary key used by the user model instead of querying a non-existent `uuid` column, aligning validation with transfer execution.
+
+The backend Jest bootstrap was repaired, and a real unit suite now covers sandbox KYC decisions and positive/invalid exchange-rate math. The complete backend unit command passes with 4 tests. The backend production build passes, and the frontend production build passes. The sandbox database seeder itself was syntax-checked but could not be executed against a disposable MySQL/TiDB instance in this environment; that remains the first staging acceptance action.
+
+## Sandbox release evidence
+
+| Area | Status |
+| --- | --- |
+| Deterministic KYC helper tests | Passing: 4 tests |
+| Backend Jest setup | Repaired and executing |
+| Sandbox fixture seeder syntax | Passing `node --check` |
+| Backend production build | Passing |
+| Frontend production build | Passing |
+| Transfer initialization without backend | Stable account-required state |
+| Live database seeding | Not executed here; requires isolated MySQL/TiDB and Redis |
+| Real KYC vendor verification | Not executed; requires vendor sandbox credentials |
+| Real exchange/chain/fiat settlement | Not executed; requires provider sandboxes and funded testnet accounts |

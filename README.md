@@ -2,7 +2,7 @@
 
 Quatava is a full-stack crypto finance platform designed around one clear operating principle: reduce the distance between market insight and execution. The product combines exchange markets, spot trading, perpetuals, wallet and finance operations, earn products, peer-to-peer trading, NFT infrastructure, token launches, referrals, and an administrative control plane in a single localized web application.
 
-The public experience now uses a dark graphite trading-terminal direction with a neon green execution accent and restrained indigo signals. It is designed to feel calm during high-volatility moments: the landing page explains the platform, the market explorer exposes a usable snapshot even when the backend is offline, and live ticker services are adopted whenever the configured API and WebSocket services are available.
+The public experience now uses a bright premium finance direction with warm-white surfaces, deep navy typography, emerald execution accents, and restrained indigo signals. It is designed to stay clear across regions and devices: the landing page explains the platform, the market explorer exposes a usable snapshot even when the backend is offline, and live ticker services are adopted whenever the configured API and WebSocket services are available.
 
 ## Product surface
 
@@ -61,6 +61,8 @@ NODE_OPTIONS='--max-old-space-size=8192' pnpm --filter frontend type-check
 ```
 
 The repository has a very large frontend graph. If the type-check exceeds the available Node heap, use the successful production build plus the backend build as the release baseline and investigate the compiler graph separately rather than disabling runtime validation.
+
+For a repeatable non-production acceptance run, see [`docs/SANDBOX_ACCEPTANCE.md`](./docs/SANDBOX_ACCEPTANCE.md). It defines guarded test users, database-only wallets, deterministic KYC PASS/FAIL/PENDING outcomes, supported fiat rates, transfer tests, and the boundaries that must never be enabled in production.
 
 ## Production readiness notes
 

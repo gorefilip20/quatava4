@@ -6,6 +6,7 @@
     "baseUrl": ".",
     "module": "CommonJS",
     "target": "ES2018",
+    "types": ["node", "jest"],
     "paths": {
       "@b/*": ["src/*"],
       "@db/*": ["models/*"]
