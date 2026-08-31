@@ -1,32 +1,58 @@
 "use client";
 
-import { Activity, ArrowUpDown, DollarSign, RefreshCw } from "lucide-react";
+import { ArrowDownToLine, Send, RefreshCw, Shield } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 const ACTIONS = [
-  { label: "Trade", icon: Activity, href: "/trade" },
-  { label: "Swap", icon: ArrowUpDown, href: "/convert" },
-  { label: "Stake", icon: DollarSign, href: "/staking" },
-  { label: "Convert", icon: RefreshCw, href: "/convert" },
+  {
+    label: "Deposit",
+    icon: ArrowDownToLine,
+    href: "/finance/deposit",
+    bg: "bg-primary/[0.08]",
+    text: "text-primary",
+  },
+  {
+    label: "Send",
+    icon: Send,
+    href: "/finance/withdraw",
+    bg: "bg-success/[0.08]",
+    text: "text-success",
+  },
+  {
+    label: "Convert",
+    icon: RefreshCw,
+    href: "/convert",
+    bg: "bg-warning/[0.08]",
+    text: "text-warning",
+  },
+  {
+    label: "Shield",
+    icon: Shield,
+    href: "/dollar-shield",
+    bg: "bg-destructive/[0.08]",
+    text: "text-destructive",
+  },
 ];
 
 export function QuickActions() {
   const router = useRouter();
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+    <div className="grid grid-cols-4 gap-3">
       {ACTIONS.map((action) => {
         const Icon = action.icon;
         return (
           <button
             key={action.label}
             onClick={() => router.push(action.href)}
-            className="flex flex-col items-center gap-2 p-4 bg-card dark:bg-[#161B22] border border-border cursor-pointer text-foreground hover:bg-[var(--quatava-blue-100)] dark:hover:bg-[rgba(51,117,187,0.1)] transition-colors"
+            className="flex flex-col items-center gap-2.5 py-5 bg-card border border-border cursor-pointer text-foreground hover:border-primary transition-colors"
           >
-            <div className="w-9 h-9 flex items-center justify-center bg-[var(--quatava-blue-100)] dark:bg-[rgba(51,117,187,0.15)] text-primary">
-              <Icon className="w-[18px] h-[18px]" />
+            <div
+              className={`w-11 h-11 flex items-center justify-center ${action.bg}`}
+            >
+              <Icon className={`w-5 h-5 ${action.text}`} />
             </div>
-            <span className="text-xs font-semibold">{action.label}</span>
+            <span className="text-[12px] font-bold">{action.label}</span>
           </button>
         );
       })}
