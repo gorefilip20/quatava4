@@ -22,6 +22,20 @@ import {
   Moon,
   Menu,
   X,
+  Shield,
+  Send,
+  CreditCard,
+  QrCode,
+  PiggyBank,
+  Zap,
+  Banknote,
+  Gift,
+  Users,
+  Eye,
+  Landmark,
+  FileText,
+  BarChart3,
+  Store,
 } from "lucide-react";
 
 const SIDEBAR_SECTIONS = [
@@ -41,11 +55,45 @@ const SIDEBAR_SECTIONS = [
     ],
   },
   {
+    label: "Protect & Save",
+    items: [
+      { key: "dollar-shield", title: "Dollar Shield", href: "/dollar-shield", icon: Shield },
+      { key: "savings", title: "Savings Vaults", href: "/savings", icon: PiggyBank },
+      { key: "savings-groups", title: "Savings Circles", href: "/savings-groups", icon: Users },
+    ],
+  },
+  {
+    label: "Spend & Pay",
+    items: [
+      { key: "card", title: "Quatava Card", href: "/card", icon: CreditCard },
+      { key: "qr-pay", title: "QR Pay", href: "/qr-pay", icon: QrCode },
+      { key: "billpay", title: "Bill Pay", href: "/billpay", icon: Zap },
+      { key: "remittance", title: "Send Money", href: "/remittance", icon: Send },
+    ],
+  },
+  {
     label: "Invest",
     items: [
       { key: "staking", title: "Staking", href: "/staking", icon: DollarSign },
-      { key: "nft", title: "NFT Marketplace", href: "/nft", icon: Image },
       { key: "ai", title: "AI Investment", href: "/ai-investment", icon: Clock },
+      { key: "nft", title: "NFT Marketplace", href: "/nft", icon: Image },
+      { key: "loans", title: "Crypto Loans", href: "/loans", icon: Landmark },
+    ],
+  },
+  {
+    label: "Earn",
+    items: [
+      { key: "payroll", title: "Crypto Payroll", href: "/payroll", icon: Banknote },
+      { key: "referral", title: "Quatava Circle", href: "/referral", icon: Gift },
+      { key: "merchant", title: "Merchant Gateway", href: "/merchant", icon: Store },
+    ],
+  },
+  {
+    label: "Insights",
+    items: [
+      { key: "inflation", title: "Inflation Tracker", href: "/inflation", icon: BarChart3 },
+      { key: "tax", title: "Tax Reports", href: "/tax", icon: FileText },
+      { key: "transparency", title: "Transparency", href: "/transparency", icon: Eye },
     ],
   },
   {
@@ -176,7 +224,7 @@ export function UserDashboardShell({ children }: { children: ReactNode }) {
       {/* Layout: Sidebar + Main */}
       <div className="grid grid-cols-1 lg:grid-cols-[220px_1fr] min-h-[calc(100vh-56px)]">
         {/* Desktop Sidebar */}
-        <aside className="hidden lg:flex flex-col gap-1 bg-card dark:bg-[#161B22] border-r border-border py-6">
+        <aside className="hidden lg:flex flex-col gap-1 bg-card dark:bg-[#161B22] border-r border-border py-6 overflow-y-auto">
           <SidebarContent pathname={pathname} router={router} />
         </aside>
 
@@ -206,8 +254,8 @@ export function UserDashboardShell({ children }: { children: ReactNode }) {
         {[
           { icon: Home, label: "Home", href: "/user/dashboard" },
           { icon: Wallet, label: "Wallet", href: "/finance/wallet" },
+          { icon: Shield, label: "Protect", href: "/dollar-shield" },
           { icon: Activity, label: "Trade", href: "/trade/BTCUSDT" },
-          { icon: RefreshCw, label: "Convert", href: "/convert" },
           { icon: Settings, label: "More", href: "/user/profile" },
         ].map((item) => {
           const Icon = item.icon;
