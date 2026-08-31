@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ArrowDown, ArrowUpDown, ArrowUp, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { $fetch } from "@/lib/api";
 
 interface Transaction {
@@ -18,44 +18,99 @@ interface Transaction {
   };
 }
 
-function getIcon(type: string) {
-  if (type.includes("INCOMING") || type.includes("DEPOSIT")) return ArrowDown;
-  if (type.includes("OUTGOING") || type.includes("WITHDRAW")) return ArrowUp;
-  return ArrowUpDown;
-}
+const MOCK_ACTIVITY = [
+  {
+    id: "1",
+    type: "deposit",
+    title: "USDT Deposit",
+    amount: "+500.00 USDT",
+    time: "2 hours ago",
+    borderColor: "bg-success",
+  },
+  {
+    id: "2",
+    type: "withdrawal",
+    title: "BTC Withdrawal",
+    amount: "-0.005 BTC",
+    time: "5 hours ago",
+    borderColor: "bg-destructive",
+  },
+  {
+    id: "3",
+    type: "trade",
+    title: "ETH/USDT Buy",
+    amount: "+0.42 ETH",
+    time: "8 hours ago",
+    borderColor: "bg-primary",
+  },
+  {
+    id: "4",
+    type: "deposit",
+    title: "Bank Transfer (ARS)",
+    amount: "+25,000 ARS",
+    time: "1 day ago",
+    borderColor: "bg-success",
+  },
+  {
+    id: "5",
+    type: "trade",
+    title: "BTC/USDT Sell",
+    amount: "-0.012 BTC",
+    time: "1 day ago",
+    borderColor: "bg-primary",
+  },
+  {
+    id: "6",
+    type: "withdrawal",
+    title: "USDC Send",
+    amount: "-150.00 USDC",
+    time: "2 days ago",
+    borderColor: "bg-destructive",
+  },
+];
 
-function getColor(type: string) {
-  if (type.includes("INCOMING") || type.includes("DEPOSIT")) return "text-success";
-  if (type.includes("OUTGOING") || type.includes("WITHDRAW")) return "text-destructive";
-  return "text-primary";
+function getBorderColor(type: string) {
+  if (type.includes("INCOMING") || type.includes("DEPOSIT")) return "bg-success";
+  if (type.includes("OUTGOING") || type.includes("WITHDRAW")) return "bg-destructive";
+  return "bg-primary";
 }
 
 function formatAmount(tx: Transaction) {
   const currency = tx.wallet?.currency || "";
   const amount = tx.amount.toLocaleString("en-US", { maximumFractionDigits: 8 });
-
-  if (tx.type.includes("INCOMING") || tx.type.includes("DEPOSIT")) {
+  if (tx.type.includes("INCOMING") || tx.type.includes("DEPOSIT"))
     return `+${amount} ${currency}`;
-  }
-  if (tx.type.includes("OUTGOING") || tx.type.includes("WITHDRAW")) {
+  if (tx.type.includes("OUTGOING") || tx.type.includes("WITHDRAW"))
     return `-${amount} ${currency}`;
-  }
   return `${amount} ${currency}`;
 }
 
 function formatType(type: string, description: string) {
-  if (description) return description.length > 30 ? description.slice(0, 30) + "..." : description;
-
+  if (description)
+    return description.length > 28 ? description.slice(0, 28) + "..." : description;
   const labels: Record<string, string> = {
     INCOMING_TRANSFER: "Received",
     OUTGOING_TRANSFER: "Sent",
     DEPOSIT: "Deposit",
     WITHDRAW: "Withdrawal",
     TRADE: "Trade",
-    BINARY_ORDER: "Binary Order",
-    INVESTMENT: "Investment",
   };
-  return labels[type] || type.replace(/_/g, " ").toLowerCase().replace(/^\w/, (c) => c.toUpperCase());
+  return (
+    labels[type] ||
+    type
+      .replace(/_/g, " ")
+      .toLowerCase()
+      .replace(/^\w/, (c) => c.toUpperCase())
+  );
+}
+
+function timeAgo(dateStr: string) {
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const hours = Math.floor(diff / 3600000);
+  if (hours < 1) return "Just now";
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  return `${days}d ago`;
 }
 
 export function RecentActivity() {
@@ -67,7 +122,7 @@ export function RecentActivity() {
       const { data } = await $fetch<{ data: Transaction[] }>({
         url: "/api/finance/transaction",
         method: "GET",
-        params: { perPage: 5, sortField: "createdAt", sortOrder: "desc" },
+        params: { perPage: 6, sortField: "createdAt", sortOrder: "desc" },
         silent: true,
       });
       if (data?.data) {
@@ -78,59 +133,99 @@ export function RecentActivity() {
     load();
   }, []);
 
+  const showMock = transactions.length === 0 && !loading;
+
   return (
-    <div className="bg-card dark:bg-[#161B22] border border-border p-4">
-      <div className="flex justify-between items-center mb-4">
-        <span className="font-extrabold text-sm tracking-tight">
+    <div className="bg-card border border-border">
+      <div className="flex justify-between items-center px-5 py-4 border-b border-border">
+        <span className="font-extrabold text-[15px] tracking-tight">
           Recent Activity
         </span>
         <a
           href="/finance/transaction"
-          className="text-xs text-primary font-semibold no-underline hover:underline"
+          className="text-[12px] text-primary font-bold no-underline hover:underline"
         >
           History
         </a>
       </div>
 
       {loading ? (
-        <div className="flex items-center justify-center py-6 text-muted-foreground">
+        <div className="flex items-center justify-center py-12 text-muted-foreground">
           <Loader2 className="w-4 h-4 animate-spin mr-2" />
-          Loading...
+          <span className="text-[13px]">Loading...</span>
         </div>
-      ) : transactions.length === 0 ? (
-        <div className="py-6 text-center text-sm text-muted-foreground">
-          No recent activity.
+      ) : showMock ? (
+        <div className="divide-y divide-border/50">
+          {MOCK_ACTIVITY.map((item) => (
+            <div
+              key={item.id}
+              className="flex items-stretch hover:bg-foreground/[0.02] transition-colors"
+            >
+              {/* Colored left stripe */}
+              <div className={`w-[3px] ${item.borderColor} shrink-0`} />
+              <div className="flex-1 flex justify-between items-center px-4 py-3.5">
+                <div>
+                  <span className="text-[13px] font-semibold block leading-tight">
+                    {item.title}
+                  </span>
+                  <span className="text-[11px] text-muted-foreground">
+                    {item.time}
+                  </span>
+                </div>
+                <span
+                  className={`text-[13px] font-bold tabular-nums ${
+                    item.type === "deposit"
+                      ? "text-success"
+                      : item.type === "withdrawal"
+                        ? "text-destructive"
+                        : "text-primary"
+                  }`}
+                >
+                  {item.amount}
+                </span>
+              </div>
+            </div>
+          ))}
         </div>
       ) : (
-        transactions.map((tx) => {
-          const Icon = getIcon(tx.type);
-          const color = getColor(tx.type);
-          return (
-            <div
-              key={tx.id}
-              className="flex justify-between items-center py-2.5 border-b border-border/50 last:border-b-0 text-sm"
-            >
-              <div className="flex items-center gap-2.5">
-                <div className={`w-7 h-7 flex items-center justify-center ${color}`}>
-                  <Icon className="w-4 h-4" />
-                </div>
-                <div>
-                  <div className="font-semibold">{formatType(tx.type, tx.description)}</div>
-                  <div className="text-[11px] text-muted-foreground">
-                    {new Date(tx.createdAt).toLocaleDateString("en-US", {
-                      month: "short",
-                      day: "numeric",
-                      year: "numeric",
-                    })}
+        <div className="divide-y divide-border/50">
+          {transactions.map((tx) => {
+            const borderColor = getBorderColor(tx.type);
+            const isIn =
+              tx.type.includes("INCOMING") || tx.type.includes("DEPOSIT");
+            const isOut =
+              tx.type.includes("OUTGOING") || tx.type.includes("WITHDRAW");
+            return (
+              <div
+                key={tx.id}
+                className="flex items-stretch hover:bg-foreground/[0.02] transition-colors"
+              >
+                <div className={`w-[3px] ${borderColor} shrink-0`} />
+                <div className="flex-1 flex justify-between items-center px-4 py-3.5">
+                  <div>
+                    <span className="text-[13px] font-semibold block leading-tight">
+                      {formatType(tx.type, tx.description)}
+                    </span>
+                    <span className="text-[11px] text-muted-foreground">
+                      {timeAgo(tx.createdAt)}
+                    </span>
                   </div>
+                  <span
+                    className={`text-[13px] font-bold tabular-nums ${
+                      isIn
+                        ? "text-success"
+                        : isOut
+                          ? "text-destructive"
+                          : "text-primary"
+                    }`}
+                  >
+                    {formatAmount(tx)}
+                  </span>
                 </div>
               </div>
-              <span className={`font-semibold tabular-nums ${color}`}>
-                {formatAmount(tx)}
-              </span>
-            </div>
-          );
-        })
+            );
+          })}
+        </div>
       )}
     </div>
   );

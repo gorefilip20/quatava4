@@ -2,14 +2,10 @@
 
 import { useEffect, useState } from "react";
 import {
-  BarChart3,
-  TrendingDown,
-  AlertTriangle,
-  Shield,
-  DollarSign,
   Share2,
   Bell,
-  Globe,
+  CheckCircle,
+  ArrowDown,
 } from "lucide-react";
 import { $fetch } from "@/lib/api";
 import { useUserStore } from "@/store/user";
@@ -35,18 +31,25 @@ const COUNTRIES: CountryInflation[] = [
   { country: "Uruguay", flag: "\u{1F1FA}\u{1F1FE}", currencyCode: "UYU", inflationRate: 5.8, devaluation: -9.3, currentWorth: 907 },
 ];
 
-function getInflationColor(rate: number): string {
-  if (rate >= 50) return "text-red-500";
-  if (rate >= 10) return "text-orange-500";
-  if (rate >= 5) return "text-yellow-600 dark:text-yellow-500";
-  return "text-emerald-500";
+function severityColor(rate: number): string {
+  if (rate >= 50) return "#EF4444";
+  if (rate >= 10) return "#F97316";
+  if (rate >= 5) return "#EAB308";
+  return "#10B981";
 }
 
-function getInflationBg(rate: number): string {
-  if (rate >= 50) return "bg-red-500";
-  if (rate >= 10) return "bg-orange-500";
-  if (rate >= 5) return "bg-yellow-500";
-  return "bg-emerald-500";
+function severityTextClass(rate: number): string {
+  if (rate >= 50) return "text-destructive";
+  if (rate >= 10) return "text-warning";
+  if (rate >= 5) return "text-warning";
+  return "text-success";
+}
+
+function severityBgClass(rate: number): string {
+  if (rate >= 50) return "bg-destructive";
+  if (rate >= 10) return "bg-[#F97316]";
+  if (rate >= 5) return "bg-[#EAB308]";
+  return "bg-success";
 }
 
 export default function InflationClient() {
@@ -121,330 +124,325 @@ export default function InflationClient() {
 
   const avgInflation =
     countries.reduce((sum, c) => sum + c.inflationRate, 0) / countries.length;
-  const highInflationCount = countries.filter((c) => c.inflationRate >= 10).length;
+
+  // Sort countries by inflation rate descending for the bar chart
+  const sortedCountries = [...countries].sort(
+    (a, b) => b.inflationRate - a.inflationRate
+  );
 
   return (
     <UserDashboardShell>
-      <div className="space-y-6">
-        {/* Header */}
-        <div>
-          <h1 className="text-[28px] font-extrabold tracking-[-0.02em]">
-            Inflation Tracker
-          </h1>
-          <p className="text-[13px] text-muted-foreground mt-1">
-            See how much you're saving by holding dollars
-          </p>
-        </div>
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-8">
+        {/* Main column */}
+        <div className="space-y-10">
+          {/* --- Editorial headline --- */}
+          <header className="pt-4 pb-2">
+            <p className="text-[10px] uppercase tracking-[0.1em] font-bold text-muted-foreground mb-3">
+              Latin America Inflation Report
+            </p>
+            <h1 className="text-[36px] sm:text-[48px] font-extrabold tracking-[-0.03em] leading-[1.05]">
+              Your Money Is
+              <br />
+              Losing Value
+            </h1>
+            <div className="mt-5 flex items-baseline gap-3">
+              <span className="text-[56px] sm:text-[72px] font-extrabold tracking-[-0.04em] leading-none text-destructive tabular-nums">
+                {avgInflation.toFixed(1)}%
+              </span>
+              <div className="flex flex-col">
+                <span className="text-[13px] font-bold text-muted-foreground">
+                  average annual inflation
+                </span>
+                <span className="text-[12px] text-muted-foreground">
+                  across {countries.length} tracked economies
+                </span>
+              </div>
+            </div>
+            <div className="w-full h-px bg-border mt-6" />
+          </header>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-          <div className="bg-card border border-border p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <div className="w-8 h-8 flex items-center justify-center bg-primary/[0.08]">
-                <Globe className="w-4 h-4 text-primary" />
-              </div>
-              <span className="text-[10px] uppercase tracking-[0.06em] text-muted-foreground font-bold">
-                Countries Tracked
-              </span>
-            </div>
-            <div className="text-[20px] font-extrabold">{countries.length}</div>
-          </div>
-          <div className="bg-card border border-border p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <div className="w-8 h-8 flex items-center justify-center bg-red-500/[0.08]">
-                <TrendingDown className="w-4 h-4 text-red-500" />
-              </div>
-              <span className="text-[10px] uppercase tracking-[0.06em] text-muted-foreground font-bold">
-                Avg Inflation
-              </span>
-            </div>
-            <div className="text-[20px] font-extrabold text-red-500">
-              {avgInflation.toFixed(1)}%
-            </div>
-          </div>
-          <div className="bg-card border border-border p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <div className="w-8 h-8 flex items-center justify-center bg-orange-500/[0.08]">
-                <AlertTriangle className="w-4 h-4 text-orange-500" />
-              </div>
-              <span className="text-[10px] uppercase tracking-[0.06em] text-muted-foreground font-bold">
-                High Inflation
-              </span>
-            </div>
-            <div className="text-[20px] font-extrabold text-orange-500">
-              {highInflationCount}
-            </div>
-          </div>
-          <div className="bg-card border border-border p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <div className="w-8 h-8 flex items-center justify-center bg-success/[0.08]">
-                <Shield className="w-4 h-4 text-success" />
-              </div>
-              <span className="text-[10px] uppercase tracking-[0.06em] text-muted-foreground font-bold">
-                USDT Stability
-              </span>
-            </div>
-            <div className="text-[20px] font-extrabold text-success">$1.00</div>
-          </div>
-        </div>
+          {/* --- Purchasing Power Bar Chart (centerpiece) --- */}
+          <section>
+            <h2 className="text-[18px] font-extrabold tracking-[-0.01em] mb-1">
+              $1,000 After One Year
+            </h2>
+            <p className="text-[13px] text-muted-foreground mb-6">
+              What happens to $1,000 held in local currency vs. USDT over 12 months.
+            </p>
 
-        {/* Main Content */}
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-6">
-          {/* Country Cards */}
-          <div className="space-y-6">
-            <h2 className="text-[18px] font-bold">Country Inflation Rates</h2>
+            {isLoading ? (
+              <div className="space-y-4">
+                {[1, 2, 3, 4].map((i) => (
+                  <div key={i} className="animate-pulse">
+                    <div className="h-4 bg-muted w-24 mb-2" />
+                    <div className="h-7 bg-muted w-full mb-1" />
+                    <div className="h-7 bg-muted w-full" />
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="space-y-5">
+                {sortedCountries.map((c) => {
+                  const localPct = Math.max((c.currentWorth / 1000) * 100, 5);
+                  return (
+                    <div key={c.currencyCode}>
+                      {/* Country label row */}
+                      <div className="flex items-center gap-2 mb-1.5">
+                        <span className="text-[20px] leading-none">{c.flag}</span>
+                        <span className="text-[13px] font-bold">{c.country}</span>
+                        <span className="text-[11px] text-muted-foreground font-semibold ml-auto tabular-nums">
+                          {c.currencyCode}
+                        </span>
+                      </div>
+                      {/* Bars */}
+                      <div className="flex items-stretch gap-px">
+                        {/* Local currency bar */}
+                        <div
+                          className="relative h-8 flex items-center transition-all duration-500"
+                          style={{
+                            width: `${localPct}%`,
+                            backgroundColor: severityColor(c.inflationRate),
+                            opacity: 0.85,
+                          }}
+                        >
+                          <span className="absolute right-2 text-[11px] font-extrabold text-white tabular-nums whitespace-nowrap">
+                            ${c.currentWorth}
+                          </span>
+                        </div>
+                        {/* Lost portion (gap visual) */}
+                        <div
+                          className="h-8"
+                          style={{
+                            width: `${100 - localPct}%`,
+                            background: "repeating-linear-gradient(135deg, transparent, transparent 3px, var(--border) 3px, var(--border) 4px)",
+                            opacity: 0.3,
+                          }}
+                        />
+                      </div>
+                      {/* USDT bar */}
+                      <div className="mt-px">
+                        <div className="relative h-8 w-full bg-success flex items-center">
+                          <span className="absolute right-2 text-[11px] font-extrabold text-white tabular-nums">
+                            $1,000
+                          </span>
+                          <span className="absolute left-2 text-[10px] font-bold text-white/80 uppercase tracking-wider">
+                            USDT
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+
+                {/* Legend */}
+                <div className="flex items-center gap-6 pt-2">
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-3 bg-[#F97316] opacity-85" />
+                    <span className="text-[11px] text-muted-foreground font-semibold">
+                      Local Currency (colored by severity)
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-3 bg-success" />
+                    <span className="text-[11px] text-muted-foreground font-semibold">
+                      USDT
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
+          </section>
+
+          {/* --- Country deep-dive cards --- */}
+          <section>
+            <h2 className="text-[18px] font-extrabold tracking-[-0.01em] mb-1">
+              Country Breakdown
+            </h2>
+            <p className="text-[13px] text-muted-foreground mb-5">
+              Annual inflation rates and purchasing power erosion by country.
+            </p>
 
             {isLoading ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {[1, 2, 3, 4].map((i) => (
                   <div key={i} className="bg-card border border-border p-5 animate-pulse">
                     <div className="h-5 bg-muted w-1/3 mb-3" />
-                    <div className="h-8 bg-muted w-1/4 mb-2" />
-                    <div className="h-4 bg-muted w-2/3 mb-2" />
-                    <div className="h-4 bg-muted w-full" />
+                    <div className="h-10 bg-muted w-1/4 mb-2" />
+                    <div className="h-3 bg-muted w-full mb-2" />
+                    <div className="h-4 bg-muted w-2/3" />
                   </div>
                 ))}
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {countries.map((c) => (
-                  <div key={c.currencyCode} className="bg-card border border-border p-5">
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="flex items-center gap-2">
-                        <span className="text-[22px]">{c.flag}</span>
-                        <div>
-                          <h3 className="font-bold text-[14px]">{c.country}</h3>
-                          <span className="text-[11px] text-muted-foreground font-semibold">
-                            {c.currencyCode}
-                          </span>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <div className={`text-[24px] font-extrabold ${getInflationColor(c.inflationRate)}`}>
-                          {c.inflationRate}%
-                        </div>
-                        <span className="text-[10px] uppercase tracking-[0.06em] text-muted-foreground font-bold">
-                          Annual Inflation
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="border-t border-border pt-3 space-y-2">
-                      <div className="flex items-center justify-between">
-                        <span className="text-[12px] text-muted-foreground">
-                          Currency Devaluation
-                        </span>
-                        <span className="text-[13px] font-bold text-red-500">
-                          {c.devaluation}%
-                        </span>
-                      </div>
-                      <div className="text-[12px] text-muted-foreground">
-                        If you held{" "}
-                        <span className="font-semibold text-foreground">$1,000</span>{" "}
-                        in {c.currencyCode} a year ago, it's now worth{" "}
-                        <span className="font-semibold text-foreground">
-                          ${c.currentWorth}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* Dollar Comparison Chart */}
-            <div className="bg-card border border-border p-5">
-              <div className="flex items-center gap-2 mb-4">
-                <BarChart3 className="w-5 h-5 text-primary" />
-                <h2 className="text-[16px] font-bold">
-                  $1,000 After 1 Year: Local Currency vs USDT
-                </h2>
-              </div>
-
-              <div className="space-y-3">
-                {countries.map((c) => {
-                  const localWidth = Math.max((c.currentWorth / 1000) * 100, 8);
+                {sortedCountries.map((c) => {
+                  const gaugeWidth = Math.min((c.inflationRate / 220) * 100, 100);
                   return (
-                    <div key={c.currencyCode} className="flex items-center gap-3">
-                      <div className="w-12 text-[12px] font-bold shrink-0">
-                        {c.currencyCode}
-                      </div>
-                      <div className="flex-1 space-y-1">
-                        {/* Local currency bar */}
-                        <div className="flex items-center gap-2">
-                          <div
-                            className={`h-5 ${getInflationBg(c.inflationRate)} opacity-70 transition-all`}
-                            style={{ width: `${localWidth}%` }}
-                          />
-                          <span className="text-[11px] font-semibold text-muted-foreground shrink-0">
-                            ${c.currentWorth}
-                          </span>
+                    <div
+                      key={c.currencyCode}
+                      className="bg-card border border-border relative overflow-hidden"
+                      style={{
+                        borderLeftWidth: "4px",
+                        borderLeftColor: severityColor(c.inflationRate),
+                      }}
+                    >
+                      <div className="p-5">
+                        {/* Flag + country */}
+                        <div className="flex items-start gap-3 mb-4">
+                          <span className="text-[32px] leading-none">{c.flag}</span>
+                          <div className="flex-1 min-w-0">
+                            <h3 className="text-[15px] font-bold leading-tight">
+                              {c.country}
+                            </h3>
+                            <span className="text-[11px] text-muted-foreground font-semibold">
+                              {c.currencyCode}
+                            </span>
+                          </div>
+                          {/* Big inflation number */}
+                          <div className="text-right shrink-0">
+                            <div
+                              className={`text-[32px] font-extrabold leading-none tabular-nums ${severityTextClass(c.inflationRate)}`}
+                            >
+                              {c.inflationRate}%
+                            </div>
+                            <span className="text-[10px] uppercase tracking-[0.06em] font-bold text-muted-foreground">
+                              Annual
+                            </span>
+                          </div>
                         </div>
-                        {/* USDT bar */}
-                        <div className="flex items-center gap-2">
-                          <div
-                            className="h-5 bg-emerald-500 transition-all"
-                            style={{ width: "100%" }}
-                          />
-                          <span className="text-[11px] font-semibold text-emerald-500 shrink-0">
-                            $1,000
-                          </span>
+
+                        {/* Inflation gauge */}
+                        <div className="mb-4">
+                          <div className="h-1.5 w-full bg-muted/50 relative">
+                            <div
+                              className={`h-full transition-all duration-700 ${severityBgClass(c.inflationRate)}`}
+                              style={{ width: `${gaugeWidth}%` }}
+                            />
+                          </div>
+                        </div>
+
+                        {/* Stats row */}
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <span className="text-[10px] uppercase tracking-[0.06em] font-bold text-muted-foreground block mb-0.5">
+                              Devaluation
+                            </span>
+                            <span className="text-[15px] font-extrabold text-destructive tabular-nums">
+                              {c.devaluation}%
+                            </span>
+                          </div>
+                          <div>
+                            <span className="text-[10px] uppercase tracking-[0.06em] font-bold text-muted-foreground block mb-0.5">
+                              $1,000 Now Worth
+                            </span>
+                            <span className="text-[15px] font-extrabold tabular-nums">
+                              ${c.currentWorth}
+                            </span>
+                          </div>
                         </div>
                       </div>
                     </div>
                   );
                 })}
               </div>
-
-              <div className="flex items-center gap-4 mt-4 pt-3 border-t border-border">
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 bg-orange-500 opacity-70" />
-                  <span className="text-[11px] text-muted-foreground">Local Currency</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 bg-emerald-500" />
-                  <span className="text-[11px] text-muted-foreground">USDT</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Sidebar */}
-          <div className="space-y-4">
-            {/* Personal Savings (auth'd only) */}
-            {user && (
-              <div className="bg-card border border-border p-5">
-                <div className="flex items-center gap-2 mb-4">
-                  <Shield className="w-5 h-5 text-primary" />
-                  <h3 className="text-[15px] font-bold">Your Savings</h3>
-                </div>
-
-                <div className="space-y-4">
-                  <div>
-                    <span className="text-[10px] uppercase tracking-[0.06em] text-muted-foreground font-bold block mb-1">
-                      Total USDT Holdings
-                    </span>
-                    <div className="text-[24px] font-extrabold">
-                      ${totalHoldings.toLocaleString("en-US", { minimumFractionDigits: 2 })}
-                    </div>
-                  </div>
-
-                  <div className="border-t border-border pt-4">
-                    <span className="text-[10px] uppercase tracking-[0.06em] text-muted-foreground font-bold block mb-1">
-                      Value Preserved This Month
-                    </span>
-                    <div className="text-[20px] font-extrabold text-success">
-                      +${savedThisMonth.toFixed(2)}
-                    </div>
-                    <p className="text-[11px] text-muted-foreground mt-1">
-                      Based on avg regional inflation vs your USDT position
-                    </p>
-                  </div>
-                </div>
-              </div>
             )}
+          </section>
 
-            {/* Shareable Card */}
-            {user && (
-              <div className="bg-primary/[0.08] border border-primary/20 p-5">
-                <div className="flex items-center gap-2 mb-3">
-                  <Share2 className="w-4 h-4 text-primary" />
-                  <span className="text-[13px] font-bold">Share Your Progress</span>
-                </div>
-                <div className="bg-card border border-border p-4 mb-3">
-                  <p className="text-[13px] font-semibold text-center">
-                    I protected{" "}
-                    <span className="text-success font-extrabold">
-                      ${savedThisMonth.toFixed(2)}
-                    </span>{" "}
-                    from inflation this month with Quatava
+          {/* --- USDT Stability Row --- */}
+          <section className="bg-success/[0.06] border border-success/20 p-5">
+            <div className="flex items-center justify-between flex-wrap gap-4">
+              <div className="flex items-center gap-3">
+                <CheckCircle className="w-6 h-6 text-success shrink-0" />
+                <div>
+                  <p className="text-[16px] font-extrabold">
+                    $1,000 in USDT = $1,000
+                  </p>
+                  <p className="text-[12px] text-muted-foreground">
+                    Stablecoins maintain purchasing power regardless of local inflation.
                   </p>
                 </div>
-                <button
-                  onClick={handleShare}
-                  className="w-full py-2.5 bg-primary text-white text-[13px] font-bold flex items-center justify-center gap-2 hover:bg-primary/90 transition-colors border-0 cursor-pointer"
-                >
-                  <Share2 className="w-4 h-4" />
-                  Share
-                </button>
               </div>
-            )}
-
-            {/* Alert Signup */}
-            <div className="bg-card border border-border p-5">
-              <div className="flex items-center gap-2 mb-3">
-                <Bell className="w-5 h-5 text-primary" />
-                <h3 className="text-[15px] font-bold">Devaluation Alerts</h3>
-              </div>
-              <p className="text-[12px] text-muted-foreground mb-4">
-                Get weekly alerts on currency devaluation across Latin America
-              </p>
-
-              <div className="flex items-center justify-between">
-                <span className="text-[13px] font-semibold">
-                  Weekly Alerts
+              <div className="flex items-center gap-2 text-success">
+                <span className="text-[10px] uppercase tracking-[0.06em] font-bold">
+                  Always $1.00
                 </span>
-                <button
-                  onClick={handleToggleAlerts}
-                  className={`relative w-11 h-6 border-0 cursor-pointer transition-colors ${
-                    alertsEnabled ? "bg-success" : "bg-muted"
-                  }`}
-                >
-                  <div
-                    className={`absolute top-0.5 w-5 h-5 bg-white transition-transform ${
-                      alertsEnabled ? "left-[22px]" : "left-0.5"
-                    }`}
-                  />
-                </button>
-              </div>
-
-              {alertsEnabled && (
-                <p className="text-[11px] text-success mt-2 font-semibold">
-                  You'll receive weekly devaluation reports
-                </p>
-              )}
-            </div>
-
-            {/* Why Hold Dollars */}
-            <div className="bg-card border border-border p-5">
-              <h3 className="text-[15px] font-bold mb-3">Why Hold Stablecoins?</h3>
-              <div className="space-y-3">
-                {[
-                  {
-                    icon: Shield,
-                    title: "Inflation Protection",
-                    desc: "Your $1 stays $1 while local currencies lose value",
-                  },
-                  {
-                    icon: DollarSign,
-                    title: "Dollar Stability",
-                    desc: "USDT is pegged 1:1 to the US dollar",
-                  },
-                  {
-                    icon: Globe,
-                    title: "Borderless",
-                    desc: "Send and receive across any country instantly",
-                  },
-                ].map((item) => {
-                  const Icon = item.icon;
-                  return (
-                    <div key={item.title} className="flex items-start gap-3">
-                      <div className="w-8 h-8 flex items-center justify-center bg-primary/[0.08] shrink-0">
-                        <Icon className="w-4 h-4 text-primary" />
-                      </div>
-                      <div>
-                        <h4 className="text-[13px] font-bold">{item.title}</h4>
-                        <p className="text-[11px] text-muted-foreground">
-                          {item.desc}
-                        </p>
-                      </div>
-                    </div>
-                  );
-                })}
+                <div className="w-2 h-2 bg-success" />
               </div>
             </div>
-          </div>
+          </section>
         </div>
+
+        {/* --- Sidebar (desktop only) --- */}
+        <aside className="hidden lg:block space-y-5 pt-4">
+          {/* Personal savings */}
+          {user && (
+            <div className="bg-card border border-border p-5">
+              <span className="text-[10px] uppercase tracking-[0.06em] font-bold text-muted-foreground block mb-3">
+                Your Holdings
+              </span>
+              <div className="text-[28px] font-extrabold tabular-nums leading-tight">
+                ${totalHoldings.toLocaleString("en-US", { minimumFractionDigits: 2 })}
+              </div>
+              <span className="text-[11px] text-muted-foreground">in USDT</span>
+
+              <div className="w-full h-px bg-border my-4" />
+
+              <span className="text-[10px] uppercase tracking-[0.06em] font-bold text-muted-foreground block mb-1">
+                Value Preserved This Month
+              </span>
+              <div className="text-[20px] font-extrabold text-success tabular-nums">
+                +${savedThisMonth.toFixed(2)}
+              </div>
+              <p className="text-[11px] text-muted-foreground mt-1">
+                vs avg regional inflation on your position
+              </p>
+            </div>
+          )}
+
+          {/* Devaluation alerts toggle */}
+          <div className="bg-card border border-border p-5">
+            <div className="flex items-center gap-2 mb-3">
+              <Bell className="w-4 h-4 text-primary" />
+              <span className="text-[13px] font-bold">Weekly Alerts</span>
+            </div>
+            <p className="text-[12px] text-muted-foreground mb-4">
+              Receive weekly currency devaluation reports for Latin America.
+            </p>
+            <div className="flex items-center justify-between">
+              <span className="text-[13px] font-semibold">
+                {alertsEnabled ? "Enabled" : "Disabled"}
+              </span>
+              <button
+                onClick={handleToggleAlerts}
+                className={`relative w-11 h-6 border-0 cursor-pointer transition-colors ${
+                  alertsEnabled ? "bg-success" : "bg-muted"
+                }`}
+              >
+                <div
+                  className={`absolute top-0.5 w-5 h-5 bg-white transition-transform ${
+                    alertsEnabled ? "left-[22px]" : "left-0.5"
+                  }`}
+                />
+              </button>
+            </div>
+            {alertsEnabled && (
+              <p className="text-[11px] text-success mt-2 font-semibold">
+                You will receive weekly devaluation reports
+              </p>
+            )}
+          </div>
+
+          {/* Share button */}
+          {user && (
+            <button
+              onClick={handleShare}
+              className="w-full py-3 bg-primary text-white text-[13px] font-bold flex items-center justify-center gap-2 hover:bg-primary/90 transition-colors border-0 cursor-pointer"
+            >
+              <Share2 className="w-4 h-4" />
+              Share This Data
+            </button>
+          )}
+        </aside>
       </div>
     </UserDashboardShell>
   );

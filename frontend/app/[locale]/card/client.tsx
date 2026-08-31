@@ -1,22 +1,20 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import {
   CreditCard,
-  DollarSign,
-  TrendingUp,
+  Plus,
   Snowflake,
   Play,
-  Plus,
-  SlidersHorizontal,
-  ArrowUpCircle,
-  Clock,
-  ShieldCheck,
-  Zap,
-  Copy,
-  CheckCircle,
-  XCircle,
   Loader2,
+  ShoppingBag,
+  Coffee,
+  Car,
+  Film,
+  Utensils,
+  ChevronDown,
+  ChevronUp,
+  Zap,
 } from "lucide-react";
 import {
   useCardStore,
@@ -25,6 +23,45 @@ import {
 } from "@/store/card/card-store";
 import { useUserStore } from "@/store/user";
 import { UserDashboardShell } from "@/components/layout/user-dashboard-shell";
+
+// ---------- helpers ----------
+
+const CATEGORY_META: Record<string, { icon: typeof Coffee; color: string; barColor: string }> = {
+  food: { icon: Utensils, color: "text-orange-500", barColor: "#f97316" },
+  transport: { icon: Car, color: "text-blue-400", barColor: "#60a5fa" },
+  shopping: { icon: ShoppingBag, color: "text-pink-500", barColor: "#ec4899" },
+  entertainment: { icon: Film, color: "text-purple-500", barColor: "#a855f7" },
+  coffee: { icon: Coffee, color: "text-amber-600", barColor: "#d97706" },
+  utilities: { icon: Zap, color: "text-teal-500", barColor: "#14b8a6" },
+};
+
+function getCategoryMeta(cat: string) {
+  const key = cat.toLowerCase();
+  return CATEGORY_META[key] || { icon: ShoppingBag, color: "text-muted-foreground", barColor: "#6b7280" };
+}
+
+function formatDateLabel(dateStr: string): string {
+  const d = new Date(dateStr);
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const target = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  const diff = (today.getTime() - target.getTime()) / (1000 * 60 * 60 * 24);
+  if (diff < 1) return "Today";
+  if (diff < 2) return "Yesterday";
+  return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+}
+
+function groupTransactionsByDate(txs: CardTransaction[]): [string, CardTransaction[]][] {
+  const map = new Map<string, CardTransaction[]>();
+  for (const tx of txs) {
+    const label = formatDateLabel(tx.createdAt);
+    if (!map.has(label)) map.set(label, []);
+    map.get(label)!.push(tx);
+  }
+  return Array.from(map.entries());
+}
+
+// ---------- component ----------
 
 export default function CardClient() {
   const { user } = useUserStore();
@@ -44,12 +81,11 @@ export default function CardClient() {
 
   const [selectedCard, setSelectedCard] = useState<VirtualCard | null>(null);
   const [showCreateForm, setShowCreateForm] = useState(false);
-  const [showTopUp, setShowTopUp] = useState(false);
-  const [showLimits, setShowLimits] = useState(false);
   const [topUpAmount, setTopUpAmount] = useState("");
   const [topUpSource, setTopUpSource] = useState("USDT");
   const [newCardCurrency, setNewCardCurrency] = useState("USDT");
   const [newCardDailyLimit, setNewCardDailyLimit] = useState(500);
+  const [showControls, setShowControls] = useState(false);
   const [limitDaily, setLimitDaily] = useState(0);
   const [limitMonthly, setLimitMonthly] = useState(0);
 
@@ -89,7 +125,6 @@ export default function CardClient() {
     if (!activeCard || !topUpAmount) return;
     const result = await topUp(activeCard.id, parseFloat(topUpAmount), topUpSource);
     if (result.success) {
-      setShowTopUp(false);
       setTopUpAmount("");
       fetchCards();
     }
@@ -106,15 +141,34 @@ export default function CardClient() {
 
   const handleSetLimits = async () => {
     if (!activeCard) return;
-    const result = await setLimits(activeCard.id, limitDaily, limitMonthly);
-    if (result.success) {
-      setShowLimits(false);
-    }
+    await setLimits(activeCard.id, limitDaily, limitMonthly);
   };
+
+  // spending breakdown
+  const spendingByCategory = useMemo(() => {
+    const map: Record<string, number> = {};
+    for (const tx of transactions) {
+      if (tx.status === "DECLINED") continue;
+      const cat = tx.category || "Other";
+      map[cat] = (map[cat] || 0) + tx.amount;
+    }
+    return Object.entries(map).sort((a, b) => b[1] - a[1]);
+  }, [transactions]);
+
+  const totalSpending = useMemo(
+    () => spendingByCategory.reduce((s, [, v]) => s + v, 0),
+    [spendingByCategory]
+  );
+
+  const groupedTxs = useMemo(() => groupTransactionsByDate(transactions), [transactions]);
+
+  const cardholderName = user
+    ? `${user.firstName || ""} ${user.lastName || ""}`.trim() || "Cardholder"
+    : "Cardholder";
 
   return (
     <UserDashboardShell>
-      <div className="space-y-6">
+      <div className="space-y-8">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
@@ -122,526 +176,517 @@ export default function CardClient() {
               Quatava Card
             </h1>
             <p className="text-[13px] text-muted-foreground mt-1">
-              Spend crypto as dollars anywhere in the world
+              Your financial identity, everywhere
             </p>
           </div>
-          <button
-            onClick={() => setShowCreateForm(true)}
-            className="inline-flex items-center gap-2 px-4 py-2.5 bg-primary text-white text-[13px] font-semibold hover:bg-primary/90 transition-colors"
-          >
-            <Plus className="w-4 h-4" />
-            New Card
-          </button>
+          {cards.length > 1 && (
+            <div className="flex gap-2">
+              {cards.map((c) => (
+                <button
+                  key={c.id}
+                  onClick={() => setSelectedCard(c)}
+                  className={`px-3 py-1.5 text-[12px] font-bold border transition-colors ${
+                    selectedCard?.id === c.id
+                      ? "border-primary bg-primary/[0.08] text-primary"
+                      : "border-border hover:border-primary/40"
+                  }`}
+                >
+                  **** {c.lastFour}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
-        {/* Main Content */}
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-6">
-          {/* Left Column */}
-          <div className="space-y-6">
-            {/* Card Display */}
-            {activeCard ? (
-              <div className="relative overflow-hidden bg-gradient-to-br from-[#3375BB] via-[#2b68a8] to-[#1a4d80] p-6 text-white min-h-[220px] flex flex-col justify-between">
-                <div className="absolute top-0 right-0 w-[200px] h-[200px] bg-white/[0.04] -translate-y-1/2 translate-x-1/2" style={{ borderRadius: "50%" }} />
-                <div className="absolute bottom-0 left-0 w-[150px] h-[150px] bg-white/[0.03] translate-y-1/2 -translate-x-1/2" style={{ borderRadius: "50%" }} />
-                <div className="flex items-start justify-between relative z-10">
-                  <div>
-                    <span className="text-[10px] uppercase tracking-[0.1em] text-white/60 font-bold">
-                      Quatava Virtual Card
+        {/* Card Visual + Top-up row */}
+        {activeCard ? (
+          <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-6 items-start">
+            {/* The Card */}
+            <div
+              className="w-full max-w-[320px] aspect-[1.586/1] relative overflow-hidden select-none mx-auto lg:mx-0"
+              style={{
+                background: "linear-gradient(135deg, #1a1a2e, #16213e, #0f3460)",
+                boxShadow: "0 8px 32px rgba(0,0,0,0.35), 0 2px 8px rgba(0,0,0,0.2)",
+                transition: "transform 0.4s ease",
+              }}
+              onMouseEnter={(e) => {
+                (e.currentTarget as HTMLElement).style.transform =
+                  "perspective(800px) rotateY(3deg)";
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLElement).style.transform = "none";
+              }}
+            >
+              {/* Subtle pattern overlay */}
+              <div
+                className="absolute inset-0 opacity-[0.04]"
+                style={{
+                  backgroundImage:
+                    "repeating-linear-gradient(45deg, transparent, transparent 20px, rgba(255,255,255,0.5) 20px, rgba(255,255,255,0.5) 21px)",
+                }}
+              />
+              <div className="relative z-10 p-5 flex flex-col justify-between h-full text-white">
+                {/* Top: Logo + status */}
+                <div className="flex items-start justify-between">
+                  <div className="flex items-center gap-2">
+                    <span
+                      className="text-[22px] font-extrabold leading-none"
+                      style={{ fontFamily: "var(--font-archivo), sans-serif" }}
+                    >
+                      Q
                     </span>
-                    <div className="flex items-center gap-2 mt-1">
-                      <span
-                        className={`inline-flex items-center px-2 py-0.5 text-[10px] font-bold uppercase ${
-                          activeCard.status === "ACTIVE"
-                            ? "bg-[#10B981]/20 text-[#10B981]"
-                            : activeCard.status === "FROZEN"
-                            ? "bg-blue-400/20 text-blue-300"
-                            : "bg-red-400/20 text-red-300"
-                        }`}
-                      >
-                        {activeCard.status}
-                      </span>
-                    </div>
+                    <span className="text-[10px] uppercase tracking-[0.12em] text-white/50 font-bold mt-0.5">
+                      Quatava
+                    </span>
                   </div>
-                  <CreditCard className="w-8 h-8 text-white/40" />
+                  {/* Chip icon */}
+                  <div className="w-8 h-6 border border-white/20 bg-gradient-to-br from-yellow-200/30 to-yellow-600/20 flex items-center justify-center">
+                    <div className="w-4 h-3 border border-white/15" />
+                  </div>
                 </div>
-                <div className="relative z-10 mt-6">
-                  <div className="text-[22px] font-mono tracking-[0.12em] text-white/90">
-                    **** **** **** {activeCard.lastFour}
+
+                {/* Card number */}
+                <div className="mt-auto">
+                  <div className="text-[16px] font-mono tracking-[0.18em] text-white/85">
+                    {"****  ****  ****  " + activeCard.lastFour}
                   </div>
-                  <div className="flex items-end justify-between mt-4">
+                  <div className="flex items-end justify-between mt-3">
                     <div>
-                      <span className="text-[10px] uppercase tracking-[0.06em] text-white/50 block">
+                      <span className="text-[9px] uppercase tracking-[0.08em] text-white/40 block">
                         Expires
                       </span>
-                      <span className="text-[14px] font-mono text-white/80">
-                        {String(activeCard.expiryMonth).padStart(2, "0")}/{String(activeCard.expiryYear).slice(-2)}
+                      <span className="text-[13px] font-mono text-white/70">
+                        {String(activeCard.expiryMonth).padStart(2, "0")}/
+                        {String(activeCard.expiryYear).slice(-2)}
                       </span>
                     </div>
                     <div className="text-right">
-                      <span className="text-[10px] uppercase tracking-[0.06em] text-white/50 block">
-                        Balance
+                      <span className="text-[9px] uppercase tracking-[0.08em] text-white/40 block">
+                        Cardholder
                       </span>
-                      <span className="text-[24px] font-extrabold">
-                        ${activeCard.balance.toLocaleString("en-US", { minimumFractionDigits: 2 })}
+                      <span className="text-[12px] font-semibold tracking-wide text-white/70 uppercase">
+                        {cardholderName}
                       </span>
                     </div>
                   </div>
                 </div>
               </div>
-            ) : (
-              <div className="bg-card border border-border p-12 text-center">
-                <CreditCard className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                <p className="text-[15px] font-semibold">No cards yet</p>
-                <p className="text-[13px] text-muted-foreground mt-1">
-                  Create your first virtual card to get started
-                </p>
+              {/* Status badge */}
+              {activeCard.status !== "ACTIVE" && (
+                <div className="absolute top-3 right-3 z-20">
+                  <span className="text-[9px] uppercase font-bold tracking-wider px-1.5 py-0.5 bg-blue-400/25 text-blue-200">
+                    {activeCard.status}
+                  </span>
+                </div>
+              )}
+            </div>
+
+            {/* Top-up inline form */}
+            <div className="flex flex-col gap-5">
+              <div className="bg-card border border-border p-5">
+                <span className="text-[10px] uppercase tracking-[0.06em] font-bold text-muted-foreground block mb-3">
+                  Top Up Card
+                </span>
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <input
+                    type="number"
+                    value={topUpAmount}
+                    onChange={(e) => setTopUpAmount(e.target.value)}
+                    placeholder="Amount (USD)"
+                    className="flex-1 bg-muted border border-border px-3 py-2.5 text-[14px] focus:outline-none focus:border-primary transition-colors"
+                  />
+                  <select
+                    value={topUpSource}
+                    onChange={(e) => setTopUpSource(e.target.value)}
+                    className="bg-muted border border-border px-3 py-2.5 text-[13px] font-semibold focus:outline-none focus:border-primary transition-colors min-w-[100px]"
+                  >
+                    <option value="USDT">USDT</option>
+                    <option value="USDC">USDC</option>
+                    <option value="BTC">BTC</option>
+                  </select>
+                  <button
+                    onClick={handleTopUp}
+                    disabled={!topUpAmount}
+                    className="px-6 py-2.5 bg-primary text-white text-[13px] font-bold hover:bg-primary/90 transition-colors disabled:opacity-40"
+                  >
+                    Top Up
+                  </button>
+                </div>
+              </div>
+
+              {/* New Card creation (compact) */}
+              {!showCreateForm ? (
                 <button
                   onClick={() => setShowCreateForm(true)}
-                  className="mt-4 inline-flex items-center gap-2 px-4 py-2.5 bg-primary text-white text-[13px] font-semibold hover:bg-primary/90 transition-colors"
+                  className="flex items-center gap-2 text-[12px] font-semibold text-primary hover:underline self-start"
                 >
-                  <Plus className="w-4 h-4" />
-                  Create Card
+                  <Plus className="w-3.5 h-3.5" />
+                  Create another card
                 </button>
-              </div>
-            )}
-
-            {/* Stats */}
-            {activeCard && (
-              <div className="grid grid-cols-3 gap-3">
-                <div className="bg-card border border-border p-4">
-                  <div className="flex items-center gap-2 mb-2">
-                    <div className="w-8 h-8 flex items-center justify-center bg-primary/[0.08]">
-                      <DollarSign className="w-4 h-4 text-primary" />
-                    </div>
-                    <span className="text-[10px] uppercase tracking-[0.06em] text-muted-foreground font-bold">
-                      Card Balance
-                    </span>
-                  </div>
-                  <div className="text-[20px] font-extrabold">
-                    ${activeCard.balance.toLocaleString("en-US", { minimumFractionDigits: 2 })}
-                  </div>
-                </div>
-                <div className="bg-card border border-border p-4">
-                  <div className="flex items-center gap-2 mb-2">
-                    <div className="w-8 h-8 flex items-center justify-center bg-primary/[0.08]">
-                      <TrendingUp className="w-4 h-4 text-primary" />
-                    </div>
-                    <span className="text-[10px] uppercase tracking-[0.06em] text-muted-foreground font-bold">
-                      Daily Spent / Limit
-                    </span>
-                  </div>
-                  <div className="text-[20px] font-extrabold">
-                    ${activeCard.dailySpent.toLocaleString("en-US", { minimumFractionDigits: 0 })}
-                    <span className="text-[13px] font-semibold text-muted-foreground">
-                      {" "}/ ${activeCard.dailyLimit.toLocaleString()}
-                    </span>
-                  </div>
-                  <div className="mt-2 h-1.5 bg-muted overflow-hidden">
-                    <div
-                      className="h-full bg-primary transition-all"
-                      style={{
-                        width: `${Math.min((activeCard.dailySpent / activeCard.dailyLimit) * 100, 100)}%`,
-                      }}
-                    />
-                  </div>
-                </div>
-                <div className="bg-card border border-border p-4">
-                  <div className="flex items-center gap-2 mb-2">
-                    <div className="w-8 h-8 flex items-center justify-center bg-primary/[0.08]">
-                      <Clock className="w-4 h-4 text-primary" />
-                    </div>
-                    <span className="text-[10px] uppercase tracking-[0.06em] text-muted-foreground font-bold">
-                      Monthly Spent / Limit
-                    </span>
-                  </div>
-                  <div className="text-[20px] font-extrabold">
-                    ${activeCard.monthlySpent.toLocaleString("en-US", { minimumFractionDigits: 0 })}
-                    <span className="text-[13px] font-semibold text-muted-foreground">
-                      {" "}/ ${activeCard.monthlyLimit.toLocaleString()}
-                    </span>
-                  </div>
-                  <div className="mt-2 h-1.5 bg-muted overflow-hidden">
-                    <div
-                      className="h-full bg-primary transition-all"
-                      style={{
-                        width: `${Math.min((activeCard.monthlySpent / activeCard.monthlyLimit) * 100, 100)}%`,
-                      }}
-                    />
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Quick Actions */}
-            {activeCard && (
-              <div className="grid grid-cols-3 gap-3">
-                <button
-                  onClick={() => setShowTopUp(true)}
-                  className="bg-card border border-border p-4 flex flex-col items-center gap-2 hover:border-primary/40 transition-colors group"
-                >
-                  <div className="w-10 h-10 flex items-center justify-center bg-success/[0.08] group-hover:bg-success/[0.15] transition-colors">
-                    <ArrowUpCircle className="w-5 h-5 text-success" />
-                  </div>
-                  <span className="text-[12px] font-semibold">Top Up</span>
-                </button>
-                <button
-                  onClick={handleToggleFreeze}
-                  className="bg-card border border-border p-4 flex flex-col items-center gap-2 hover:border-primary/40 transition-colors group"
-                >
-                  <div className="w-10 h-10 flex items-center justify-center bg-primary/[0.08] group-hover:bg-primary/[0.15] transition-colors">
-                    {activeCard.status === "FROZEN" ? (
-                      <Play className="w-5 h-5 text-primary" />
-                    ) : (
-                      <Snowflake className="w-5 h-5 text-primary" />
-                    )}
-                  </div>
-                  <span className="text-[12px] font-semibold">
-                    {activeCard.status === "FROZEN" ? "Unfreeze" : "Freeze"}
-                  </span>
-                </button>
-                <button
-                  onClick={() => setShowLimits(true)}
-                  className="bg-card border border-border p-4 flex flex-col items-center gap-2 hover:border-primary/40 transition-colors group"
-                >
-                  <div className="w-10 h-10 flex items-center justify-center bg-primary/[0.08] group-hover:bg-primary/[0.15] transition-colors">
-                    <SlidersHorizontal className="w-5 h-5 text-primary" />
-                  </div>
-                  <span className="text-[12px] font-semibold">Set Limits</span>
-                </button>
-              </div>
-            )}
-
-            {/* Top Up Modal */}
-            {showTopUp && activeCard && (
-              <div className="bg-card border border-border p-5">
-                <h3 className="font-extrabold text-[15px] mb-4">Top Up Card</h3>
-                <div className="space-y-4">
-                  <div>
-                    <label className="text-[10px] uppercase tracking-[0.06em] text-muted-foreground font-bold block mb-1.5">
-                      Amount (USD)
-                    </label>
-                    <input
-                      type="number"
-                      value={topUpAmount}
-                      onChange={(e) => setTopUpAmount(e.target.value)}
-                      placeholder="0.00"
-                      className="w-full bg-muted border border-border px-3 py-2.5 text-[14px] focus:outline-none focus:border-primary transition-colors"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-[10px] uppercase tracking-[0.06em] text-muted-foreground font-bold block mb-1.5">
-                      Pay With
-                    </label>
-                    <div className="grid grid-cols-3 gap-2">
-                      {["USDT", "USDC", "BTC"].map((src) => (
-                        <button
-                          key={src}
-                          onClick={() => setTopUpSource(src)}
-                          className={`py-2 text-[13px] font-semibold border transition-colors ${
-                            topUpSource === src
-                              ? "border-primary bg-primary/[0.08] text-primary"
-                              : "border-border hover:border-primary/40"
-                          }`}
-                        >
-                          {src}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={handleTopUp}
-                      className="flex-1 py-2.5 bg-primary text-white text-[13px] font-semibold hover:bg-primary/90 transition-colors"
-                    >
-                      Top Up
-                    </button>
-                    <button
-                      onClick={() => setShowTopUp(false)}
-                      className="px-4 py-2.5 border border-border text-[13px] font-semibold hover:bg-muted transition-colors"
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Set Limits Modal */}
-            {showLimits && activeCard && (
-              <div className="bg-card border border-border p-5">
-                <h3 className="font-extrabold text-[15px] mb-4">Set Spending Limits</h3>
-                <div className="space-y-4">
-                  <div>
-                    <label className="text-[10px] uppercase tracking-[0.06em] text-muted-foreground font-bold block mb-1.5">
-                      Daily Limit (USD)
-                    </label>
-                    <input
-                      type="number"
-                      value={limitDaily}
-                      onChange={(e) => setLimitDaily(Number(e.target.value))}
-                      className="w-full bg-muted border border-border px-3 py-2.5 text-[14px] focus:outline-none focus:border-primary transition-colors"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-[10px] uppercase tracking-[0.06em] text-muted-foreground font-bold block mb-1.5">
-                      Monthly Limit (USD)
-                    </label>
-                    <input
-                      type="number"
-                      value={limitMonthly}
-                      onChange={(e) => setLimitMonthly(Number(e.target.value))}
-                      className="w-full bg-muted border border-border px-3 py-2.5 text-[14px] focus:outline-none focus:border-primary transition-colors"
-                    />
-                  </div>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={handleSetLimits}
-                      className="flex-1 py-2.5 bg-primary text-white text-[13px] font-semibold hover:bg-primary/90 transition-colors"
-                    >
-                      Save Limits
-                    </button>
-                    <button
-                      onClick={() => setShowLimits(false)}
-                      className="px-4 py-2.5 border border-border text-[13px] font-semibold hover:bg-muted transition-colors"
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Recent Transactions */}
-            <div>
-              <h2 className="text-[18px] font-bold mb-4">Recent Transactions</h2>
-              {isLoading ? (
-                <div className="space-y-3">
-                  {[1, 2, 3].map((i) => (
-                    <div
-                      key={i}
-                      className="bg-card border border-border p-4 animate-pulse"
-                    >
-                      <div className="h-4 bg-muted w-1/3 mb-2" />
-                      <div className="h-3 bg-muted w-1/2" />
-                    </div>
-                  ))}
-                </div>
-              ) : transactions.length > 0 ? (
-                <div className="bg-card border border-border overflow-x-auto">
-                  <table className="w-full text-left">
-                    <thead>
-                      <tr className="border-b border-border">
-                        <th className="text-[10px] uppercase tracking-[0.06em] font-bold text-muted-foreground p-3">
-                          Merchant
-                        </th>
-                        <th className="text-[10px] uppercase tracking-[0.06em] font-bold text-muted-foreground p-3">
-                          Category
-                        </th>
-                        <th className="text-[10px] uppercase tracking-[0.06em] font-bold text-muted-foreground p-3">
-                          Amount
-                        </th>
-                        <th className="text-[10px] uppercase tracking-[0.06em] font-bold text-muted-foreground p-3">
-                          Status
-                        </th>
-                        <th className="text-[10px] uppercase tracking-[0.06em] font-bold text-muted-foreground p-3">
-                          Date
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {transactions.map((tx) => (
-                        <tr
-                          key={tx.id}
-                          className="border-b border-border last:border-0"
-                        >
-                          <td className="p-3 text-[13px] font-semibold">
-                            {tx.merchant}
-                          </td>
-                          <td className="p-3 text-[13px] text-muted-foreground">
-                            {tx.category}
-                          </td>
-                          <td className="p-3 text-[13px] font-semibold">
-                            -${tx.amount.toLocaleString("en-US", { minimumFractionDigits: 2 })}
-                          </td>
-                          <td className="p-3">
-                            <span
-                              className={`inline-flex items-center px-2 py-0.5 text-[11px] font-bold uppercase ${
-                                tx.status === "COMPLETED"
-                                  ? "bg-success/[0.08] text-success"
-                                  : tx.status === "PENDING"
-                                  ? "bg-yellow-500/[0.08] text-yellow-600"
-                                  : "bg-destructive/[0.08] text-destructive"
-                              }`}
-                            >
-                              {tx.status}
-                            </span>
-                          </td>
-                          <td className="p-3 text-[13px] text-muted-foreground">
-                            {new Date(tx.createdAt).toLocaleDateString()}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
               ) : (
-                <div className="bg-card border border-border p-8 text-center">
-                  <CreditCard className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
-                  <p className="text-[14px] font-semibold">No transactions yet</p>
-                  <p className="text-[13px] text-muted-foreground mt-1">
-                    Transactions will appear here when you use your card.
-                  </p>
+                <div className="bg-card border border-border p-5">
+                  <span className="text-[10px] uppercase tracking-[0.06em] font-bold text-muted-foreground block mb-3">
+                    New Card
+                  </span>
+                  <div className="flex flex-col sm:flex-row gap-3 items-end">
+                    <div className="flex-1 w-full">
+                      <label className="text-[11px] text-muted-foreground block mb-1">Funding Source</label>
+                      <div className="flex gap-2">
+                        {["USDT", "USDC", "BTC"].map((c) => (
+                          <button
+                            key={c}
+                            onClick={() => setNewCardCurrency(c)}
+                            className={`flex-1 py-2 text-[13px] font-semibold border transition-colors ${
+                              newCardCurrency === c
+                                ? "border-primary bg-primary/[0.08] text-primary"
+                                : "border-border hover:border-primary/40"
+                            }`}
+                          >
+                            {c}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="flex-1 w-full">
+                      <label className="text-[11px] text-muted-foreground block mb-1">Daily Limit</label>
+                      <div className="flex gap-2">
+                        {[500, 1000, 5000].map((lim) => (
+                          <button
+                            key={lim}
+                            onClick={() => setNewCardDailyLimit(lim)}
+                            className={`flex-1 py-2 text-[13px] font-semibold border transition-colors ${
+                              newCardDailyLimit === lim
+                                ? "border-primary bg-primary/[0.08] text-primary"
+                                : "border-border hover:border-primary/40"
+                            }`}
+                          >
+                            ${lim.toLocaleString()}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={handleCreateCard}
+                        disabled={isCreating}
+                        className="px-5 py-2.5 bg-primary text-white text-[13px] font-bold hover:bg-primary/90 transition-colors disabled:opacity-50 flex items-center gap-2"
+                      >
+                        {isCreating && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                        Create
+                      </button>
+                      <button
+                        onClick={() => setShowCreateForm(false)}
+                        className="px-4 py-2.5 border border-border text-[13px] font-semibold hover:bg-muted transition-colors"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
                 </div>
               )}
             </div>
           </div>
+        ) : (
+          <div className="bg-card border border-border p-12 text-center">
+            <CreditCard className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+            <p className="text-[15px] font-semibold">No cards yet</p>
+            <p className="text-[13px] text-muted-foreground mt-1">
+              Create your first virtual card to get started
+            </p>
+            <button
+              onClick={() => setShowCreateForm(true)}
+              className="mt-4 inline-flex items-center gap-2 px-5 py-2.5 bg-primary text-white text-[13px] font-semibold hover:bg-primary/90 transition-colors"
+            >
+              <Plus className="w-4 h-4" />
+              Create Card
+            </button>
+          </div>
+        )}
 
-          {/* Right Sidebar */}
-          <div className="space-y-4">
-            {/* Create Card Form */}
-            {showCreateForm && (
-              <div className="bg-card border border-border p-4">
-                <h3 className="font-extrabold text-sm mb-4">Create New Card</h3>
-                <div className="space-y-4">
-                  <div>
-                    <label className="text-[10px] uppercase tracking-[0.06em] text-muted-foreground font-bold block mb-1.5">
-                      Funding Source
-                    </label>
-                    <div className="grid grid-cols-3 gap-2">
-                      {["USDT", "USDC", "BTC"].map((c) => (
-                        <button
-                          key={c}
-                          onClick={() => setNewCardCurrency(c)}
-                          className={`py-2 text-[13px] font-semibold border transition-colors ${
-                            newCardCurrency === c
-                              ? "border-primary bg-primary/[0.08] text-primary"
-                              : "border-border hover:border-primary/40"
-                          }`}
-                        >
-                          {c}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                  <div>
-                    <label className="text-[10px] uppercase tracking-[0.06em] text-muted-foreground font-bold block mb-1.5">
-                      Daily Limit
-                    </label>
-                    <div className="grid grid-cols-3 gap-2">
-                      {[500, 1000, 5000].map((limit) => (
-                        <button
-                          key={limit}
-                          onClick={() => setNewCardDailyLimit(limit)}
-                          className={`py-2 text-[13px] font-semibold border transition-colors ${
-                            newCardDailyLimit === limit
-                              ? "border-primary bg-primary/[0.08] text-primary"
-                              : "border-border hover:border-primary/40"
-                          }`}
-                        >
-                          ${limit.toLocaleString()}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                  <button
-                    onClick={handleCreateCard}
-                    disabled={isCreating}
-                    className="w-full py-2.5 bg-primary text-white text-[13px] font-semibold hover:bg-primary/90 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
-                  >
-                    {isCreating ? (
-                      <>
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                        Creating...
-                      </>
-                    ) : (
-                      <>
-                        <Plus className="w-4 h-4" />
-                        Create Card
-                      </>
-                    )}
-                  </button>
-                  <button
-                    onClick={() => setShowCreateForm(false)}
-                    className="w-full py-2 border border-border text-[13px] font-semibold hover:bg-muted transition-colors"
-                  >
-                    Cancel
-                  </button>
+        {/* Stats row — single stripe */}
+        {activeCard && (
+          <div className="bg-card border border-border">
+            <div className="grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-border">
+              {/* Balance */}
+              <div className="p-4 sm:p-5">
+                <span className="text-[10px] uppercase tracking-[0.06em] font-bold text-muted-foreground block mb-1">
+                  Balance
+                </span>
+                <span className="text-[22px] font-extrabold">
+                  ${activeCard.balance.toLocaleString("en-US", { minimumFractionDigits: 2 })}
+                </span>
+              </div>
+
+              {/* Daily */}
+              <div className="p-4 sm:p-5">
+                <span className="text-[10px] uppercase tracking-[0.06em] font-bold text-muted-foreground block mb-1">
+                  Daily Spent / Limit
+                </span>
+                <span className="text-[18px] font-extrabold">
+                  ${activeCard.dailySpent.toLocaleString()}
+                  <span className="text-[13px] font-semibold text-muted-foreground">
+                    {" "}/ ${activeCard.dailyLimit.toLocaleString()}
+                  </span>
+                </span>
+                <div className="mt-2 h-[3px] bg-muted overflow-hidden">
+                  <div
+                    className="h-full bg-primary transition-all"
+                    style={{
+                      width: `${Math.min((activeCard.dailySpent / activeCard.dailyLimit) * 100, 100)}%`,
+                    }}
+                  />
                 </div>
               </div>
-            )}
 
-            {/* Card Selector */}
-            {cards.length > 1 && (
-              <div className="bg-card border border-border p-4">
-                <h3 className="font-extrabold text-sm mb-3">Your Cards</h3>
-                <div className="space-y-2">
-                  {cards.map((card) => (
-                    <button
-                      key={card.id}
-                      onClick={() => setSelectedCard(card)}
-                      className={`w-full p-3 border text-left flex items-center gap-3 transition-colors ${
-                        selectedCard?.id === card.id
-                          ? "border-primary bg-primary/[0.08]"
-                          : "border-border hover:border-primary/40"
-                      }`}
-                    >
-                      <CreditCard className="w-5 h-5 text-primary shrink-0" />
-                      <div>
-                        <span className="text-[13px] font-semibold block">
-                          **** {card.lastFour}
-                        </span>
-                        <span className="text-[11px] text-muted-foreground">
-                          ${card.balance.toLocaleString("en-US", { minimumFractionDigits: 2 })} - {card.status}
-                        </span>
-                      </div>
-                    </button>
-                  ))}
+              {/* Monthly */}
+              <div className="p-4 sm:p-5">
+                <span className="text-[10px] uppercase tracking-[0.06em] font-bold text-muted-foreground block mb-1">
+                  Monthly Spent / Limit
+                </span>
+                <span className="text-[18px] font-extrabold">
+                  ${activeCard.monthlySpent.toLocaleString()}
+                  <span className="text-[13px] font-semibold text-muted-foreground">
+                    {" "}/ ${activeCard.monthlyLimit.toLocaleString()}
+                  </span>
+                </span>
+                <div className="mt-2 h-[3px] bg-muted overflow-hidden">
+                  <div
+                    className="h-full bg-primary transition-all"
+                    style={{
+                      width: `${Math.min((activeCard.monthlySpent / activeCard.monthlyLimit) * 100, 100)}%`,
+                    }}
+                  />
                 </div>
-              </div>
-            )}
-
-            {/* How It Works */}
-            <div className="bg-card border border-border p-4">
-              <h3 className="font-extrabold text-sm mb-4">How It Works</h3>
-              <div className="flex flex-col gap-3 text-[13px]">
-                {[
-                  {
-                    icon: Plus,
-                    title: "1. Create a card",
-                    text: "Choose your funding source and set your limits",
-                  },
-                  {
-                    icon: ArrowUpCircle,
-                    title: "2. Top up",
-                    text: "Add funds using USDT, USDC, or BTC",
-                  },
-                  {
-                    icon: CreditCard,
-                    title: "3. Spend anywhere",
-                    text: "Use your card online or with Apple/Google Pay",
-                  },
-                  {
-                    icon: ShieldCheck,
-                    title: "4. Stay in control",
-                    text: "Freeze, set limits, and track spending in real time",
-                  },
-                ].map((item, i) => (
-                  <div key={i} className="flex items-start gap-2.5">
-                    <div className="w-7 h-7 flex items-center justify-center bg-primary/[0.08] shrink-0 mt-0.5">
-                      <item.icon className="w-3.5 h-3.5 text-primary" />
-                    </div>
-                    <div>
-                      <span className="font-semibold block">{item.title}</span>
-                      <span className="text-muted-foreground text-[12px]">
-                        {item.text}
-                      </span>
-                    </div>
-                  </div>
-                ))}
               </div>
             </div>
           </div>
+        )}
+
+        {/* Spending Breakdown — horizontal stacked bar */}
+        {activeCard && spendingByCategory.length > 0 && (
+          <div>
+            <h2 className="text-[16px] font-bold mb-3">Spending Breakdown</h2>
+            <div className="bg-card border border-border p-5">
+              {/* Bar */}
+              <div className="w-full h-5 flex overflow-hidden">
+                {spendingByCategory.map(([cat, amount]) => {
+                  const pct = totalSpending > 0 ? (amount / totalSpending) * 100 : 0;
+                  const meta = getCategoryMeta(cat);
+                  return (
+                    <div
+                      key={cat}
+                      style={{ width: `${pct}%`, backgroundColor: meta.barColor, minWidth: pct > 0 ? 4 : 0 }}
+                      className="h-full transition-all"
+                      title={`${cat}: $${amount.toFixed(2)} (${pct.toFixed(0)}%)`}
+                    />
+                  );
+                })}
+              </div>
+              {/* Legend */}
+              <div className="flex flex-wrap gap-x-5 gap-y-2 mt-3">
+                {spendingByCategory.map(([cat, amount]) => {
+                  const meta = getCategoryMeta(cat);
+                  const CatIcon = meta.icon;
+                  return (
+                    <div key={cat} className="flex items-center gap-1.5">
+                      <div className="w-2.5 h-2.5" style={{ backgroundColor: meta.barColor }} />
+                      <CatIcon className={`w-3 h-3 ${meta.color}`} />
+                      <span className="text-[12px] text-muted-foreground">
+                        {cat}
+                      </span>
+                      <span className="text-[12px] font-semibold">
+                        ${amount.toFixed(0)}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Transaction list — grouped by date */}
+        <div>
+          <h2 className="text-[16px] font-bold mb-3">Transactions</h2>
+          {isLoading ? (
+            <div className="space-y-2">
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="bg-card border border-border p-4 animate-pulse">
+                  <div className="h-4 bg-muted w-1/3 mb-2" />
+                  <div className="h-3 bg-muted w-1/2" />
+                </div>
+              ))}
+            </div>
+          ) : groupedTxs.length > 0 ? (
+            <div className="space-y-4">
+              {groupedTxs.map(([dateLabel, txs]) => (
+                <div key={dateLabel}>
+                  <span className="text-[10px] uppercase tracking-[0.06em] font-bold text-muted-foreground block mb-1.5 pl-1">
+                    {dateLabel}
+                  </span>
+                  <div className="bg-card border border-border overflow-hidden">
+                    {txs.map((tx, idx) => {
+                      const meta = getCategoryMeta(tx.category);
+                      const CatIcon = meta.icon;
+                      const isDeposit =
+                        tx.category?.toLowerCase() === "deposit" ||
+                        tx.merchant?.toLowerCase().includes("top up") ||
+                        tx.merchant?.toLowerCase().includes("deposit");
+                      return (
+                        <div
+                          key={tx.id}
+                          className={`flex items-center gap-3 px-4 py-3 ${
+                            idx % 2 === 1 ? "bg-muted/30" : ""
+                          } ${idx > 0 ? "border-t border-border" : ""}`}
+                        >
+                          <div className={`w-8 h-8 flex items-center justify-center ${isDeposit ? "bg-success/[0.08]" : "bg-muted"}`}>
+                            <CatIcon className={`w-4 h-4 ${isDeposit ? "text-success" : meta.color}`} />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <span className="text-[13px] font-semibold block truncate">
+                              {tx.merchant}
+                            </span>
+                            <span className="text-[11px] text-muted-foreground">
+                              {tx.category}
+                            </span>
+                          </div>
+                          <div className="text-right shrink-0">
+                            <span
+                              className={`text-[14px] font-bold block ${
+                                isDeposit ? "text-success" : ""
+                              }`}
+                            >
+                              {isDeposit ? "+" : "-"}$
+                              {tx.amount.toLocaleString("en-US", { minimumFractionDigits: 2 })}
+                            </span>
+                            <span className="text-[10px] text-muted-foreground">
+                              {new Date(tx.createdAt).toLocaleTimeString("en-US", {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              })}
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="bg-card border border-border p-10 text-center">
+              <CreditCard className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
+              <p className="text-[14px] font-semibold">No transactions yet</p>
+              <p className="text-[13px] text-muted-foreground mt-1">
+                Transactions will appear here when you use your card.
+              </p>
+            </div>
+          )}
         </div>
+
+        {/* Controls — collapsible panel */}
+        {activeCard && (
+          <div className="bg-card border border-border">
+            <button
+              onClick={() => setShowControls(!showControls)}
+              className="w-full flex items-center justify-between p-4 hover:bg-muted/30 transition-colors"
+            >
+              <span className="text-[14px] font-bold">Card Controls</span>
+              {showControls ? (
+                <ChevronUp className="w-4 h-4 text-muted-foreground" />
+              ) : (
+                <ChevronDown className="w-4 h-4 text-muted-foreground" />
+              )}
+            </button>
+            {showControls && (
+              <div className="border-t border-border p-5 space-y-6">
+                {/* Freeze toggle */}
+                <div className="flex items-center justify-between">
+                  <div>
+                    <span className="text-[13px] font-semibold block">
+                      {activeCard.status === "FROZEN" ? "Card is frozen" : "Freeze card"}
+                    </span>
+                    <span className="text-[12px] text-muted-foreground">
+                      {activeCard.status === "FROZEN"
+                        ? "Unfreeze to resume spending"
+                        : "Temporarily disable all transactions"}
+                    </span>
+                  </div>
+                  <button
+                    onClick={handleToggleFreeze}
+                    className={`flex items-center gap-2 px-4 py-2 text-[13px] font-bold transition-colors ${
+                      activeCard.status === "FROZEN"
+                        ? "bg-success/[0.08] text-success border border-success/20 hover:bg-success/[0.15]"
+                        : "bg-destructive/[0.08] text-destructive border border-destructive/20 hover:bg-destructive/[0.15]"
+                    }`}
+                  >
+                    {activeCard.status === "FROZEN" ? (
+                      <>
+                        <Play className="w-3.5 h-3.5" /> Unfreeze
+                      </>
+                    ) : (
+                      <>
+                        <Snowflake className="w-3.5 h-3.5" /> Freeze
+                      </>
+                    )}
+                  </button>
+                </div>
+
+                {/* Limit sliders */}
+                <div className="space-y-4">
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-[10px] uppercase tracking-[0.06em] font-bold text-muted-foreground">
+                        Daily Limit
+                      </span>
+                      <span className="text-[13px] font-bold">${limitDaily.toLocaleString()}</span>
+                    </div>
+                    <input
+                      type="range"
+                      min={100}
+                      max={10000}
+                      step={100}
+                      value={limitDaily}
+                      onChange={(e) => setLimitDaily(Number(e.target.value))}
+                      className="w-full accent-[#3375BB] h-1.5"
+                    />
+                    <div className="flex justify-between text-[10px] text-muted-foreground mt-1">
+                      <span>$100</span>
+                      <span>$10,000</span>
+                    </div>
+                  </div>
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-[10px] uppercase tracking-[0.06em] font-bold text-muted-foreground">
+                        Monthly Limit
+                      </span>
+                      <span className="text-[13px] font-bold">${limitMonthly.toLocaleString()}</span>
+                    </div>
+                    <input
+                      type="range"
+                      min={500}
+                      max={50000}
+                      step={500}
+                      value={limitMonthly}
+                      onChange={(e) => setLimitMonthly(Number(e.target.value))}
+                      className="w-full accent-[#3375BB] h-1.5"
+                    />
+                    <div className="flex justify-between text-[10px] text-muted-foreground mt-1">
+                      <span>$500</span>
+                      <span>$50,000</span>
+                    </div>
+                  </div>
+                  <button
+                    onClick={handleSetLimits}
+                    className="px-5 py-2.5 bg-primary text-white text-[13px] font-bold hover:bg-primary/90 transition-colors"
+                  >
+                    Save Limits
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </UserDashboardShell>
   );
