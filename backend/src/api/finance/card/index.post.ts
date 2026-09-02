@@ -35,7 +35,7 @@ export default async (data: Handler) => {
   const { user, body } = data;
   if (!user?.id) throw createError(401, "Unauthorized");
 
-  const { cardType = "VIRTUAL", tier = "STANDARD" } = body;
+  const { cardType = "VIRTUAL", tier = "STANDARD", currency = "USDT" } = body;
   const config = TIER_CONFIG[tier as keyof typeof TIER_CONFIG] || TIER_CONFIG.STANDARD;
   const cardNumber = crypto.randomInt(1000, 9999).toString();
 
@@ -44,7 +44,7 @@ export default async (data: Handler) => {
     cardNumber,
     cardType,
     tier,
-    currency: "USDT",
+    currency,
     status: "ACTIVE",
     cashbackRate: config.cashbackRate,
     spendingLimit: config.spendingLimit,

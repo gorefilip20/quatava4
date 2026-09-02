@@ -16,8 +16,10 @@ export const metadata: OperationObject = {
             termId: { type: "string" },
             collateralCurrency: { type: "string" },
             collateralAmount: { type: "number" },
+            borrowCurrency: { type: "string" },
+            durationDays: { type: "number" },
           },
-          required: ["termId", "collateralCurrency", "collateralAmount"],
+          required: ["collateralCurrency", "collateralAmount"],
         },
       },
     },
@@ -29,11 +31,18 @@ export default async (data: Handler) => {
   const { user, body } = data;
   if (!user?.id) throw createError(401, "Unauthorized");
 
-  const { termId, collateralCurrency, collateralAmount } = body;
-  if (!termId || !collateralCurrency || !collateralAmount)
+  const { termId, collateralCurrency, collateralAmount, borrowCurrency, durationDays } = body;
+  if (!collateralCurrency || !collateralAmount)
     throw createError(400, "Missing required fields");
 
-  const term = await models.loanTerm.findByPk(termId);
+  let term: any;
+  if (termId) {
+    term = await models.loanTerm.findByPk(termId);
+  } else if (durationDays) {
+    term = await models.loanTerm.findOne({ where: { termDays: durationDays, status: true } });
+  } else {
+    term = await models.loanTerm.findOne({ where: { status: true }, order: [["termDays", "ASC"]] });
+  }
   if (!term || !term.status) throw createError(404, "Loan term not found");
   if (collateralAmount < term.minCollateral)
     throw createError(400, `Minimum collateral is ${term.minCollateral}`);
@@ -45,27 +54,28 @@ export default async (data: Handler) => {
   if (wallet.balance < collateralAmount)
     throw createError(400, "Insufficient collateral balance");
 
+  const loanCurrency = borrowCurrency || "USDT";
   const loanAmount = collateralAmount * (term.maxLtv / 100);
   const dueDate = new Date(Date.now() + term.termDays * 86400000);
 
   const loan = await sequelize.transaction(async (t) => {
     await wallet.update({ balance: wallet.balance - collateralAmount }, { transaction: t });
 
-    let usdtWallet = await models.wallet.findOne({
-      where: { userId: user.id, currency: "USDT", type: "SPOT" },
+    let targetWallet = await models.wallet.findOne({
+      where: { userId: user.id, currency: loanCurrency, type: "SPOT" },
     });
-    if (!usdtWallet) {
-      usdtWallet = await models.wallet.create({
-        userId: user.id, currency: "USDT", type: "SPOT", balance: 0, status: true,
+    if (!targetWallet) {
+      targetWallet = await models.wallet.create({
+        userId: user.id, currency: loanCurrency, type: "SPOT", balance: 0, status: true,
       }, { transaction: t });
     }
-    await usdtWallet.update({ balance: usdtWallet.balance + loanAmount }, { transaction: t });
+    await targetWallet.update({ balance: targetWallet.balance + loanAmount }, { transaction: t });
 
     return await models.loan.create({
       userId: user.id,
       collateralCurrency,
       collateralAmount,
-      loanCurrency: "USDT",
+      loanCurrency,
       loanAmount,
       interestRate: term.interestRate,
       termDays: term.termDays,

@@ -33,16 +33,18 @@ export default async (data: Handler) => {
   const { user, body } = data;
   if (!user?.id) throw createError(401, "Unauthorized");
 
-  const { categoryId, billerName, accountNumber, amount, currency, country } = body;
-  if (!categoryId || !billerName || !accountNumber || !amount || !currency || !country)
+  const { categoryId, providerId, billerName, accountNumber, amount, currency, payWithCurrency, country } = body;
+  const catId = categoryId || providerId;
+  const payCurrency = currency || payWithCurrency;
+  if (!catId || !accountNumber || !amount || !payCurrency)
     throw createError(400, "Missing required fields");
   if (amount <= 0) throw createError(400, "Invalid amount");
 
-  const category = await models.billCategory.findByPk(categoryId);
+  const category = await models.billCategory.findByPk(catId);
   if (!category) throw createError(404, "Category not found");
 
   const wallet = await models.wallet.findOne({
-    where: { userId: user.id, currency, type: "SPOT" },
+    where: { userId: user.id, currency: payCurrency, type: "SPOT" },
   });
   if (!wallet) throw createError(404, "Wallet not found");
   if (wallet.balance < amount) throw createError(400, "Insufficient balance");
@@ -53,8 +55,8 @@ export default async (data: Handler) => {
     await wallet.update({ balance: wallet.balance - amount }, { transaction: t });
 
     return await models.billPayment.create({
-      userId: user.id, categoryId, billerName, accountNumber,
-      amount, currency, country, status: "COMPLETED",
+      userId: user.id, categoryId: catId, billerName: billerName || "Bill Payment", accountNumber,
+      amount, currency: payCurrency, country: country || "BR", status: "COMPLETED",
       reference, paidAt: new Date(),
     }, { transaction: t });
   });

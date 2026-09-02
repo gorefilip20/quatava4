@@ -28,7 +28,8 @@ export default async (data: Handler) => {
   const { user, params, body } = data;
   if (!user?.id) throw createError(401, "Unauthorized");
 
-  const { amount, fromCurrency = "USDT" } = body;
+  const { amount, fromCurrency, source } = body;
+  const currency = fromCurrency || source || "USDT";
   if (!amount || amount <= 0) throw createError(400, "Invalid amount");
 
   const card = await models.card.findOne({
@@ -38,7 +39,7 @@ export default async (data: Handler) => {
   if (card.status !== "ACTIVE") throw createError(400, "Card is not active");
 
   const wallet = await models.wallet.findOne({
-    where: { userId: user.id, currency: fromCurrency, type: "SPOT" },
+    where: { userId: user.id, currency, type: "SPOT" },
   });
   if (!wallet) throw createError(404, "Wallet not found");
   if (wallet.balance < amount) throw createError(400, "Insufficient balance");
@@ -47,7 +48,7 @@ export default async (data: Handler) => {
     await wallet.update({ balance: wallet.balance - amount }, { transaction: t });
     await card.update({ balance: card.balance + amount }, { transaction: t });
     await models.cardTransaction.create({
-      cardId: card.id, userId: user.id, type: "TOPUP", amount, currency: fromCurrency, status: "COMPLETED",
+      cardId: card.id, userId: user.id, type: "TOPUP", amount, currency, status: "COMPLETED",
     }, { transaction: t });
   });
 

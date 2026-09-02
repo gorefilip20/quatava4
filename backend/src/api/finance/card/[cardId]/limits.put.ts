@@ -12,8 +12,10 @@ export const metadata: OperationObject = {
       "application/json": {
         schema: {
           type: "object",
-          properties: { spendingLimit: { type: "number" } },
-          required: ["spendingLimit"],
+          properties: {
+            dailyLimit: { type: "number" },
+            monthlyLimit: { type: "number" },
+          },
         },
       },
     },
@@ -27,7 +29,8 @@ export default async (data: Handler) => {
   const { user, params, body } = data;
   if (!user?.id) throw createError(401, "Unauthorized");
 
-  const { spendingLimit } = body;
+  const { dailyLimit, monthlyLimit } = body;
+  const spendingLimit = monthlyLimit || dailyLimit;
   if (!spendingLimit || spendingLimit <= 0) throw createError(400, "Invalid limit");
 
   const card = await models.card.findOne({

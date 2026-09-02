@@ -5,11 +5,24 @@ export const metadata: OperationObject = {
   operationId: "getRemittanceQuote",
   tags: ["Finance", "Remittance"],
   requiresAuth: true,
-  parameters: [
-    { name: "sendCurrency", in: "query", schema: { type: "string" } },
-    { name: "receiveCurrency", in: "query", schema: { type: "string" } },
-    { name: "sendAmount", in: "query", schema: { type: "number" } },
-  ],
+  requestBody: {
+    required: true,
+    content: {
+      "application/json": {
+        schema: {
+          type: "object",
+          properties: {
+            fromCurrency: { type: "string" },
+            toCurrency: { type: "string" },
+            amount: { type: "number" },
+            fromCountry: { type: "string" },
+            toCountry: { type: "string" },
+          },
+          required: ["fromCurrency", "toCurrency", "amount"],
+        },
+      },
+    },
+  },
   responses: { 200: { description: "Quote generated" } },
 };
 
@@ -22,26 +35,26 @@ const RATES: Record<string, number> = {
 };
 
 export default async (data: Handler) => {
-  const { user, query } = data;
+  const { user, body } = data;
   if (!user?.id) throw createError(401, "Unauthorized");
 
-  const { sendCurrency, receiveCurrency, sendAmount: rawAmount } = query;
-  if (!sendCurrency || !receiveCurrency || !rawAmount)
+  const { fromCurrency, toCurrency, amount } = body;
+  if (!fromCurrency || !toCurrency || !amount)
     throw createError(400, "Missing required parameters");
 
-  const sendAmount = parseFloat(rawAmount);
+  const sendAmount = parseFloat(amount);
   if (isNaN(sendAmount) || sendAmount <= 0) throw createError(400, "Invalid amount");
 
-  const key = `${sendCurrency}-${receiveCurrency}`;
+  const key = `${fromCurrency}-${toCurrency}`;
   const rate = RATES[key];
   if (!rate) throw createError(400, `Corridor ${key} not supported`);
 
   const fee = Math.max(1, sendAmount * 0.025);
   const netAmount = sendAmount - fee;
-  const receiveAmount = netAmount * rate;
+  const toAmount = Math.round(netAmount * rate * 100) / 100;
   const estimatedDelivery = new Date(Date.now() + 2 * 86400000);
 
   return {
-    data: { sendAmount, sendCurrency, receiveCurrency, receiveAmount: Math.round(receiveAmount * 100) / 100, exchangeRate: rate, fee, estimatedDelivery },
+    data: { rate, fee, toAmount, fromCurrency, toCurrency, sendAmount, estimatedDelivery },
   };
 };
