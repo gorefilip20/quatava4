@@ -5,6 +5,7 @@
     "dev": "next dev --turbopack",
     "dev:turbo": "next dev --turbo",
     "build": "next build",
+    "build:all": "npm run build",
     "build:fast": "NODE_OPTIONS='--max-old-space-size=2560' next build",
     "build:analyze": "ANALYZE=true next build",
     "build:parallel": "NODE_OPTIONS='--max-old-space-size=2560 --max-semi-space-size=512' next build",
