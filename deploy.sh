@@ -209,7 +209,7 @@ upstream quatava_backend {
 server {
     listen 80 default_server;
     listen [::]:80 default_server;
-    server_name _;
+    server_name getquatava.com www.getquatava.com _;
 
     client_max_body_size 25M;
 
