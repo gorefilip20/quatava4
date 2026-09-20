@@ -15,6 +15,7 @@ import StopOrderForm from "./stop-order-form";
 import AiInvestmentForm from "../ai-investment";
 import type { WalletData, TickerData } from "./types";
 import { useTranslations } from "next-intl";
+import { isPaperTradingEnabled } from "@/lib/paper-trading";
 
 interface TradingFormPanelProps {
   symbol?: string;
@@ -342,6 +343,11 @@ export default function TradingFormPanel({
 
   return (
     <div className="flex flex-col h-full bg-background dark:bg-black overflow-y-auto scrollbar-hide">
+      {isPaperTradingEnabled() && (
+        <div className="px-3 py-2 bg-amber-500/10 border-b border-amber-500/20 text-xs text-amber-700 dark:text-amber-300">
+          <strong>Paper trading mode:</strong> orders are simulated locally and never use real funds.
+        </div>
+      )}
       {/* Market type indicator - only show for Eco markets */}
       {isMarketEco && (
         <div className="px-3 py-1.5 bg-emerald-500/10 border-b border-emerald-500/20 flex items-center">

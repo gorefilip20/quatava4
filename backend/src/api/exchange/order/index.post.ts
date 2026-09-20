@@ -66,6 +66,12 @@ export default async (data: Handler) => {
   }
 
   try {
+    if (process.env.TRADING_MODE !== "LIVE") {
+      throw new Error(
+        "Live spot trading is disabled. Use the paper-trading interface until live execution is explicitly enabled."
+      );
+    }
+
     // Step 1: Check for ban status
     const unblockTime = await loadBanStatus();
     if (await handleBanStatus(unblockTime)) {

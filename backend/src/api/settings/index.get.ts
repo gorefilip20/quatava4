@@ -55,6 +55,12 @@ export default async () => {
     };
   } catch (error) {
     console.error("Error fetching settings and extensions:", error);
-    return serverErrorResponse;
+    // Settings are public configuration. Return an empty safe payload rather
+    // than taking down the frontend while the database/cache is unavailable.
+    return {
+      settings: [],
+      extensions: [],
+      degraded: true,
+    };
   }
 };

@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { DollarSign, TrendingUp, TrendingDown, Leaf } from "lucide-react";
 import { $fetch } from "@/lib/api";
+import { isPaperTradingEnabled, simulatePaperSpotOrder } from "@/lib/paper-trading";
 import type { OrderFormProps } from "./types";
 import PercentButtons from "./percent-buttons";
 import { useTranslations } from "next-intl";
@@ -208,6 +209,15 @@ export default function MarketOrderForm({
         price: null,
         isEco,
       };
+
+      if (isPaperTradingEnabled()) {
+        simulatePaperSpotOrder(orderData);
+        setAmount("");
+        setTotal("");
+        setPercentSelected(null);
+        setOrderError("Paper order accepted locally. No real funds were used.");
+        return;
+      }
 
       // Submit order using the provided callback or default implementation
       if (onOrderSubmit) {
