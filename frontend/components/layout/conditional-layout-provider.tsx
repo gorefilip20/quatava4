@@ -3,6 +3,8 @@
 import React, { ReactNode } from "react";
 import { usePathname } from "@/i18n/routing";
 import DashBoardLayoutProvider from "@/provider/dashboard.provider";
+import { useUserStore } from "@/store/user";
+import QuatavaTerminalShell from "@/components/terminal/quatava-terminal-shell";
 
 interface ConditionalLayoutProviderProps {
   children: ReactNode;
@@ -12,6 +14,7 @@ const ConditionalLayoutProvider = ({
   children,
 }: ConditionalLayoutProviderProps) => {
   const pathname = usePathname();
+  const user = useUserStore((state) => state.user);
 
   // List of all (ext) route prefixes that have their own layouts
   const extRoutes = [
@@ -27,6 +30,21 @@ const ConditionalLayoutProvider = ({
   // Check if current path is in the (ext) route group
   // These routes have their own layouts and should not use DashBoardLayoutProvider
   const isExtRoute = extRoutes.some((route) => pathname.startsWith(route));
+
+  const terminalRoutes = [
+    "/trade",
+    "/finance",
+    "/staking",
+    "/nft",
+    "/investment",
+    "/p2p",
+    "/ai",
+  ];
+  const isTerminalRoute = terminalRoutes.some((route) => pathname.startsWith(route));
+
+  if (user && isTerminalRoute && !pathname.startsWith("/admin")) {
+    return <QuatavaTerminalShell>{children}</QuatavaTerminalShell>;
+  }
 
   // If it's an (ext) route, just return children without DashBoardLayoutProvider
   // This allows the individual (ext) layouts to take full control
