@@ -9,7 +9,7 @@
     "build:fast": "NODE_OPTIONS='--max-old-space-size=2560' next build",
     "build:analyze": "ANALYZE=true next build",
     "build:parallel": "NODE_OPTIONS='--max-old-space-size=2560 --max-semi-space-size=512' next build",
-    "start": "next start",
+    "start": "node server.js",
     "lint": "next lint",
     "lint:fix": "next lint --fix",
     "type-check": "tsc --noEmit"
