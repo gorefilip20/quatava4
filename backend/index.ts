@@ -33,7 +33,9 @@ import "./module-alias-setup";
 import { MashServer } from "./src";
 import logger from "./src/utils/logger";
 
-const port = process.env.NEXT_PUBLIC_BACKEND_PORT || 4000;
+// Hostinger and similar platforms provide the public listener through PORT.
+// Keep NEXT_PUBLIC_BACKEND_PORT as a local-development fallback only.
+const port = process.env.PORT || process.env.NEXT_PUBLIC_BACKEND_PORT || 4000;
 
 const startApp = async () => {
   try {
