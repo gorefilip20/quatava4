@@ -27,6 +27,13 @@ if (!envLoaded) {
 }
 
 const backendPort = process.env.NEXT_PUBLIC_BACKEND_PORT || 4000;
+// Split Hostinger deployments should set NEXT_PUBLIC_BACKEND_URL to the
+// backend app's public HTTPS origin. localhost remains the local fallback.
+const backendUrl = (
+  process.env.NEXT_PUBLIC_BACKEND_URL ||
+  process.env.BACKEND_URL ||
+  `http://localhost:${backendPort}`
+).replace(/\/$/, "");
 const withNextIntl = require("next-intl/plugin")();
 
 /** @type {import('next').NextConfig} */
@@ -98,8 +105,6 @@ const nextConfig = {
     return config;
   },
   async rewrites() {
-    const backendUrl = `http://localhost:${backendPort}`;
-    
     return [
       {
         source: "/api/:path*",
