@@ -1,5 +1,6 @@
 // lib/api.ts
 import { toast } from "sonner";
+import { getDemoFallback } from "@/lib/demo-data";
 
 type HttpMethod = "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
 
@@ -193,10 +194,22 @@ export async function $fetch<T = any>({
       handleSuccess(data as T, successMessage, silent, silentSuccess);
       return { data: data as T, error: null };
     } else {
+      const demoData = getDemoFallback(urlWithQuery, method);
+      if (demoData !== null) {
+        if (!silent && toastId !== null) toast.dismiss(toastId);
+        console.warn(`[demo-fallback] ${method} ${urlWithQuery} returned preview data after HTTP ${response.status}`);
+        return { data: demoData as T, error: null };
+      }
       // Non-2xx status, standard error handling
       return await handleError<T>(response, data, silent, errorMessage);
     }
   } catch (error: any) {
+    const demoData = getDemoFallback(urlWithQuery, method);
+    if (demoData !== null) {
+      if (!silent && toastId !== null) toast.dismiss(toastId);
+      console.warn(`[demo-fallback] ${method} ${urlWithQuery} returned preview data after a network error`);
+      return { data: demoData as T, error: null };
+    }
     return handleNetworkError(error, silent, toastId);
   }
 }
