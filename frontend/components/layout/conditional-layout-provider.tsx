@@ -32,6 +32,7 @@ const ConditionalLayoutProvider = ({
 
   const terminalRoutes = [
     "/dashboard",
+    "/market",
     "/trade",
     "/finance",
     "/staking",
