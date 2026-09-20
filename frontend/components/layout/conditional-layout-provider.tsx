@@ -13,6 +13,7 @@ const ConditionalLayoutProvider = ({
   children,
 }: ConditionalLayoutProviderProps) => {
   const pathname = usePathname();
+  const normalizedPath = pathname.replace(/^\/[a-z]{2}(\/|$)/, "/");
 
   // List of all (ext) route prefixes that have their own layouts
   const extRoutes = [
@@ -27,7 +28,7 @@ const ConditionalLayoutProvider = ({
 
   // Check if current path is in the (ext) route group
   // These routes have their own layouts and should not use DashBoardLayoutProvider
-  const isExtRoute = extRoutes.some((route) => pathname.startsWith(route));
+  const isExtRoute = extRoutes.some((route) => normalizedPath.startsWith(route));
 
   const terminalRoutes = [
     "/dashboard",
@@ -39,11 +40,11 @@ const ConditionalLayoutProvider = ({
     "/p2p",
     "/ai",
   ];
-  const isTerminalRoute = terminalRoutes.some((route) => pathname.startsWith(route));
+  const isTerminalRoute = terminalRoutes.some((route) => normalizedPath.startsWith(route));
 
   // Keep the Figma terminal shell consistent when these routes are opened
   // directly, including before the client-side auth store has hydrated.
-  if (isTerminalRoute && !pathname.startsWith("/admin")) {
+  if (isTerminalRoute && !normalizedPath.startsWith("/admin")) {
     return <QuatavaTerminalShell>{children}</QuatavaTerminalShell>;
   }
 
