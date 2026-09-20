@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "@/i18n/routing";
+import { routing, usePathname } from "@/i18n/routing";
 import {
   ArrowLeftRight,
   BarChart3,
@@ -35,8 +35,16 @@ const navigation = [
 export default function QuatavaTerminalShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const locale = pathname.split("/")[1] || "en";
-  const pathWithoutLocale = pathname.replace(/^\/[a-z]{2}/, "") || "/";
+  const locale = routing.locales.find(
+    (candidate) =>
+      pathname === `/${candidate}` || pathname.startsWith(`/${candidate}/`)
+  ) || routing.defaultLocale;
+  const pathWithoutLocale = routing.locales.some(
+    (candidate) =>
+      pathname === `/${candidate}` || pathname.startsWith(`/${candidate}/`)
+  )
+    ? pathname.replace(new RegExp(`^/${locale}`), "") || "/"
+    : pathname || "/";
   const hrefFor = (href: string) => `/${locale}${href || "/"}`;
 
   const isActive = (href: string) => {
