@@ -3,7 +3,6 @@
 import React, { ReactNode } from "react";
 import { usePathname } from "@/i18n/routing";
 import DashBoardLayoutProvider from "@/provider/dashboard.provider";
-import { useUserStore } from "@/store/user";
 import QuatavaTerminalShell from "@/components/terminal/quatava-terminal-shell";
 
 interface ConditionalLayoutProviderProps {
@@ -14,7 +13,6 @@ const ConditionalLayoutProvider = ({
   children,
 }: ConditionalLayoutProviderProps) => {
   const pathname = usePathname();
-  const user = useUserStore((state) => state.user);
 
   // List of all (ext) route prefixes that have their own layouts
   const extRoutes = [
@@ -43,7 +41,9 @@ const ConditionalLayoutProvider = ({
   ];
   const isTerminalRoute = terminalRoutes.some((route) => pathname.startsWith(route));
 
-  if (user && isTerminalRoute && !pathname.startsWith("/admin")) {
+  // Keep the Figma terminal shell consistent when these routes are opened
+  // directly, including before the client-side auth store has hydrated.
+  if (isTerminalRoute && !pathname.startsWith("/admin")) {
     return <QuatavaTerminalShell>{children}</QuatavaTerminalShell>;
   }
 

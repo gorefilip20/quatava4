@@ -1,8 +1,6 @@
 "use client";
 
 import type { ReactNode } from "react";
-import SiteHeader from "@/components/partials/header/site-header";
-import Footer from "@/components/partials/footer";
 
 const financeMenu = [
   {
@@ -38,15 +36,5 @@ const financeMenu = [
 ];
 
 export default function FinanceLayout({ children }: { children: ReactNode }) {
-  return (
-    <div className="min-h-screen">
-      {/* Consistent top nav */}
-      <SiteHeader menu={financeMenu} />
-      <div className="container mx-auto px-4 pt-24 pb-18 min-h-[calc(100vh-56px)]">
-        {/* Main content below header */}
-        <main>{children}</main>
-      </div>
-      <Footer />
-    </div>
-  );
+  return <>{children}</>;
 }
