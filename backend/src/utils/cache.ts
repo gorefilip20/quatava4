@@ -119,7 +119,11 @@ export class CacheManager {
       );
     });
 
-    await pipeline.exec();
+    try {
+      await pipeline.exec();
+    } catch (error) {
+      logger("warn", "CacheManager", __filename, `Redis unavailable while caching settings: ${error.message}`);
+    }
   }
 
   // Load extensions from DB, populate Map, and update Redis cache
@@ -138,19 +142,28 @@ export class CacheManager {
       );
     });
 
-    await pipeline.exec();
+    try {
+      await pipeline.exec();
+    } catch (error) {
+      logger("warn", "CacheManager", __filename, `Redis unavailable while caching extensions: ${error.message}`);
+    }
   }
 
   // Helper method to retrieve all data from Redis cache and parse it into an object
   private async getCache(key: string): Promise<Record<string, any>> {
-    const cachedData = await redis.hgetall(key);
-    return Object.keys(cachedData).reduce(
-      (acc, field) => {
-        acc[field] = JSON.parse(cachedData[field]);
-        return acc;
-      },
-      {} as Record<string, any>
-    );
+    try {
+      const cachedData = await redis.hgetall(key);
+      return Object.keys(cachedData).reduce(
+        (acc, field) => {
+          acc[field] = JSON.parse(cachedData[field]);
+          return acc;
+        },
+        {} as Record<string, any>
+      );
+    } catch (error) {
+      logger("warn", "CacheManager", __filename, `Redis unavailable while reading ${key}; falling back to database.`);
+      return {};
+    }
   }
 
   // Method to clear both Map and Redis cache for settings and extensions

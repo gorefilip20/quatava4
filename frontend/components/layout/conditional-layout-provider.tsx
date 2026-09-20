@@ -32,6 +32,7 @@ const ConditionalLayoutProvider = ({
   const isExtRoute = extRoutes.some((route) => pathname.startsWith(route));
 
   const terminalRoutes = [
+    "/dashboard",
     "/trade",
     "/finance",
     "/staking",

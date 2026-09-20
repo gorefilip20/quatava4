@@ -22,7 +22,7 @@ import {
 import { useState } from "react";
 
 const navigation = [
-  { label: "Dashboard", href: "", icon: LayoutDashboard, section: "MAIN" },
+  { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard, section: "MAIN" },
   { label: "Wallet", href: "/finance/wallet", icon: Wallet },
   { label: "Spot Trading", href: "/trade", icon: CandlestickChart, section: "TRADING" },
   { label: "Futures", href: "/trade?type=futures", icon: BarChart3 },
