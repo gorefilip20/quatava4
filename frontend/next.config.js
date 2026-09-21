@@ -60,6 +60,14 @@ const nextConfig = {
   // Removed explicit env object to allow Next.js automatic NEXT_PUBLIC_ variable exposure
   // This allows all NEXT_PUBLIC_* environment variables to be available in the client
   webpack: (config, { dev, isServer }) => {
+    // Keep webpack resolution aligned with the Turbopack aliases. Hostinger
+    // production builds use webpack to avoid the Next 16 global-error
+    // prerender workStore regression seen with Turbopack.
+    config.resolve.alias = {
+      ...(config.resolve.alias || {}),
+      '@': path.resolve(__dirname, '.'),
+      '~': path.resolve(__dirname, '.'),
+    };
     // Fixes npm packages that depend on `fs` module
     if (!isServer) {
       config.resolve.fallback = {
