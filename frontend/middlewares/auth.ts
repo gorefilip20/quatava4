@@ -22,11 +22,22 @@ interface RolesCache {
   [key: number]: Role;
 }
 let rolesCache: RolesCache | null = null;
+let rolesLoaded = false;
+
+async function fetchWithTimeout(input: RequestInfo | URL, init?: RequestInit, timeoutMs = 1500) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(input, { ...init, signal: controller.signal });
+  } finally {
+    clearTimeout(timeout);
+  }
+}
 
 async function fetchRolesAndPermissions() {
   try {
     const endpoint = `${apiUrl}/api/auth/role`;
-    const response = await fetch(endpoint, {
+    const response = await fetchWithTimeout(endpoint, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -39,6 +50,7 @@ async function fetchRolesAndPermissions() {
         `Failed to fetch roles and permissions: ${response.status} ${response.statusText}`
       );
       rolesCache = {};
+      rolesLoaded = true;
       return;
     }
 
@@ -50,6 +62,7 @@ async function fetchRolesAndPermissions() {
         `Invalid response format: expected JSON, got ${contentType || "unknown"}. Response: ${text}`
       );
       rolesCache = {};
+      rolesLoaded = true;
       return;
     }
 
@@ -68,15 +81,17 @@ async function fetchRolesAndPermissions() {
       console.error("Invalid roles data format received");
       rolesCache = {};
     }
+    rolesLoaded = true;
   } catch (error) {
     console.error("Error fetching roles and permissions:", error);
     rolesCache = {};
+    rolesLoaded = true;
   }
 }
 
 async function refreshToken(request: NextRequest) {
   try {
-    const res = await fetch(`${apiUrl}/api/auth/session`, {
+    const res = await fetchWithTimeout(`${apiUrl}/api/auth/session`, {
       method: "GET",
       credentials: "include",
       headers: {
@@ -149,7 +164,7 @@ export const authMiddleware: MiddlewareFactory =
       strippedPath = "/" + segments.slice(1).join("/");
     }
     // Fetch roles if not loaded
-    if (!rolesCache || Object.keys(rolesCache).length === 0) {
+    if (!rolesLoaded) {
       await fetchRolesAndPermissions();
     }
 

@@ -28,10 +28,14 @@ export const getSettings = cache(async () => {
     const apiUrl = `${siteUrl}/api/settings`;
     console.log("SSR: Fetching settings from:", apiUrl);
 
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 1500);
     const res = await fetch(apiUrl, {
       method: "GET",
       next: { revalidate: 60 },
+      signal: controller.signal,
     });
+    clearTimeout(timeout);
 
     if (!res.ok) {
       console.warn(
