@@ -1,5 +1,6 @@
 // RootLayout.tsx
 import React from "react";
+import type { Metadata } from "next";
 import "../globals.css";
 import "simplebar-react/dist/simplebar.min.css";
 import Providers from "@/provider/providers";
@@ -24,13 +25,36 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata = {
-  title: {
-    default: process.env.NEXT_PUBLIC_SITE_NAME || "My App",
-    template: `%s - ${process.env.NEXT_PUBLIC_SITE_NAME || "My App"}`,
-  },
-  description: process.env.NEXT_PUBLIC_SITE_DESCRIPTION || "My App Description",
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const siteName = process.env.NEXT_PUBLIC_SITE_NAME || "Quatava";
+  const description =
+    process.env.NEXT_PUBLIC_SITE_DESCRIPTION ||
+    "Quatava is a focused crypto terminal for markets, spot trading, earn products, and multi-chain money movement.";
+
+  return {
+    title: {
+      default: `${siteName} — Crypto, all day. One clear terminal.`,
+      template: `%s | ${siteName}`,
+    },
+    description,
+    alternates: {
+      canonical: `/${locale}`,
+      languages: { en: "/en", ar: "/ar" },
+    },
+    openGraph: {
+      type: "website",
+      siteName,
+      title: `${siteName} — Crypto, all day. One clear terminal.`,
+      description,
+      url: `/${locale}`,
+    },
+  };
+}
 
 async function loadTranslations(locale: string) {
   try {
