@@ -4,11 +4,14 @@ import Link from "next/link";
 import { routing, usePathname } from "@/i18n/routing";
 import {
   ArrowLeftRight,
+  CreditCard,
   BarChart3,
   Bot,
   CandlestickChart,
   ChevronDown,
   CircleDollarSign,
+  Gift,
+  Globe2,
   Image as ImageIcon,
   LayoutDashboard,
   Menu,
@@ -16,6 +19,7 @@ import {
   Settings2,
   ShieldCheck,
   Sparkles,
+  TrendingDown,
   Wallet,
   X,
 } from "lucide-react";
@@ -27,7 +31,11 @@ const navigation = [
   { label: "Spot Trading", href: "/trade", icon: CandlestickChart, section: "TRADING" },
   { label: "Futures", href: "/trade?type=futures", icon: BarChart3 },
   { label: "Convert", href: "/finance/transfer", icon: ArrowLeftRight },
+  { label: "Send Money", href: "/send-money", icon: Globe2 },
   { label: "Staking", href: "/staking", icon: CircleDollarSign, section: "INVEST" },
+  { label: "Inflation Tracker", href: "/inflation", icon: TrendingDown },
+  { label: "Quatava Card", href: "/card", icon: CreditCard, section: "FEATURES" },
+  { label: "Quatava Circle", href: "/circle", icon: Gift },
   { label: "NFT Marketplace", href: "/nft/marketplace", icon: ImageIcon },
   { label: "AI Trading", href: "/ai/trading", icon: Bot },
 ];
