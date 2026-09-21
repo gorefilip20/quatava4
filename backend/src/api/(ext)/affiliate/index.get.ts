@@ -217,7 +217,7 @@ export default async function getAffiliateDashboard(data: Handler) {
   }
   const earningsRaw = await models.mlmReferralReward.findAll({
     attributes: [
-      [fn("DATE_FORMAT", col("createdAt"), "%Y-%m"), "month"],
+      [fn("to_char", col("createdAt"), "YYYY-MM"), "month"],
       [fn("SUM", col("reward")), "amount"],
     ],
     where: { referrerId: userId, createdAt: { [Op.gte]: startDate } },

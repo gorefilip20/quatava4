@@ -97,7 +97,7 @@ async function fetchRowsForInterval(
 
   const attributes: any[] = [
     [
-      Sequelize.fn("DATE_FORMAT", Sequelize.col("createdAt"), dateFormat),
+      Sequelize.fn("to_char", Sequelize.col("createdAt"), dateFormat),
       "dateGroup",
     ],
     [Sequelize.fn("COUNT", "*"), "total"],

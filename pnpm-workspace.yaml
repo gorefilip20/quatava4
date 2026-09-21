@@ -18,3 +18,8 @@ allowBuilds:
   unrs-resolver: true
   utf-8-validate: true
   zeromq: true
+minimumReleaseAgeExclude:
+  - icu-minify@4.14.6
+  - next-intl-swc-plugin-extractor@4.14.6
+  - next-intl@4.14.6
+  - use-intl@4.14.6

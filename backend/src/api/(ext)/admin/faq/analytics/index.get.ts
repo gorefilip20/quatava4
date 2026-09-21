@@ -215,19 +215,19 @@ export default async (data: Handler) => {
       }),
       models.faq.findAll({
         attributes: [
-          [fn("DATE_FORMAT", col("createdAt"), "%Y-%m-01"), "month"],
+          [fn("to_char", col("createdAt"), "YYYY-MM-01"), "month"],
           [fn("SUM", col("views")), "views"],
         ],
         where: {
           createdAt: { [Op.between]: [startYear, endYear] },
         },
-        group: [fn("DATE_FORMAT", col("createdAt"), "%Y-%m-01")],
+        group: [fn("to_char", col("createdAt"), "YYYY-MM-01")],
         order: [[literal("month"), "ASC"]],
         raw: true,
       }),
       models.faqFeedback.findAll({
         attributes: [
-          [fn("DATE_FORMAT", col("createdAt"), "%Y-%m-01"), "month"],
+          [fn("to_char", col("createdAt"), "YYYY-MM-01"), "month"],
           [
             fn("SUM", literal("CASE WHEN isHelpful THEN 1 ELSE 0 END")),
             "positive",
@@ -240,7 +240,7 @@ export default async (data: Handler) => {
         where: {
           createdAt: { [Op.between]: [startYear, endYear] },
         },
-        group: [fn("DATE_FORMAT", col("createdAt"), "%Y-%m-01")],
+        group: [fn("to_char", col("createdAt"), "YYYY-MM-01")],
         order: [[literal("month"), "ASC"]],
         raw: true,
       }),

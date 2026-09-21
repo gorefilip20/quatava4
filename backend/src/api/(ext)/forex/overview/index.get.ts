@@ -184,7 +184,7 @@ export default async (data: Handler) => {
   // --- CHART DATA ---
   const chartDataRaw = await models.forexInvestment.findAll({
     attributes: [
-      [fn("DATE_FORMAT", sequelize.col("createdAt"), groupFormat), "period"],
+      [fn("to_char", sequelize.col("createdAt"), groupFormat), "period"],
       [fn("SUM", sequelize.col("amount")), "totalInvested"],
     ],
     where: {

@@ -85,7 +85,7 @@ async function getCreatorDailyChartData(
   start: Date,
   end: Date
 ): Promise<ChartDataPoint[]> {
-  const dailyFormat = "DATE_FORMAT(icoTransaction.createdAt, '%Y-%m-%d')";
+  const dailyFormat = "to_char(icoTransaction.createdAt, 'YYYY-MM-DD')";
   const rows: { period: string; raised: string }[] =
     await models.icoTransaction.findAll({
       attributes: [
@@ -132,7 +132,7 @@ async function getCreatorMonthlyChartData(
   start: Date,
   end: Date
 ): Promise<ChartDataPoint[]> {
-  const monthFormat = "DATE_FORMAT(icoTransaction.createdAt, '%Y-%m-01')";
+  const monthFormat = "to_char(icoTransaction.createdAt, 'YYYY-MM-01')";
   const rows: { period: string; raised: string }[] =
     await models.icoTransaction.findAll({
       attributes: [

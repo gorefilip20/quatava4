@@ -28,17 +28,17 @@ export default async (data) => {
     // Run a raw SQL query to aggregate trades for the current year by month.
     // Adjust SQL if using PostgreSQL or another DBMS.
     const [result] = await sequelize.query(`
-      SELECT DATE_FORMAT(createdAt, '%Y-%m-01') AS month,
+      SELECT to_char(createdAt, 'YYYY-MM-01') AS month,
              COUNT(*) AS trades,
-             IFNULL(SUM(total)/1000, 0) AS volume,
-             IFNULL(SUM(
+             COALESCE(SUM(total)/1000, 0) AS volume,
+             COALESCE(SUM(
                (SELECT amount FROM p2p_commissions 
                 WHERE p2p_commissions.tradeId = p2p_trades.id 
                 LIMIT 1)
              )/1000, 0) AS revenue
       FROM p2p_trades
       WHERE createdAt BETWEEN '${startDate.toISOString()}' AND '${endDate.toISOString()}'
-      GROUP BY DATE_FORMAT(createdAt, '%Y-%m')
+      GROUP BY to_char(createdAt, 'YYYY-MM')
       ORDER BY month ASC
     `);
 

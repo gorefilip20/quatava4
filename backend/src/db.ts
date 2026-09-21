@@ -8,36 +8,50 @@ export class SequelizeSingleton {
   public models: any;
 
   private constructor() {
-    // Log database configuration for debugging
-    console.log(`\x1b[36mDatabase Configuration:\x1b[0m`);
-    console.log(`  DB_NAME: ${process.env.DB_NAME || '(not set)'}`);
-    console.log(`  DB_USER: ${process.env.DB_USER || '(not set)'}`);
-    console.log(`  DB_PASSWORD: ${process.env.DB_PASSWORD !== undefined ? (process.env.DB_PASSWORD === '' ? '(empty)' : '[HIDDEN]') : '(not set)'}`);
-    console.log(`  DB_HOST: ${process.env.DB_HOST || '(not set)'}`);
-    console.log(`  DB_PORT: ${process.env.DB_PORT || '(not set)'}`);
-    
-    if (!process.env.DB_NAME || !process.env.DB_USER || !process.env.DB_HOST) {
-      throw new Error('Missing required database environment variables. Please check your .env file.');
-    }
+    const databaseUrl = process.env.DATABASE_URL?.trim();
+    const sslRequired =
+      process.env.PGSSLMODE === "require" ||
+      process.env.DB_SSL === "true" ||
+      databaseUrl?.includes("supabase") === true;
 
-    this.sequelize = new Sequelize(
-      process.env.DB_NAME as string,
-      process.env.DB_USER as string,
-      process.env.DB_PASSWORD || '', // Use empty string if undefined
-      {
-        host: process.env.DB_HOST as string,
-        dialect: "mysql",
-        port: Number(process.env.DB_PORT),
-        logging: false,
-        dialectOptions: {
-          charset: "utf8mb4",
-        },
-        define: {
-          charset: "utf8mb4",
-          collate: "utf8mb4_unicode_ci",
-        },
+    console.log(`\x1b[36mDatabase Configuration:\x1b[0m`);
+    console.log(`  DIALECT: postgres`);
+    console.log(`  DATABASE_URL: ${databaseUrl ? '[configured]' : '(not set)'}`);
+    console.log(`  DB_HOST: ${process.env.DB_HOST || '(from DATABASE_URL)'}`);
+    console.log(`  DB_PORT: ${process.env.DB_PORT || '(from DATABASE_URL)'}`);
+    console.log(`  SSL: ${sslRequired ? 'enabled' : 'disabled'}`);
+
+    const options = {
+      dialect: "postgres" as const,
+      logging: false,
+      dialectOptions: {
+        ...(sslRequired
+          ? { ssl: { require: true, rejectUnauthorized: false } }
+          : {}),
+        keepAlive: true,
+      },
+    };
+
+    if (databaseUrl) {
+      this.sequelize = new Sequelize(databaseUrl, options);
+    } else {
+      if (!process.env.DB_NAME || !process.env.DB_USER || !process.env.DB_HOST) {
+        throw new Error(
+          "Missing database configuration. Set DATABASE_URL for Supabase PostgreSQL or DB_NAME, DB_USER, DB_PASSWORD, DB_HOST, and DB_PORT."
+        );
       }
-    );
+
+      this.sequelize = new Sequelize(
+        process.env.DB_NAME,
+        process.env.DB_USER,
+        process.env.DB_PASSWORD || "",
+        {
+          ...options,
+          host: process.env.DB_HOST,
+          port: Number(process.env.DB_PORT || 5432),
+        }
+      );
+    }
     
     if (!this.sequelize) {
       throw new Error("Failed to create Sequelize instance");

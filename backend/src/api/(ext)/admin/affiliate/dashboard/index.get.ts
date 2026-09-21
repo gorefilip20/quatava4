@@ -199,7 +199,7 @@ export default async (data: { user?: { id: string } }) => {
   }
   const earningsByMonthRaw = await models.mlmReferralReward.findAll({
     attributes: [
-      [fn("DATE_FORMAT", col("createdAt"), "%Y-%m"), "month"],
+      [fn("to_char", col("createdAt"), "YYYY-MM"), "month"],
       [fn("SUM", col("reward")), "amount"],
     ],
     where: {

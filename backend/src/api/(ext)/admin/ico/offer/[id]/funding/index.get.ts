@@ -90,7 +90,7 @@ async function getDailyChartData(
     await models.icoTransaction.findAll({
       attributes: [
         [
-          literal("DATE_FORMAT(icoTransaction.createdAt, '%Y-%m-%d')"),
+          literal("to_char(icoTransaction.createdAt, 'YYYY-MM-DD')"),
           "period",
         ],
         [fn("SUM", literal("amount * price")), "raised"],
@@ -100,7 +100,7 @@ async function getDailyChartData(
         createdAt: { [Op.between]: [start, end] },
         status: { [Op.not]: ["REJECTED"] },
       },
-      group: [literal("DATE_FORMAT(icoTransaction.createdAt, '%Y-%m-%d')")],
+      group: [literal("to_char(icoTransaction.createdAt, 'YYYY-MM-DD')")],
       order: [literal("period")],
       raw: true,
     });
@@ -110,7 +110,7 @@ async function getDailyChartData(
     await models.icoTransaction.findAll({
       attributes: [
         [
-          literal("DATE_FORMAT(icoTransaction.createdAt, '%Y-%m-%d')"),
+          literal("to_char(icoTransaction.createdAt, 'YYYY-MM-DD')"),
           "period",
         ],
         [fn("SUM", literal("amount * price")), "raised"],
@@ -120,7 +120,7 @@ async function getDailyChartData(
         createdAt: { [Op.between]: [start, end] },
         status: "REJECTED",
       },
-      group: [literal("DATE_FORMAT(icoTransaction.createdAt, '%Y-%m-%d')")],
+      group: [literal("to_char(icoTransaction.createdAt, 'YYYY-MM-DD')")],
       order: [literal("period")],
       raw: true,
     });
@@ -186,7 +186,7 @@ async function getMonthlyChartData(
     await models.icoTransaction.findAll({
       attributes: [
         [
-          literal("DATE_FORMAT(icoTransaction.createdAt, '%Y-%m-01')"),
+          literal("to_char(icoTransaction.createdAt, 'YYYY-MM-01')"),
           "period",
         ],
         [fn("SUM", literal("amount * price")), "raised"],
@@ -196,7 +196,7 @@ async function getMonthlyChartData(
         createdAt: { [Op.gte]: start },
         status: { [Op.not]: ["REJECTED"] },
       },
-      group: [literal("DATE_FORMAT(icoTransaction.createdAt, '%Y-%m-01')")],
+      group: [literal("to_char(icoTransaction.createdAt, 'YYYY-MM-01')")],
       order: [literal("period")],
       raw: true,
     });
@@ -206,7 +206,7 @@ async function getMonthlyChartData(
     await models.icoTransaction.findAll({
       attributes: [
         [
-          literal("DATE_FORMAT(icoTransaction.createdAt, '%Y-%m-01')"),
+          literal("to_char(icoTransaction.createdAt, 'YYYY-MM-01')"),
           "period",
         ],
         [fn("SUM", literal("amount * price")), "raised"],
@@ -216,7 +216,7 @@ async function getMonthlyChartData(
         createdAt: { [Op.gte]: start },
         status: "REJECTED",
       },
-      group: [literal("DATE_FORMAT(icoTransaction.createdAt, '%Y-%m-01')")],
+      group: [literal("to_char(icoTransaction.createdAt, 'YYYY-MM-01')")],
       order: [literal("period")],
       raw: true,
     });

@@ -169,17 +169,17 @@ export default async (data: Handler) => {
       dateFormat = "%Y-W%u";
       break;
     case "month":
-      dateFormat = "%Y-%m";
+      dateFormat = "YYYY-MM";
       break;
     case "day":
     default:
-      dateFormat = "%Y-%m-%d";
+      dateFormat = "YYYY-MM-DD";
   }
 
   // Use raw query for grouping by date truncation
   const timeSeriesQuery = `
     SELECT
-      DATE_FORMAT(createdAt, '${dateFormat}') as period,
+      to_char(createdAt, '${dateFormat}') as period,
       SUM(price) as volume,
       COUNT(*) as count,
       AVG(price) as avgPrice

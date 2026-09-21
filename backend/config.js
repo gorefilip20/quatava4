@@ -35,8 +35,18 @@ console.log(`Config: Using environment: ${environment}`);
 console.log(`Config: NODE_ENV = ${process.env.NODE_ENV}`);
 console.log(`Config: Database config - Host: ${process.env.DB_HOST}, User: ${process.env.DB_USER}, Database: ${process.env.DB_NAME}`);
 
-// Validate required environment variables
-const requiredEnvVars = ['DB_HOST', 'DB_USER', 'DB_PASSWORD', 'DB_NAME'];
+const databaseUrl = process.env.DATABASE_URL && process.env.DATABASE_URL.trim();
+const sslRequired =
+  process.env.PGSSLMODE === 'require' ||
+  process.env.DB_SSL === 'true' ||
+  databaseUrl?.includes('supabase') === true;
+
+// Validate required environment variables. Supabase deployments use a single
+// PostgreSQL DATABASE_URL; the discrete DB_* form remains supported for local
+// and self-hosted PostgreSQL instances.
+const requiredEnvVars = databaseUrl
+  ? []
+  : ['DB_HOST', 'DB_USER', 'DB_NAME'];
 const missingEnvVars = requiredEnvVars.filter(envVar => !process.env[envVar]);
 
 if (missingEnvVars.length > 0) {
@@ -45,21 +55,23 @@ if (missingEnvVars.length > 0) {
 }
 
 const dbConfig = {
-  username: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
-  host: process.env.DB_HOST,
-  dialect: "mysql",
-  port: process.env.DB_PORT || 3306,
+  ...(databaseUrl
+    ? { url: databaseUrl }
+    : {
+        username: process.env.DB_USER,
+        password: process.env.DB_PASSWORD,
+        database: process.env.DB_NAME,
+        host: process.env.DB_HOST,
+        port: process.env.DB_PORT || 5432,
+      }),
+  dialect: "postgres",
   logging: environment === 'development' ? console.log : false,
   dialectOptions: {
-    charset: 'utf8mb4',
-    timezone: '+00:00',
+    ...(sslRequired
+      ? { ssl: { require: true, rejectUnauthorized: false } }
+      : {}),
+    keepAlive: true,
   },
-  define: {
-    charset: 'utf8mb4',
-    collate: 'utf8mb4_unicode_ci',
-  }
 };
 
 module.exports = {
