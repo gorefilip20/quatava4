@@ -210,12 +210,6 @@ importers:
       multispinner:
         specifier: file:packages/multispinner
         version: file:backend/packages/multispinner
-      mysql2:
-        specifier: ^3.22.3
-        version: 3.22.3(@types/node@22.19.18)
-      mysqldump:
-        specifier: ^3.2.0
-        version: 3.2.0
       nodemailer:
         specifier: ^6.10.1
         version: 6.10.1
@@ -6863,10 +6857,6 @@ packages:
   deep-is@0.1.4:
     resolution: {integrity: sha512-oIPzksmTg4/MriiaYGO+okXDT7ztn/w3Eptv/+gSIdMdKsJo0u4CfYNFJPy+4SKMuCqGw2wxnA+URMg3t8a/bQ==}
 
-  deepmerge@3.3.0:
-    resolution: {integrity: sha512-GRQOafGHwMHpjPx9iCvTgpu9NojZ49q794EEL94JVEw6VaeA8XTUyBKvAkOOjBX9oJNiV6G3P+T+tihFjo2TqA==}
-    engines: {node: '>=0.10.0'}
-
   deepmerge@4.3.1:
     resolution: {integrity: sha512-3sUqbMEc77XqpdNO7FRyRog+eW3ph+GYCbj+rK+uYyRMuwsVy0rMiVtPn+QJlKFvWP/1PYpapqYn0Me2knFn+A==}
     engines: {node: '>=0.10.0'}
@@ -9015,9 +9005,6 @@ packages:
     resolution: {integrity: sha512-TFYA4jnP7PVbmlBIfhlSe+WKxs9dklXMTEGcBCIvLhE/Tn3H6Gk1norupVW7m5Cnd4bLcr08AytbyV/xj7f/kQ==}
     engines: {node: '>= 12.0.0'}
 
-  long@4.0.0:
-    resolution: {integrity: sha512-XsP+KhQif4bjX1kbuSiySJFNAehNxgLb6hPRGJ9QsUr8ajHkuXGdrHmFUTUUXhDwVX2R5bY4JNZEwbUiMhV+MA==}
-
   long@5.2.5:
     resolution: {integrity: sha512-e0r9YBBgNCq1D1o5Dp8FMH0N5hsFtXDBiVa0qoJPHpakvZkmDKPRoGffZJII/XsHvj9An9blm+cRJ01yQqU+Dw==}
 
@@ -9043,10 +9030,6 @@ packages:
 
   lru-cache@5.1.1:
     resolution: {integrity: sha512-KpNARQA3Iwv+jTA0utUVVbrh+Jlrr1Fv0e56GGzAFOXN7dk/FviaDW8LHmK52DlcH4WP2n6gI8vN1aesBFgo9w==}
-
-  lru-cache@6.0.0:
-    resolution: {integrity: sha512-Jo6dJ04CmSjuznwJSS3pUeWmd/H0ffTlkXXgwZi+eq1UCmqQwCh+eLsYOYCwY991i2Fah4h1BEMCx4qThGbsiA==}
-    engines: {node: '>=10'}
 
   lru.min@1.1.4:
     resolution: {integrity: sha512-DqC6n3QQ77zdFpCMASA1a3Jlb64Hv2N2DciFGkO/4L9+q/IpIAuRlKOvCXabtRW6cQf8usbmM6BE/TOPysCdIA==}
@@ -9375,18 +9358,11 @@ packages:
   multitars@1.0.0:
     resolution: {integrity: sha512-H/J4fMLedtudftaYMOg7ajzLYgT3/rwbWVJbqr/iUgB8DQztn38ys5HOqI1CzSxx8QhXXwOOnnBvd4v3jG5+Mg==}
 
-  mysql2@2.3.3:
-    resolution: {integrity: sha512-wxJUev6LgMSgACDkb/InIFxDprRa6T95+VEoR+xPvtngtccNH2dGjEB/fVZ8yg1gWv1510c9CvXuJHi5zUm0ZA==}
-    engines: {node: '>= 8.0'}
-
   mysql2@3.22.3:
     resolution: {integrity: sha512-uWWxvZSRvRhtBdh2CdcuK83YcOfPdmEeEYB069bAmPnV93QApDGVPuvCQOLjlh7tYHEWdgQPrn6kosDxHBVLkA==}
     engines: {node: '>= 8.0'}
     peerDependencies:
       '@types/node': '>= 8'
-
-  mysqldump@3.2.0:
-    resolution: {integrity: sha512-hS4jUk23BT+qZEwp668eGwyFhmsDFHkIDYANLFeNXlvPK1AhOMLV+SGoKpAk8290sUhtUAIG16R3YrNhHmZ+zQ==}
 
   named-placeholders@1.1.6:
     resolution: {integrity: sha512-Tz09sEL2EEuv5fFowm419c1+a/jSMiBjI9gHxVLrVdbUkkNUUfjsVYs9pVZu5oCon/kmRh9TfLEObFtkVxmY0w==}
@@ -10762,9 +10738,6 @@ packages:
     resolution: {integrity: sha512-VMbMxbDeehAxpOtWJXlcUS5E8iXh6QmN+BkRX1GARS3wRaXEEgzCcB10gTQazO42tpNIya8xIyNx8fll1OFPrg==}
     engines: {node: '>= 0.8.0'}
 
-  seq-queue@0.0.5:
-    resolution: {integrity: sha512-hr3Wtp/GZIc/6DAGPDcV4/9WoZhjrkXsi5B/07QgX8tsdc6ilr7BFM6PM6rbdAX1kFSDYeZGLipIZZKyQP0O5Q==}
-
   sequelize-cli@6.6.5:
     resolution: {integrity: sha512-DqyISCULOaEbTM+rRQH4YvcUWeOC1XDiSKcjsC6TfAnT7W837mNkChJhtB/Z4FdCFHRCojmiP7zsrA4pARmacA==}
     engines: {node: '>=10.0.0'}
@@ -10988,13 +10961,6 @@ packages:
   sql-escaper@1.3.3:
     resolution: {integrity: sha512-BsTCV265VpTp8tm1wyIm1xqQCS+Q9NHx2Sr+WcnUrgLrQ6yiDIvHYJV5gHxsj1lMBy2zm5twLaZao8Jd+S8JJw==}
     engines: {bun: '>=1.0.0', deno: '>=2.0.0', node: '>=12.0.0'}
-
-  sql-formatter@2.3.4:
-    resolution: {integrity: sha512-CajWtvzYoBJbD5PQeVe3E7AOHAIYvRQEPOKgF9kfKNeY8jtjBiiA6pDzkMuAID8jJMluoPvyKveLigSaA5tKQQ==}
-
-  sqlstring@2.3.3:
-    resolution: {integrity: sha512-qC9iz2FlN7DQl3+wjwn3802RTyjCx7sDvfQEXchwa6CWOx07/WVfh91gBmQ9fahw8snwGEWU3xGzOt4tFyHLxg==}
-    engines: {node: '>= 0.6'}
 
   ssf@0.11.2:
     resolution: {integrity: sha512-+idbmIXoYET47hH+d7dfm2epdOMUDjqcB4648sTZ+t2JwoyBFL/insLfB/racrDmsKB3diwsDA696pZMieAC5g==}
@@ -12210,9 +12176,6 @@ packages:
 
   yallist@3.1.1:
     resolution: {integrity: sha512-a4UGQaWPH59mOXUYnAG2ewncQS4i4F43Tv3JoAM+s2VDAmS9NsK8GpDMLrCHPksFT7h3K6TOoUNn2pb7RoXx4g==}
-
-  yallist@4.0.0:
-    resolution: {integrity: sha512-3wdGidZyq5PB084XLES5TpOSRA3wjXAlIWMhum2kRcv/41Sn2emQ0dycQW4uZXLejwKvg6EsvbdlVL+FYEct7A==}
 
   yaml@2.8.4:
     resolution: {integrity: sha512-ml/JPOj9fOQK8RNnWojA67GbZ0ApXAUlN2UQclwv2eVgTgn7O9gg9o7paZWKMp4g0H3nTLtS9LVzhkpOFIKzog==}
@@ -21296,7 +21259,8 @@ snapshots:
     dependencies:
       possible-typed-array-names: 1.1.0
 
-  aws-ssl-profiles@1.1.2: {}
+  aws-ssl-profiles@1.1.2:
+    optional: true
 
   axe-core@4.11.4: {}
 
@@ -22560,8 +22524,6 @@ snapshots:
 
   deep-is@0.1.4: {}
 
-  deepmerge@3.3.0: {}
-
   deepmerge@4.3.1: {}
 
   defaults@1.0.4:
@@ -23771,6 +23733,7 @@ snapshots:
   generate-function@2.3.1:
     dependencies:
       is-property: 1.0.2
+    optional: true
 
   generate-password@1.7.1: {}
 
@@ -24157,6 +24120,7 @@ snapshots:
   iconv-lite@0.7.2:
     dependencies:
       safer-buffer: 2.1.2
+    optional: true
 
   icu-minify@4.14.6:
     dependencies:
@@ -24373,7 +24337,8 @@ snapshots:
 
   is-potential-custom-element-name@1.0.1: {}
 
-  is-property@1.0.2: {}
+  is-property@1.0.2:
+    optional: true
 
   is-regex@1.2.1:
     dependencies:
@@ -25295,8 +25260,6 @@ snapshots:
       safe-stable-stringify: 2.5.0
       triple-beam: 1.4.1
 
-  long@4.0.0: {}
-
   long@5.2.5: {}
 
   long@5.3.2: {}
@@ -25322,11 +25285,8 @@ snapshots:
     dependencies:
       yallist: 3.1.1
 
-  lru-cache@6.0.0:
-    dependencies:
-      yallist: 4.0.0
-
-  lru.min@1.1.4: {}
+  lru.min@1.1.4:
+    optional: true
 
   lucide-react@0.468.0(react@19.1.1):
     dependencies:
@@ -25981,17 +25941,6 @@ snapshots:
   multitars@1.0.0:
     optional: true
 
-  mysql2@2.3.3:
-    dependencies:
-      denque: 2.1.0
-      generate-function: 2.3.1
-      iconv-lite: 0.6.3
-      long: 4.0.0
-      lru-cache: 6.0.0
-      named-placeholders: 1.1.6
-      seq-queue: 0.0.5
-      sqlstring: 2.3.3
-
   mysql2@3.22.3(@types/node@22.19.18):
     dependencies:
       '@types/node': 22.19.18
@@ -26003,17 +25952,12 @@ snapshots:
       lru.min: 1.1.4
       named-placeholders: 1.1.6
       sql-escaper: 1.3.3
-
-  mysqldump@3.2.0:
-    dependencies:
-      deepmerge: 3.3.0
-      mysql2: 2.3.3
-      sql-formatter: 2.3.4
-      sqlstring: 2.3.3
+    optional: true
 
   named-placeholders@1.1.6:
     dependencies:
       lru.min: 1.1.4
+    optional: true
 
   nanoid@3.3.12: {}
 
@@ -27769,8 +27713,6 @@ snapshots:
       - supports-color
     optional: true
 
-  seq-queue@0.0.5: {}
-
   sequelize-cli@6.6.5:
     dependencies:
       fs-extra: 9.1.0
@@ -28064,13 +28006,8 @@ snapshots:
 
   sprintf-js@1.0.3: {}
 
-  sql-escaper@1.3.3: {}
-
-  sql-formatter@2.3.4:
-    dependencies:
-      lodash: 4.18.1
-
-  sqlstring@2.3.3: {}
+  sql-escaper@1.3.3:
+    optional: true
 
   ssf@0.11.2:
     dependencies:
@@ -29586,8 +29523,6 @@ snapshots:
   y18n@5.0.8: {}
 
   yallist@3.1.1: {}
-
-  yallist@4.0.0: {}
 
   yaml@2.8.4:
     optional: true
