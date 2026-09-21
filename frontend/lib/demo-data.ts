@@ -25,11 +25,20 @@ export const DEMO_SETTINGS = {
   features: { spotTrading: true, futuresTrading: true, nftMarketplace: true },
 };
 
+export const DEMO_STAKING_POOLS = [
+  { id: "demo-stake-usdt", name: "USDT Stable Yield", token: "Tether", symbol: "USDT", description: "Preview staking pool for paper-mode product exploration.", walletType: "SPOT", apr: 8.5, lockPeriod: 30, minStake: 10, maxStake: 100000, availableToStake: 1000000, earlyWithdrawalFee: 2, adminFeePercentage: 0.5, status: "ACTIVE", isPromoted: true, order: 1, earningFrequency: "DAILY", autoCompound: true, externalPoolUrl: "", profitSource: "Preview yield model", fundAllocation: "Paper mode", risks: "Preview only", rewards: "Paper rewards only", isDemo: true },
+  { id: "demo-stake-eth", name: "ETH Flexible Earn", token: "Ethereum", symbol: "ETH", description: "Preview flexible pool for paper-mode product exploration.", walletType: "SPOT", apr: 5.2, lockPeriod: 14, minStake: 0.01, maxStake: 500, availableToStake: 5000, earlyWithdrawalFee: 1, adminFeePercentage: 0.5, status: "ACTIVE", isPromoted: true, order: 2, earningFrequency: "WEEKLY", autoCompound: false, externalPoolUrl: "", profitSource: "Preview yield model", fundAllocation: "Paper mode", risks: "Preview only", rewards: "Paper rewards only", isDemo: true },
+];
+
+export const DEMO_STAKING_STATS = { totalStaked: 1842500, activeUsers: 842, avgApr: 6.85, totalRewards: 128460, isDemo: true };
+
 export function getDemoFallback(url: string, method = "GET"): unknown | null {
   if (!DEMO_DATA_ENABLED || method.toUpperCase() !== "GET") return null;
   const path = url.split("?")[0];
   if (path.endsWith("/api/exchange/market") || path.endsWith("/api/futures/market")) return DEMO_MARKETS;
   if (path.endsWith("/api/nft/listing") || path.endsWith("/api/nft/marketplace")) return DEMO_NFT_LISTINGS;
+  if (path.endsWith("/api/staking/pool")) return DEMO_STAKING_POOLS;
+  if (path.endsWith("/api/staking/stats")) return DEMO_STAKING_STATS;
   if (path.endsWith("/api/settings")) return DEMO_SETTINGS;
   return null;
 }
