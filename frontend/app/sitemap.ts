@@ -13,6 +13,8 @@ const publicPaths = [
   "/login",
   "/send-money",
   "/finance/dollar-shield",
+  "/platform",
+  "/business",
 ];
 
 export default function sitemap(): MetadataRoute.Sitemap {
