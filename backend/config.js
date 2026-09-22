@@ -3,12 +3,11 @@
 const path = require("path");
 const fs = require("fs");
 
-// Load environment variables with multiple path fallbacks - prioritize root .env file
 const envPaths = [
-  path.resolve(process.cwd(), "../.env"),  // Root .env (one level up from backend)
-  path.resolve(__dirname, "../.env"),     // Development relative path (same as above)
-  path.resolve(process.cwd(), ".env"),    // Current working directory
-  path.resolve(__dirname, ".env"),        // Fallback (same directory)
+  path.resolve(process.cwd(), "../.env"),
+  path.resolve(__dirname, "../.env"),
+  path.resolve(process.cwd(), ".env"),
+  path.resolve(__dirname, ".env"),
 ];
 
 let envLoaded = false;
@@ -22,57 +21,55 @@ for (const envPath of envPaths) {
     }
   }
 }
+if (!envLoaded) require("dotenv").config();
 
-if (!envLoaded) {
-  console.warn(`Config: Warning: No .env file found. Tried paths: ${envPaths.join(", ")}`);
-  // Try to load from process environment as fallback
-  require("dotenv").config();
-}
-
-// Determine the correct environment - Sequelize CLI uses NODE_ENV
-const environment = process.env.NODE_ENV || 'development';
-console.log(`Config: Using environment: ${environment}`);
-console.log(`Config: NODE_ENV = ${process.env.NODE_ENV}`);
-console.log(`Config: Database config - Host: ${process.env.DB_HOST}, User: ${process.env.DB_USER}, Database: ${process.env.DB_NAME}`);
-
-const databaseUrl = process.env.DATABASE_URL && process.env.DATABASE_URL.trim();
+const environment = process.env.NODE_ENV || "development";
+const databaseUrl = process.env.DATABASE_URL?.trim();
+const pgSslMode = process.env.PGSSLMODE?.trim().toLowerCase();
+const explicitSsl = process.env.DB_SSL?.trim().toLowerCase();
 const sslRequired =
-  process.env.PGSSLMODE === 'require' ||
-  process.env.DB_SSL === 'true' ||
-  databaseUrl?.includes('supabase') === true;
+  explicitSsl === "true" ||
+  explicitSsl === "1" ||
+  pgSslMode === "require" ||
+  (pgSslMode !== "disable" && databaseUrl?.toLowerCase().includes("supabase") === true);
 
-// Validate required environment variables. Supabase deployments use a single
-// PostgreSQL DATABASE_URL; the discrete DB_* form remains supported for local
-// and self-hosted PostgreSQL instances.
-const requiredEnvVars = databaseUrl
-  ? []
-  : ['DB_HOST', 'DB_USER', 'DB_NAME'];
-const missingEnvVars = requiredEnvVars.filter(envVar => !process.env[envVar]);
+const positiveInteger = (value, fallback) => {
+  const parsed = Number(value);
+  return Number.isInteger(parsed) && parsed > 0 ? parsed : fallback;
+};
 
+const requiredEnvVars = databaseUrl ? [] : ["DB_HOST", "DB_USER", "DB_NAME"];
+const missingEnvVars = requiredEnvVars.filter((envVar) => !process.env[envVar]);
 if (missingEnvVars.length > 0) {
-  console.error(`Config: Error - Missing required environment variables: ${missingEnvVars.join(', ')}`);
-  console.error(`Config: Please ensure your .env file contains all required database configuration variables.`);
+  console.error(`Config: Missing required environment variables: ${missingEnvVars.join(", ")}`);
 }
 
-const dbConfig = {
-  ...(databaseUrl
-    ? { url: databaseUrl }
-    : {
-        username: process.env.DB_USER,
-        password: process.env.DB_PASSWORD,
-        database: process.env.DB_NAME,
-        host: process.env.DB_HOST,
-        port: process.env.DB_PORT || 5432,
-      }),
+const common = {
   dialect: "postgres",
-  logging: environment === 'development' ? console.log : false,
+  logging: environment === "development" ? console.log : false,
+  pool: {
+    max: positiveInteger(process.env.DB_POOL_MAX, 5),
+    min: 0,
+    acquire: positiveInteger(process.env.DB_POOL_ACQUIRE_MS, 30000),
+    idle: positiveInteger(process.env.DB_POOL_IDLE_MS, 10000),
+  },
   dialectOptions: {
-    ...(sslRequired
-      ? { ssl: { require: true, rejectUnauthorized: false } }
-      : {}),
+    connectionTimeoutMillis: positiveInteger(process.env.DB_CONNECT_TIMEOUT_MS, 10000),
     keepAlive: true,
+    ...(sslRequired ? { ssl: { rejectUnauthorized: false } } : {}),
   },
 };
+
+const dbConfig = databaseUrl
+  ? { ...common, url: databaseUrl }
+  : {
+      ...common,
+      username: process.env.DB_USER,
+      password: process.env.DB_PASSWORD || "",
+      database: process.env.DB_NAME,
+      host: process.env.DB_HOST,
+      port: positiveInteger(process.env.DB_PORT, 5432),
+    };
 
 module.exports = {
   development: dbConfig,
