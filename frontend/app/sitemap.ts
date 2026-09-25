@@ -4,7 +4,8 @@ const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || "https://getquatava.com").r
   /\/$/,
   ""
 );
-const locales = ["en", "ar"];
+const defaultLocale = "en";
+const secondaryLocales = ["ar"];
 const publicPaths = [
   "",
   "/market",
@@ -18,12 +19,21 @@ const publicPaths = [
 ];
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  return locales.flatMap((locale) =>
+  const defaultEntries = publicPaths.map((path) => ({
+    url: `${siteUrl}${path || "/"}`,
+    lastModified: new Date(),
+    changeFrequency: path === "" || path === "/market" ? "daily" as const : "weekly" as const,
+    priority: path === "" ? 1 : path === "/market" ? 0.8 : 0.6,
+  }));
+
+  const localizedEntries = secondaryLocales.flatMap((locale) =>
     publicPaths.map((path) => ({
       url: `${siteUrl}/${locale}${path}`,
       lastModified: new Date(),
-      changeFrequency: path === "" || path === "/market" ? "daily" : "weekly",
-      priority: path === "" ? 1 : path === "/market" ? 0.8 : 0.6,
+      changeFrequency: path === "" || path === "/market" ? "daily" as const : "weekly" as const,
+      priority: path === "" ? 0.8 : path === "/market" ? 0.7 : 0.5,
     }))
   );
+
+  return [...defaultEntries, ...localizedEntries];
 }

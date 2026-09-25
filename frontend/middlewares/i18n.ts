@@ -10,7 +10,7 @@ export const i18nMiddleware: MiddlewareFactory = (next) => {
   const intlMiddleware = createMiddleware({
     ...routing,
     localeDetection: true, // Enable locale detection
-    localePrefix: "always", // Always use locale prefix
+    localePrefix: "as-needed",
     localeCookie: {
       name: "NEXT_LOCALE", // Cookie name for persisting locale
       maxAge: 60 * 60 * 24 * 365, // 1 year
@@ -42,7 +42,8 @@ export const i18nMiddleware: MiddlewareFactory = (next) => {
       return new NextResponse(null, { status: 404 });
     }
 
-    // Handle root path redirect explicitly with cookie support
+    // Keep the default English homepage at the bare domain. Use an internal
+    // rewrite so users do not see `/en` in the address bar.
     if (pathname === "/") {
       // Check for saved locale in cookie first
       const savedLocale = request.cookies.get("NEXT_LOCALE")?.value;
@@ -63,7 +64,7 @@ export const i18nMiddleware: MiddlewareFactory = (next) => {
         }
       }
       
-      const response = NextResponse.redirect(new URL(`/${preferredLocale}`, request.url));
+      const response = NextResponse.rewrite(new URL(`/${preferredLocale}`, request.url));
       
       // Set cookie if it's different from current saved locale
       if (savedLocale !== preferredLocale) {
@@ -75,6 +76,14 @@ export const i18nMiddleware: MiddlewareFactory = (next) => {
       }
       
       return response;
+    }
+
+    // English is the default locale; keep legacy `/en` links working while
+    // making the bare domain the only canonical public URL.
+    if (pathname === "/en" || pathname.startsWith("/en/")) {
+      const canonicalUrl = request.nextUrl.clone();
+      canonicalUrl.pathname = pathname === "/en" ? "/" : pathname.slice(3);
+      return NextResponse.redirect(canonicalUrl, 308);
     }
     
     const response = await intlMiddleware(request);

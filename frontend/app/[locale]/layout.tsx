@@ -35,6 +35,7 @@ export async function generateMetadata({
   const description =
     process.env.NEXT_PUBLIC_SITE_DESCRIPTION ||
     "Quatava is a focused crypto terminal for markets, spot trading, earn products, and multi-chain money movement.";
+  const localePath = locale === routing.defaultLocale ? "" : `/${locale}`;
 
   return {
     title: {
@@ -43,15 +44,15 @@ export async function generateMetadata({
     },
     description,
     alternates: {
-      canonical: `/${locale}`,
-      languages: { en: "/en", ar: "/ar" },
+      canonical: localePath || "/",
+      languages: { en: "/", ar: "/ar" },
     },
     openGraph: {
       type: "website",
       siteName,
       title: `${siteName} — Crypto, all day. One clear terminal.`,
       description,
-      url: `/${locale}`,
+      url: localePath || "/",
     },
   };
 }

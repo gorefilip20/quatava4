@@ -15,7 +15,8 @@ const locales = Array.from(new Set(parsedLocales.length ? parsedLocales : [defau
 export const routing = defineRouting({
   locales: locales,
   defaultLocale: defaultLocale,
-  localePrefix: "always", // Always use locale prefix for consistency
+  // Keep English at the bare domain; non-default locales remain prefixed.
+  localePrefix: "as-needed",
   localeDetection: true, // Enable automatic locale detection
 });
 

@@ -24,7 +24,7 @@ export const metadata: Metadata = {
     title: "Quatava — Crypto, all day. One clear terminal.",
     description:
       "A focused crypto terminal for markets, trading, earn, and multi-chain money movement.",
-    url: "https://getquatava.com/en",
+    url: "https://getquatava.com",
   },
   twitter: {
     card: "summary",
@@ -51,7 +51,7 @@ export default function RootLayout({
       {
         "@type": "WebSite",
         name: "Quatava",
-        url: "https://getquatava.com/en",
+        url: "https://getquatava.com",
         description:
           "A focused crypto terminal for markets, trading, earn, and multi-chain money movement.",
       },
