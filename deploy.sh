@@ -26,9 +26,6 @@ fi
 
 DEPLOY_USER="${DEPLOY_USER:-deploy}"
 APP_DIR="/home/$DEPLOY_USER/quatava"
-DB_NAME="quatava"
-DB_USER="quatava_admin"
-DB_PASS=$(openssl rand -base64 24 | tr -dc 'a-zA-Z0-9' | head -c 32)
 
 log "Starting Quatava deployment..."
 log "Deploy user: $DEPLOY_USER"
@@ -53,7 +50,6 @@ apt install -y \
     build-essential g++ python3 python-is-python3 \
     libtool-bin autoconf automake \
     git curl wget unzip jq \
-    mariadb-server mariadb-client \
     redis-server \
     nginx \
     ufw fail2ban
@@ -72,26 +68,8 @@ ufw --force enable
 # ============================================
 # STEP 3: Start Services
 # ============================================
-log "Step 4/12: Starting MariaDB and Redis..."
-systemctl enable --now mariadb
+log "Step 4/12: Starting Redis..."
 systemctl enable --now redis-server
-
-# ============================================
-# STEP 4: Setup Database
-# ============================================
-log "Step 5/12: Setting up database..."
-mariadb -u root <<EOF
-CREATE DATABASE IF NOT EXISTS $DB_NAME CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-CREATE USER IF NOT EXISTS '$DB_USER'@'localhost' IDENTIFIED BY '$DB_PASS';
-GRANT ALL PRIVILEGES ON $DB_NAME.* TO '$DB_USER'@'localhost';
-FLUSH PRIVILEGES;
-EOF
-
-log "Database created. Credentials saved to /home/$DEPLOY_USER/.db-credentials"
-echo "DB_NAME=$DB_NAME" > /home/$DEPLOY_USER/.db-credentials
-echo "DB_USER=$DB_USER" >> /home/$DEPLOY_USER/.db-credentials
-echo "DB_PASS=$DB_PASS" >> /home/$DEPLOY_USER/.db-credentials
-chmod 600 /home/$DEPLOY_USER/.db-credentials
 
 # ============================================
 # STEP 5: Install Node.js
@@ -166,11 +144,11 @@ su - $DEPLOY_USER -c "
     sed -i 's|ENCRYPTION_KEY_PASSPHRASE=.*|ENCRYPTION_KEY_PASSPHRASE=\"$ENCRYPTION_KEY\"|' .env
     sed -i 's|NEXT_PUBLIC_SITE_URL=.*|NEXT_PUBLIC_SITE_URL=\"http://$SERVER_IP\"|' .env
     sed -i 's|NODE_ENV=.*|NODE_ENV=\"production\"|' .env
-    sed -i 's|DB_NAME=.*|DB_NAME=\"$DB_NAME\"|' .env
-    sed -i 's|DB_USER=.*|DB_USER=\"$DB_USER\"|' .env
-    sed -i 's|DB_PASSWORD=.*|DB_PASSWORD=\"$DB_PASS\"|' .env
-    sed -i 's|DB_HOST=.*|DB_HOST=\"127.0.0.1\"|' .env
-    sed -i 's|DB_PORT=.*|DB_PORT=\"3306\"|' .env
+    sed -i 's|NEXT_PUBLIC_BACKEND_URL=.*|NEXT_PUBLIC_BACKEND_URL=\"http://127.0.0.1:4000\"|' .env
+    sed -i 's|PGSSLMODE=.*|PGSSLMODE=\"require\"|' .env
+    sed -i 's|DB_SSL=.*|DB_SSL=\"true\"|' .env
+    sed -i 's|DB_CONNECT_TIMEOUT_MS=.*|DB_CONNECT_TIMEOUT_MS=\"10000\"|' .env
+    echo \"IMPORTANT: set DATABASE_URL to the Supabase PostgreSQL connection string in ~/quatava/.env before starting the application.\"
     chmod 600 .env
 "
 

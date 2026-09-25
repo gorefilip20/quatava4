@@ -111,31 +111,19 @@ npm install -g pm2
 
 ---
 
-## 5. Install MariaDB 10.11
+## 5. Configure PostgreSQL / Supabase
+
+Quatava production uses Supabase PostgreSQL. Do not install MariaDB and do not use port `3306`.
+Create or retrieve a Supabase PostgreSQL connection string and keep it server-side:
 
 ```bash
-sudo apt install -y mariadb-server mariadb-client
-sudo systemctl enable --now mariadb
-
-# Set root password and lock down install
-sudo mariadb-secure-installation
-# Answer:
-#   - new root password: (set a strong one)
-#   - remove anonymous users: Y
-#   - disallow root login remotely: Y
-#   - remove test database: Y
-#   - reload privilege tables: Y
-
-# Create the app database + user
-sudo mariadb -u root -p <<'EOF'
-CREATE DATABASE IF NOT EXISTS quatava CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-CREATE USER 'quatava_admin'@'localhost' IDENTIFIED BY 'CHANGEME_strong_password';
-GRANT ALL PRIVILEGES ON quatava.* TO 'quatava_admin'@'localhost';
-FLUSH PRIVILEGES;
-EOF
+DATABASE_URL="postgresql://postgres:REDACTED@db.PROJECT.supabase.co:5432/postgres?sslmode=require"
+PGSSLMODE="require"
+DB_SSL="true"
+DB_CONNECT_TIMEOUT_MS="10000"
 ```
 
-> **Replace `CHANGEME_strong_password` with a real strong password** — at least 24 chars, mixed case, digits, no `!`/`$`/`` ` `` (those cause shell quoting headaches in .env). Generate with `openssl rand -base64 24`.
+If direct database connections are unavailable from the host, use the Supabase Session Pooler URL instead.
 
 ---
 
@@ -208,12 +196,14 @@ NEXT_PUBLIC_FRONTEND_PORT="3000"                 # Internal; Nginx talks to this
 NEXT_PUBLIC_BACKEND_PORT="4000"                  # Internal; Nginx talks to this
 NEXT_PUBLIC_LANGUAGES="en"
 
-# Database (use the password from Step 5)
-DB_NAME="quatava"
-DB_USER="quatava_admin"
-DB_PASSWORD="THE_PASSWORD_FROM_STEP_5"
-DB_HOST="127.0.0.1"
-DB_PORT="3306"
+# Database (Supabase PostgreSQL)
+DATABASE_URL="postgresql://postgres:REDACTED@db.PROJECT.supabase.co:5432/postgres?sslmode=require"
+PGSSLMODE="require"
+DB_SSL="true"
+DB_CONNECT_TIMEOUT_MS="10000"
+
+# API proxy: PM2 runs the backend on port 4000.
+NEXT_PUBLIC_BACKEND_URL="http://127.0.0.1:4000"
 
 # JWT secrets — REGENERATE these for production. Do NOT reuse dev secrets.
 #   Run on the VPS to generate fresh ones:
@@ -508,7 +498,7 @@ NODE_OPTIONS='--max-old-space-size=4096' pnpm build:all
 pm2 restart all
 
 # Database backup (daily cron suggested)
-mysqldump -u quatava_admin -p quatava | gzip > ~/backups/quatava-$(date +%F).sql.gz
+pg_dump "$DATABASE_URL" | gzip > ~/backups/quatava-$(date +%F).sql.gz
 
 # Restart Nginx after config change
 sudo nginx -t && sudo systemctl reload nginx
@@ -521,8 +511,8 @@ sudo nginx -t && sudo systemctl reload nginx
 - **HTTPS / a real domain** — strongly recommended before going live with real users.
 - **Real SMTP** — turn `NEXT_PUBLIC_VERIFY_EMAIL_STATUS` back on after wiring SendGrid / Mailgun.
 - **Stripe + Binance keys** — wire up real keys once you're past internal testing.
-- **Backups** — automate the `mysqldump` cron above plus snapshot the VPS at your provider.
-- **Monitoring** — at minimum, Uptime Robot pinging `/api/settings`. Better: PM2 Plus or a Grafana dashboard.
+- **Backups** — automate the `pg_dump` cron above plus Supabase point-in-time recovery/snapshots.
+- **Monitoring** — at minimum, Uptime Robot pinging `/api/health`. Better: PM2 Plus or a Grafana dashboard.
 - **Rate limiting** — `.env` already sets `RATE_LIMIT=100` / 60s but verify it's enforced.
 - **Log rotation** — `/var/log/nginx` rotates by default; PM2 logs need `pm2 install pm2-logrotate`.
 - **Disk alerts** — set a provider-side alert for >80% disk usage.
