@@ -1,7 +1,6 @@
 "use client";
 
-import Link from "next/link";
-import { routing, usePathname } from "@/i18n/routing";
+import { Link, routing, usePathname } from "@/i18n/routing";
 import {
   ArrowLeftRight,
   CreditCard,
@@ -53,7 +52,10 @@ export default function QuatavaTerminalShell({ children }: { children: React.Rea
   )
     ? pathname.replace(new RegExp(`^/${locale}`), "") || "/"
     : pathname || "/";
-  const hrefFor = (href: string) => `/${locale}${href || "/"}`;
+  const hrefFor = (href: string) => {
+    const path = href || "/";
+    return locale === routing.defaultLocale ? path : `/${locale}${path}`;
+  };
 
   const isActive = (href: string) => {
     const cleanHref = href.split("?")[0] || "/";
