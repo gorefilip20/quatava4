@@ -17,7 +17,8 @@ async function hashPassword(password) {
 module.exports = {
   async up(queryInterface, Sequelize) {
     const [superAdminRole] = await queryInterface.sequelize.query(
-      `SELECT id FROM role WHERE name = 'Super Admin';`
+      'SELECT id FROM "role" WHERE name = :name;',
+      { replacements: { name: "Super Admin" } },
     );
 
     if (superAdminRole.length === 0) {
@@ -26,20 +27,31 @@ module.exports = {
     }
 
     const superAdminRoleId = superAdminRole[0].id;
-
     const [existingSuperAdmin] = await queryInterface.sequelize.query(
-      `SELECT id FROM user WHERE roleId = '${superAdminRoleId}';`
+      'SELECT id FROM "user" WHERE "roleId" = :roleId;',
+      { replacements: { roleId: superAdminRoleId } },
     );
 
     if (existingSuperAdmin.length > 0) {
       return;
     }
 
+    const configuredPassword = process.env.APP_SUPER_ADMIN_PASSWORD;
+    if (
+      process.env.NODE_ENV === "production" &&
+      (!configuredPassword || configuredPassword.length < 32)
+    ) {
+      throw new Error(
+        "Set APP_SUPER_ADMIN_PASSWORD to a unique value of at least 32 characters before seeding production.",
+      );
+    }
+    const adminPassword = configuredPassword || "12345678";
+
     await queryInterface.bulkInsert("user", [
       {
         id: uuidv4(),
         email: "superadmin@example.com",
-        password: await hashPassword("12345678"),
+        password: await hashPassword(adminPassword),
         firstName: "Super",
         lastName: "Admin",
         emailVerified: true,
@@ -53,12 +65,15 @@ module.exports = {
 
   async down(queryInterface, Sequelize) {
     const [superAdminRole] = await queryInterface.sequelize.query(
-      `SELECT id FROM role WHERE name = 'Super Admin';`
+      'SELECT id FROM "role" WHERE name = :name;',
+      { replacements: { name: "Super Admin" } },
     );
 
     if (superAdminRole.length > 0) {
-      const superAdminRoleId = superAdminRole[0].id;
-      await queryInterface.bulkDelete("user", { role_id: superAdminRoleId });
+      await queryInterface.sequelize.query(
+        'DELETE FROM "user" WHERE "roleId" = :roleId;',
+        { replacements: { roleId: superAdminRole[0].id } },
+      );
     }
   },
 };

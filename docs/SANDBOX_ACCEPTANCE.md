@@ -10,7 +10,7 @@ Use a separate database, Redis namespace, exchange sandbox account, and wallet/t
 
 ## Start a local acceptance environment
 
-Copy `.env.example` to `.env`, set `NODE_ENV=development`, configure a disposable MySQL/TiDB database and Redis instance, then set:
+Copy `.env.example` to `.env`, set `NODE_ENV=development`, configure a disposable PostgreSQL database and Redis instance, then set:
 
 ```dotenv
 SANDBOX_MODE=true

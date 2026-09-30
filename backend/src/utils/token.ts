@@ -2,6 +2,7 @@ import { jwtVerify, SignJWT } from "jose";
 import crypto from "crypto";
 import { makeUuid } from "./passwords";
 import { RedisSingleton } from "./redis";
+import { getTokenSecret } from "./token-secrets";
 
 export const issuerKey = "platform";
 const redis = RedisSingleton.getInstance();
@@ -82,8 +83,7 @@ export const generateAccessToken = async (user: any): Promise<string> => {
     iss: issuerKey,
     jti: makeUuid(),
   };
-  const APP_ACCESS_TOKEN_SECRET =
-    process.env.APP_ACCESS_TOKEN_SECRET || "secret";
+  const APP_ACCESS_TOKEN_SECRET = getTokenSecret("APP_ACCESS_TOKEN_SECRET");
   return new SignJWT(jwtClaims)
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
@@ -98,8 +98,7 @@ export const verifyAccessToken = async (token: string): Promise<any> => {
   }
 
   const cookieToken = token.includes(" ") ? token.split(" ")[1] : token;
-  const APP_ACCESS_TOKEN_SECRET =
-    process.env.APP_ACCESS_TOKEN_SECRET || "secret";
+  const APP_ACCESS_TOKEN_SECRET = getTokenSecret("APP_ACCESS_TOKEN_SECRET");
   try {
     const { payload } = await jwtVerify(
       cookieToken,
@@ -122,8 +121,7 @@ export const generateRefreshToken = async (user: any): Promise<string> => {
     jti: makeUuid(),
   };
 
-  const APP_REFRESH_TOKEN_SECRET =
-    process.env.APP_REFRESH_TOKEN_SECRET || "secret";
+  const APP_REFRESH_TOKEN_SECRET = getTokenSecret("APP_REFRESH_TOKEN_SECRET");
   const JWT_REFRESH_EXPIRY = process.env.JWT_REFRESH_EXPIRY || "14d";
 
   return new SignJWT(jwtClaims)
@@ -141,8 +139,7 @@ export const verifyRefreshToken = async (token: string): Promise<any> => {
 
   const cookieToken = token.includes(" ") ? token.split(" ")[1] : token;
 
-  const APP_REFRESH_TOKEN_SECRET =
-    process.env.APP_REFRESH_TOKEN_SECRET || "secret";
+  const APP_REFRESH_TOKEN_SECRET = getTokenSecret("APP_REFRESH_TOKEN_SECRET");
 
   try {
     const { payload } = await jwtVerify(
@@ -188,7 +185,7 @@ export const generateResetToken = async (user: any): Promise<string> => {
     jti: makeUuid(),
   };
 
-  const APP_RESET_TOKEN_SECRET = process.env.APP_RESET_TOKEN_SECRET || "secret";
+  const APP_RESET_TOKEN_SECRET = getTokenSecret("APP_RESET_TOKEN_SECRET");
   const JWT_RESET_EXPIRY = process.env.JWT_RESET_EXPIRY || "1h";
   return new SignJWT(jwtClaims)
     .setProtectedHeader({ alg: "HS256" })
@@ -205,8 +202,7 @@ export const verifyResetToken = async (token: string): Promise<any> => {
 
   const cookieToken = token.includes(" ") ? token.split(" ")[1] : token;
   try {
-    const APP_RESET_TOKEN_SECRET =
-      process.env.APP_RESET_TOKEN_SECRET || "secret";
+    const APP_RESET_TOKEN_SECRET = getTokenSecret("APP_RESET_TOKEN_SECRET");
     const { payload } = await jwtVerify(
       cookieToken,
       new TextEncoder().encode(APP_RESET_TOKEN_SECRET)
@@ -225,7 +221,7 @@ export const generateEmailToken = async (user: any): Promise<string> => {
     jti: makeUuid(),
   };
 
-  const APP_RESET_TOKEN_SECRET = process.env.APP_RESET_TOKEN_SECRET || "secret";
+  const APP_RESET_TOKEN_SECRET = getTokenSecret("APP_RESET_TOKEN_SECRET");
   return new SignJWT(jwtClaims)
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()

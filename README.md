@@ -28,7 +28,7 @@ The frontend proxies `/api`, `/uploads`, and `/img/logo` to the backend during d
 Install the workspace dependencies from the repository root:
 
 ```bash
-pnpm install --no-frozen-lockfile
+pnpm install --frozen-lockfile
 ```
 
 Start the frontend:

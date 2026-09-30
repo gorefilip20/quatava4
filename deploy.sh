@@ -4,7 +4,8 @@
 # ============================================
 # Run this on a fresh Ubuntu 22.04/24.04 VPS
 # Usage: curl -sSL <your-url>/deploy.sh | bash
-# Or: chmod +x deploy.sh && sudo ./deploy.sh
+# Export DATABASE_URL through a secret-safe prompt, then run with sudo --preserve-env=DATABASE_URL.
+# This bootstrap is for a fresh VPS and empty PostgreSQL database only.
 # ============================================
 
 set -e
@@ -26,6 +27,16 @@ fi
 
 DEPLOY_USER="${DEPLOY_USER:-deploy}"
 APP_DIR="/home/$DEPLOY_USER/quatava"
+
+if [[ ! "${DATABASE_URL:-}" =~ ^postgres(ql)?://[^[:space:]]+ ]] || \
+   [[ "$DATABASE_URL" == *"db.project.supabase.co"* ]] || \
+   [[ "$DATABASE_URL" == *"postgres:password@"* ]]; then
+    err "Set DATABASE_URL to a real PostgreSQL connection URL before running this bootstrap. The example URL is not valid for deployment."
+fi
+
+if [[ -e "$APP_DIR" ]]; then
+    err "An existing installation was found at $APP_DIR. This bootstrap only supports a fresh VPS; use the documented update procedure instead."
+fi
 
 log "Starting Quatava deployment..."
 log "Deploy user: $DEPLOY_USER"
@@ -116,9 +127,30 @@ prefer-offline=true
 auto-install-peers=true
 NPMRC
 
-    # Copy example env
-    cp .env.example .env
+    # Preserve an existing environment file if recovering a partial first install.
+    if [ ! -f .env ]; then cp .env.example .env; fi
 "
+
+# Store the provided connection URL without exposing it in logs or shell history.
+DATABASE_URL="$DATABASE_URL" python3 - "$APP_DIR/.env" <<'PY'
+import json
+import os
+import pathlib
+import sys
+
+env_file = pathlib.Path(sys.argv[1])
+lines = env_file.read_text().splitlines()
+replacement = "DATABASE_URL=" + json.dumps(os.environ["DATABASE_URL"])
+for index, line in enumerate(lines):
+    if line.startswith("DATABASE_URL="):
+        lines[index] = replacement
+        break
+else:
+    lines.append(replacement)
+env_file.write_text("\n".join(lines) + "\n")
+PY
+chown "$DEPLOY_USER:$DEPLOY_USER" "$APP_DIR/.env"
+chmod 600 "$APP_DIR/.env"
 
 # ============================================
 # STEP 8: Configure .env
@@ -131,6 +163,7 @@ JWT_REFRESH=$(node -e "console.log(require('crypto').randomBytes(64).toString('h
 JWT_RESET=$(node -e "console.log(require('crypto').randomBytes(64).toString('hex'))")
 JWT_VERIFY=$(node -e "console.log(require('crypto').randomBytes(64).toString('hex'))")
 ENCRYPTION_KEY=$(node -e "console.log(require('crypto').randomBytes(64).toString('hex'))")
+ADMIN_PASSWORD=$(node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))")
 
 # Get server IP
 SERVER_IP=$(curl -s ifconfig.me)
@@ -158,7 +191,7 @@ su - $DEPLOY_USER -c "
 log "Step 10/12: Installing dependencies and building (this takes 5-15 minutes)..."
 su - $DEPLOY_USER -c "
     cd ~/quatava
-    NODE_OPTIONS='--max-old-space-size=4096' CI=1 pnpm install --no-frozen-lockfile --reporter=append-only
+    NODE_OPTIONS='--max-old-space-size=4096' CI=1 pnpm install --frozen-lockfile --reporter=append-only
     PYTHON=python3 pnpm rebuild
     NODE_OPTIONS='--max-old-space-size=4096' pnpm build:all
 "
@@ -167,7 +200,22 @@ su - $DEPLOY_USER -c "
 # STEP 10: Seed Database
 # ============================================
 log "Step 11/12: Seeding database..."
+ADMIN_CREDENTIAL_FILE="/home/$DEPLOY_USER/.quatava-super-admin"
+install -o "$DEPLOY_USER" -g "$DEPLOY_USER" -m 600 /dev/null "$ADMIN_CREDENTIAL_FILE"
+printf 'email=superadmin@example.com\npassword=%s\n' "$ADMIN_PASSWORD" > "$ADMIN_CREDENTIAL_FILE"
+printf '\nAPP_SUPER_ADMIN_PASSWORD="%s"\n' "$ADMIN_PASSWORD" >> "$APP_DIR/.env"
+chown "$DEPLOY_USER:$DEPLOY_USER" "$APP_DIR/.env"
+chmod 600 "$APP_DIR/.env"
 su - $DEPLOY_USER -c "cd ~/quatava && pnpm seed"
+python3 - "$APP_DIR/.env" <<'PY'
+import pathlib
+import sys
+
+env_file = pathlib.Path(sys.argv[1])
+lines = [line for line in env_file.read_text().splitlines() if not line.startswith("APP_SUPER_ADMIN_PASSWORD=")]
+env_file.write_text("\n".join(lines) + "\n")
+PY
+unset ADMIN_PASSWORD
 
 # ============================================
 # STEP 11: Configure Nginx
@@ -264,16 +312,15 @@ echo "============================================"
 echo -e "${GREEN}🎉 QUATAVA DEPLOYMENT COMPLETE!${NC}"
 echo "============================================"
 echo ""
-echo "🌐 URL:          http://$SERVER_IP"
+echo "🌐 URL:          http://$SERVER_IP (reachability smoke test only; enable HTTPS before logging in)"
 echo "📧 Admin Email:  superadmin@example.com"
-echo "🔑 Admin Pass:   (check /home/$DEPLOY_USER/.db-credentials)"
+echo "🔑 Admin Pass:   stored in $ADMIN_CREDENTIAL_FILE (mode 600)"
 echo ""
 echo "📋 Next steps:"
-echo "   1. Visit http://$SERVER_IP/en/login"
-echo "   2. Login with superadmin@example.com"
-echo "   3. Change the admin password immediately"
-echo "   4. Configure your .env with real API keys"
-echo "   5. Set up a domain + SSL (see DEPLOY.md)"
+echo "   1. Configure a domain and HTTPS before exposing login or financial actions"
+echo "   2. Store the admin password from $ADMIN_CREDENTIAL_FILE in a password manager"
+echo "   3. Configure provider credentials and validate them in isolated staging"
+echo "   4. Review the database migration and financial-operation release gates in DEPLOY.md"
 echo ""
 echo "📂 App location: /home/$DEPLOY_USER/quatava"
 echo "📊 Logs:         pm2 logs"

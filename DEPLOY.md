@@ -1,7 +1,7 @@
 # Quatava — VPS Deployment Guide
 
 Target: a generic Ubuntu **22.04 LTS** or **24.04 LTS** VPS on DigitalOcean / Linode / Vultr / Hetzner.
-No domain (yet) — frontend bound directly to the VPS IP. Add a domain + Let's Encrypt later (see "Adding a domain" at the bottom).
+Use a domain with HTTPS before allowing logins or real financial operations. An HTTP-only IP may be used for a basic reachability smoke test, but production auth cookies are `Secure` and will not work over plain HTTP. Configure TLS before exposing login, admin, payment, or wallet flows.
 
 This guide assumes you can SSH in as a sudo-capable user. Replace `YOUR_VPS_IP` with your actual IP throughout.
 
@@ -120,6 +120,7 @@ Create or retrieve a Supabase PostgreSQL connection string and keep it server-si
 DATABASE_URL="postgresql://postgres:REDACTED@db.PROJECT.supabase.co:5432/postgres?sslmode=require"
 PGSSLMODE="require"
 DB_SSL="true"
+DB_SSL_REJECT_UNAUTHORIZED="true"
 DB_CONNECT_TIMEOUT_MS="10000"
 ```
 
@@ -254,8 +255,8 @@ prefer-offline=true
 auto-install-peers=true
 EOF
 
-# Install (allow build scripts for our pinned native modules)
-CI=1 pnpm install --reporter=append-only
+# Install exactly the reviewed dependency graph (allow build scripts for pinned native modules)
+CI=1 pnpm install --frozen-lockfile --reporter=append-only
 
 # Some native modules need their build scripts approved.
 # Our package.json already lists them in pnpm.onlyBuiltDependencies.
@@ -267,33 +268,20 @@ NODE_OPTIONS='--max-old-space-size=4096' pnpm build:all
 
 ---
 
-## 10. Seed the database
+## 10. Seed the database and create the first admin account
+
+On a fresh production database, generate a unique one-time admin password and pass it only to the seed process. The production seeder refuses to create the initial super-admin account unless this value is at least 32 characters long.
 
 ```bash
 cd ~/quatava
-pnpm seed
+ADMIN_PASSWORD="$(openssl rand -hex 32)"
+umask 077
+printf 'email=superadmin@example.com\npassword=%s\n' "$ADMIN_PASSWORD" > "$HOME/.quatava-super-admin"
+APP_SUPER_ADMIN_PASSWORD="$ADMIN_PASSWORD" pnpm seed
+unset ADMIN_PASSWORD
 ```
 
-Then **rotate the super-admin password** (do NOT keep the default `12345678`):
-
-```bash
-cd ~/quatava/backend
-node -e "
-const crypto = require('crypto');
-const argon2 = require('argon2');
-(async () => {
-  const alpha = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789-_';
-  let pw = '';
-  for (let i = 0; i < 20; i++) pw += alpha[crypto.randomBytes(1)[0] % alpha.length];
-  const hash = await argon2.hash(pw);
-  console.log('NEW PASSWORD:', pw);
-  console.log('Run this SQL as your DB user:');
-  console.log(\`UPDATE user u JOIN role r ON r.id=u.roleId SET u.password='\${hash}' WHERE r.name='Super Admin';\`);
-})();
-"
-```
-
-Take the printed UPDATE statement and run it via `mariadb -u quatava_admin -p quatava`. **Save the printed password in your password manager** — it's not stored anywhere on the server.
+Store the generated password in your password manager, then remove the temporary file. Do not run the seed command against a live database until the schema has been validated on an isolated PostgreSQL staging database. The tracked migrations are not a complete, versioned schema history; the backend currently calls Sequelize `sync()` at startup, which does not replace a reviewed upgrade-migration process.
 
 ---
 
@@ -444,9 +432,9 @@ pm2 status
 sudo tail -f /var/log/nginx/access.log
 ```
 
-Then log in via the browser:
+Do not log in or enable customer actions until the domain has HTTPS configured and verified. After TLS is active, log in via the browser:
 
-- URL: `http://YOUR_VPS_IP/en/login`
+- URL: `https://YOUR_DOMAIN/en/login`
 - Email: `superadmin@example.com`
 - Password: (the one you generated in step 10)
 
@@ -493,7 +481,7 @@ pm2 stop all
 # Update from git
 cd ~/quatava
 git pull
-pnpm install
+pnpm install --frozen-lockfile
 NODE_OPTIONS='--max-old-space-size=4096' pnpm build:all
 pm2 restart all
 

@@ -1,6 +1,23 @@
 #!/usr/bin/env node
 
-const siteUrl = process.env.SITE_URL || "https://getquatava.com";
+const configuredSiteUrl = process.env.SITE_URL?.trim();
+if (!configuredSiteUrl) {
+  console.error("SITE_URL is required; set it to an explicit staging or test URL. No public-host default is used.");
+  process.exit(2);
+}
+
+let siteUrl;
+try {
+  const parsedSiteUrl = new URL(configuredSiteUrl);
+  if (!["http:", "https:"].includes(parsedSiteUrl.protocol)) {
+    throw new Error("SITE_URL must use HTTP or HTTPS");
+  }
+  siteUrl = parsedSiteUrl.toString().replace(/\/+$/, "");
+} catch (error) {
+  console.error(`Invalid SITE_URL: ${error.message}`);
+  process.exit(2);
+}
+
 const expectedMarkers = ["Neon Genesis #01", "Midnight Circuit #07", "Aurora Relic #12"];
 const attempts = Number.parseInt(process.env.CHECK_ATTEMPTS || "30", 10);
 const delayMs = Number.parseInt(process.env.CHECK_DELAY_MS || "20000", 10);

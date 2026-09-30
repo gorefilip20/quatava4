@@ -7,7 +7,15 @@ const tiers = [{ name: "Bronze", range: "0–5 referrals", detail: "Unlocked", t
 
 export default function CirclePage() {
   const [copied, setCopied] = useState(false);
-  const copyInvite = async () => { try { await navigator.clipboard.writeText("quatava.com/join/MARCO-R482"); } catch {} setCopied(true); setTimeout(() => setCopied(false), 1800); };
+  const copyInvite = async () => {
+    try {
+      await navigator.clipboard.writeText("quatava.com/join/MARCO-R482");
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1800);
+    } catch {
+      setCopied(false);
+    }
+  };
   return <div className="mx-auto max-w-[1180px] space-y-5"><div><div className="mb-2 flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.16em] text-[#2876b3]"><Users className="h-3.5 w-3.5" /> Community</div><h1 className="text-2xl font-bold tracking-tight text-[#182536]">Quatava Circle</h1><p className="mt-1 text-xs text-[#7a8696]">Invite friends, climb tiers, earn together.</p></div>
     <section className="relative overflow-hidden rounded-md bg-[linear-gradient(110deg,#2d78b7,#1b304d)] px-7 py-6 text-white shadow-[0_14px_30px_rgba(32,82,129,0.16)]"><div className="absolute -right-10 -top-24 h-64 w-64 rounded-full border border-white/10" /><div className="relative flex flex-col justify-between gap-5 sm:flex-row sm:items-center"><div><p className="text-[10px] font-bold uppercase tracking-[0.16em] text-white/65">Your invite code</p><p className="mt-1 text-2xl font-bold tracking-[0.08em]">MARCO-R482</p><p className="mt-1 text-xs text-white/75">Earn 20% of referral trading fees, forever.</p></div><button onClick={copyInvite} className="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-white px-5 text-xs font-bold text-[#2d5f8c] hover:bg-[#f3f7fb]">{copied ? <Check className="h-3.5 w-3.5" /> : <Clipboard className="h-3.5 w-3.5" />}{copied ? "Copied" : "Copy link"}</button></div></section>
     <section className="grid gap-4 md:grid-cols-3">{tiers.map((tier, index) => <article key={tier.name} className={`relative rounded-md border p-5 text-center ${tier.tone} ${index === 1 ? "ring-2 ring-[#2876b3]/30" : ""}`}>{index === 1 && <span className="absolute -top-2 right-4 rounded bg-[#6c737c] px-2 py-1 text-[8px] font-bold uppercase tracking-wider text-white">Current</span>}<Medal className="mx-auto h-7 w-7 opacity-80" /><h2 className="mt-3 text-sm font-bold uppercase tracking-wide">{tier.name}</h2><p className="mt-1 text-[10px] opacity-80">{tier.range} · {tier.detail}</p></article>)}</section>

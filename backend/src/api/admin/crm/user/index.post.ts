@@ -1,5 +1,6 @@
 // /server/api/admin/users/index.post.ts
 
+import { randomBytes } from "crypto";
 import { createError } from "@b/utils/error";
 import { models } from "@b/db";
 import { hashPassword } from "@b/utils/passwords";
@@ -48,7 +49,8 @@ export default async (data: Handler) => {
   if (existingUser)
     throw createError({ statusCode: 400, message: "User already exists" });
 
-  const password = await hashPassword("12345678");
+  const initialPassword = randomBytes(32).toString("base64url");
+  const password = await hashPassword(initialPassword);
 
   const superAdminRole = await models.role.findOne({
     where: { name: "Super Admin" },
@@ -75,6 +77,6 @@ export default async (data: Handler) => {
   });
 
   return {
-    message: "User created successfully, Password is 12345678",
+    message: `User created successfully. Share this one-time initial password securely: ${initialPassword}`,
   };
 };
