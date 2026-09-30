@@ -3,6 +3,7 @@
   "name": "quatava-v1",
   "private": true,
   "version": "5.7.1",
+  "packageManager": "pnpm@10.15.0",
   "scripts": {
     "dev": "concurrently \"pnpm --filter frontend dev\" \"pnpm --filter backend dev\"",
     "dev:backend": "pnpm --filter backend dev",
@@ -31,7 +32,7 @@
     "btc-node:setup": "node scripts/btc-node-setup.mjs",
     "update-cache-version": "node docs/update-cache-version.js",
     "format": "prettier --write \"frontend/**/*.{ts,tsx,md,mdx,css,scss}\" --ignore-path .prettierignore",
-    "lint": "eslint frontend --fix --ext .ts,.tsx"
+    "lint": "pnpm --filter frontend lint"
   },
   "devDependencies": {
     "@babel/generator": "^7.29.1",
@@ -39,7 +40,7 @@
     "@babel/traverse": "^7.29.0",
     "@babel/types": "^7.29.0",
     "@eslint/js": "^9.39.4",
-    "@next/eslint-plugin-next": "16.2.4",
+    "@next/eslint-plugin-next": "16.3.3",
     "@types/jest": "^29.5.14",
     "@types/lodash": "^4.17.24",
     "@types/node": "^22.19.17",
@@ -99,7 +100,10 @@
       "@reown/appkit-utils": "1.8.19",
       "@wagmi/connectors": "6.2.0",
       "wagmi": "^2.0.0",
-      "@wagmi/core": "^2.0.0"
+      "@wagmi/core": "^2.0.0",
+      "axios": "^1.18.0",
+      "protobufjs": "^7.6.6",
+      "shell-quote": "1.11.0"
     },
     "peerDependencyRules": {
       "ignoreMissing": [

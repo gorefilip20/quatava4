@@ -1,4 +1,5 @@
 "use strict";
+const crypto = require("crypto");
 const { v4: uuidv4 } = require("uuid");
 const argon2 = require("argon2");
 
@@ -119,12 +120,12 @@ const seedTags = async (queryInterface) => {
 
 const seedPosts = async (queryInterface) => {
   const [firstCategory] = await queryInterface.sequelize.query(
-    "SELECT id FROM category LIMIT 1",
+    'SELECT id FROM "category" LIMIT 1',
     { type: queryInterface.sequelize.QueryTypes.SELECT }
   );
 
   let [firstUser] = await queryInterface.sequelize.query(
-    "SELECT id FROM user LIMIT 1",
+    'SELECT id FROM "user" LIMIT 1',
     { type: queryInterface.sequelize.QueryTypes.SELECT }
   );
 
@@ -133,7 +134,7 @@ const seedPosts = async (queryInterface) => {
     const newUser = {
       id: newUserId,
       email: "defaultuser@example.com",
-      password: await hashPassword("12345678"),
+      password: await hashPassword(crypto.randomBytes(32).toString("base64url")),
       firstName: "Default",
       lastName: "User",
       status: "ACTIVE",
@@ -143,7 +144,7 @@ const seedPosts = async (queryInterface) => {
   }
 
   const [existingAuthor] = await queryInterface.sequelize.query(
-    "SELECT id FROM author WHERE userId = :userId",
+    'SELECT id FROM "author" WHERE "userId" = :userId',
     {
       type: queryInterface.sequelize.QueryTypes.SELECT,
       replacements: { userId: firstUser.id },

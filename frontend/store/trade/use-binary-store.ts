@@ -1069,9 +1069,7 @@ export const initializeBinaryStore = async (): Promise<void> => {
 
         // Register interval for cleanup
         cleanupRegistry.addInterval(updateInterval);
-      } else {
       }
-
       // Mark as initialized
       isInitialized = true;
       store.setIsLoading(false);

@@ -63,7 +63,14 @@ export class SequelizeSingleton {
         connectionTimeoutMillis,
         keepAlive: true,
         application_name: process.env.PG_APPLICATION_NAME || "quatava-backend",
-        ...(sslEnabled ? { ssl: { rejectUnauthorized: false } } : {}),
+        ...(sslEnabled
+          ? {
+              ssl: {
+                rejectUnauthorized:
+                  envBoolean(process.env.DB_SSL_REJECT_UNAUTHORIZED) ?? true,
+              },
+            }
+          : {}),
       },
     };
 

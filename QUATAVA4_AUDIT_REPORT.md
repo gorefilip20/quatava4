@@ -1,4 +1,6 @@
 # QUATAVA4 COMPREHENSIVE AUDIT REPORT
+> **Superseded (2026-09-30):** This is a historical feature audit, not a current release checklist. Some feature-status claims are stale; use [the current deployment-readiness review](QUATAVA4_READINESS_REVIEW_2026-09-30.md) for verified status and launch blockers.
+
 ## Incomplete, Broken, and Stubbed-Out Features
 
 **Date:** Generated via automated audit
