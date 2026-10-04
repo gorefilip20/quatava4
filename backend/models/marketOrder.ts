@@ -1,0 +1,7 @@
+import * as Sequelize from "sequelize";
+import { DataTypes, Model } from "sequelize";
+export default class marketOrder extends Model<marketOrderAttributes, marketOrderCreationAttributes> implements marketOrderAttributes {
+  id!: string; userId!: string; productId!: string; quantity!: number; total!: number; currency!: string; status!: "PENDING" | "COMPLETED" | "FAILED"; fulfillmentData?: Record<string, unknown>; createdAt?: Date; updatedAt?: Date;
+  public static initModel(sequelize: Sequelize.Sequelize): typeof marketOrder { return marketOrder.init({ id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, primaryKey: true, allowNull: false }, userId: { type: DataTypes.UUID, allowNull: false }, productId: { type: DataTypes.UUID, allowNull: false }, quantity: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 1 }, total: { type: DataTypes.DECIMAL(24, 8), allowNull: false }, currency: { type: DataTypes.STRING(12), allowNull: false }, status: { type: DataTypes.ENUM("PENDING", "COMPLETED", "FAILED"), allowNull: false, defaultValue: "PENDING" }, fulfillmentData: { type: DataTypes.JSON, allowNull: true } }, { sequelize, modelName: "marketOrder", tableName: "market_order", timestamps: true, indexes: [{ fields: ["userId", "createdAt"] }] }); }
+  public static associate(models: any) { marketOrder.belongsTo(models.user, { as: "user", foreignKey: "userId", onDelete: "CASCADE" }); marketOrder.belongsTo(models.marketProduct, { as: "product", foreignKey: "productId", onDelete: "RESTRICT" }); }
+}

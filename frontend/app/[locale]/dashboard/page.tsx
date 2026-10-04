@@ -7,7 +7,6 @@ import {
   ArrowLeftRight,
   ArrowUpFromLine,
   Bell,
-  CircleDollarSign,
   Eye,
   EyeOff,
   Globe2,
@@ -20,6 +19,7 @@ import {
 } from "lucide-react";
 import { useWalletStore } from "@/store/finance/wallet-store";
 import { useNotificationsStore } from "@/store/notification-store";
+import WalletAccountsPanel from "./components/wallet-accounts-panel";
 
 const watchlist = [
   ["Bitcoin", "BTC", "#f59e0b"],
@@ -121,6 +121,7 @@ export default function DashboardPage() {
         ))}
       </section>
 
+      <WalletAccountsPanel />
       <section className="grid gap-5 xl:grid-cols-[1.35fr_1fr]">
         <div className="rounded-md border border-[#dfe5ec] bg-white shadow-[0_1px_2px_rgba(15,23,42,0.03)]">
           <div className="flex items-center justify-between border-b border-[#edf0f4] px-5 py-4">
@@ -170,7 +171,6 @@ export default function DashboardPage() {
           <Link href="/finance/deposit" className="flex items-center gap-3 rounded-md border border-[#e5e9ee] p-3 text-xs font-medium text-[#526174] hover:border-[#9fc8e5]"><ArrowDownToLine className="h-4 w-4 text-[#2876b3]" />Deposit</Link>
           <Link href="/finance/withdraw" className="flex items-center gap-3 rounded-md border border-[#e5e9ee] p-3 text-xs font-medium text-[#526174] hover:border-[#9fc8e5]"><ArrowUpFromLine className="h-4 w-4 text-[#2876b3]" />Withdraw</Link>
           <Link href="/finance/transfer" className="flex items-center gap-3 rounded-md border border-[#e5e9ee] p-3 text-xs font-medium text-[#526174] hover:border-[#9fc8e5]"><ArrowLeftRight className="h-4 w-4 text-[#2876b3]" />Convert</Link>
-          <Link href="/staking" className="flex items-center gap-3 rounded-md border border-[#e5e9ee] p-3 text-xs font-medium text-[#526174] hover:border-[#9fc8e5]"><CircleDollarSign className="h-4 w-4 text-[#2876b3]" />Earn</Link>
           <Link href="/support" className="flex items-center gap-3 rounded-md border border-[#e5e9ee] p-3 text-xs font-medium text-[#526174] hover:border-[#9fc8e5]"><Headphones className="h-4 w-4 text-[#2876b3]" />Support</Link>
         </div>
       </section>

@@ -1,0 +1,10 @@
+interface virtualBankAccountAttributes { id: string; userId: string; currency: "USD" | "EUR" | "GBP" | "LOCAL"; countryCode?: string; accountType?: string; bankName?: string; routingNumber?: string; accountNumber?: string; iban?: string; bic?: string; sortCode?: string; status: "ACTIVE" | "SUSPENDED"; metadata?: Record<string, unknown>; createdAt?: Date; updatedAt?: Date; }
+type virtualBankAccountCreationAttributes = Optional<virtualBankAccountAttributes, "id" | "createdAt" | "updatedAt" | "status">;
+interface virtualCardAttributes { id: string; userId: string; currency: "USD"; cardholderName: string; last4: string; expiryMonth: number; expiryYear: number; balance: number; status: "ACTIVE" | "FROZEN" | "CLOSED"; providerReference?: string; createdAt?: Date; updatedAt?: Date; }
+type virtualCardCreationAttributes = Optional<virtualCardAttributes, "id" | "currency" | "balance" | "status" | "createdAt" | "updatedAt">;
+interface marketProductAttributes { id: string; category: "GIFT_CARD" | "UTILITY" | "TICKET" | "ESIM" | "DIGITAL"; name: string; description?: string; price: number; currency: string; status: boolean; metadata?: Record<string, unknown>; createdAt?: Date; updatedAt?: Date; }
+type marketProductCreationAttributes = Optional<marketProductAttributes, "id" | "description" | "status" | "metadata" | "createdAt" | "updatedAt">;
+interface marketOrderAttributes { id: string; userId: string; productId: string; quantity: number; total: number; currency: string; status: "PENDING" | "COMPLETED" | "FAILED"; fulfillmentData?: Record<string, unknown>; createdAt?: Date; updatedAt?: Date; }
+type marketOrderCreationAttributes = Optional<marketOrderAttributes, "id" | "status" | "fulfillmentData" | "createdAt" | "updatedAt">;
+interface userActivityLogAttributes { id: string; userId: string; action: string; category: "SECURITY" | "WALLET" | "CARD" | "MARKET" | "PROFILE"; ipAddress?: string; userAgent?: string; metadata?: Record<string, unknown>; createdAt?: Date; }
+type userActivityLogCreationAttributes = Optional<userActivityLogAttributes, "id" | "ipAddress" | "userAgent" | "metadata" | "createdAt">;

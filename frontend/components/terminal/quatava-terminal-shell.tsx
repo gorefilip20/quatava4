@@ -2,41 +2,24 @@
 
 import { Link, routing, usePathname } from "@/i18n/routing";
 import {
-  ArrowLeftRight,
   CreditCard,
-  BarChart3,
-  Bot,
-  CandlestickChart,
   ChevronDown,
-  CircleDollarSign,
-  Gift,
-  Globe2,
-  Image as ImageIcon,
   LayoutDashboard,
   Menu,
   Search,
   Settings2,
   ShieldCheck,
+  ShoppingBag,
   Sparkles,
-  TrendingDown,
-  Wallet,
   X,
 } from "lucide-react";
 import { useState } from "react";
 
 const navigation = [
-  { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard, section: "MAIN" },
-  { label: "Wallet", href: "/finance/wallet", icon: Wallet },
-  { label: "Spot Trading", href: "/trade", icon: CandlestickChart, section: "TRADING" },
-  { label: "Futures", href: "/trade?type=futures", icon: BarChart3 },
-  { label: "Convert", href: "/finance/transfer", icon: ArrowLeftRight },
-  { label: "Send Money", href: "/send-money", icon: Globe2 },
-  { label: "Staking", href: "/staking", icon: CircleDollarSign, section: "INVEST" },
-  { label: "Inflation Tracker", href: "/inflation", icon: TrendingDown },
-  { label: "Quatava Card", href: "/card", icon: CreditCard, section: "FEATURES" },
-  { label: "Quatava Circle", href: "/circle", icon: Gift },
-  { label: "NFT Marketplace", href: "/nft/marketplace", icon: ImageIcon },
-  { label: "AI Trading", href: "/ai/trading", icon: Bot },
+  { label: "Dashboard / Wallet", href: "/dashboard", icon: LayoutDashboard, section: "CORE" },
+  { label: "Card", href: "/card", icon: CreditCard },
+  { label: "Market", href: "/market", icon: ShoppingBag },
+  { label: "Profile & Settings", href: "/user/profile", icon: Settings2 },
 ];
 
 export default function QuatavaTerminalShell({ children }: { children: React.ReactNode }) {

@@ -1,0 +1,6 @@
+import * as Sequelize from "sequelize";
+import { DataTypes, Model } from "sequelize";
+export default class marketProduct extends Model<marketProductAttributes, marketProductCreationAttributes> implements marketProductAttributes {
+  id!: string; category!: "GIFT_CARD" | "UTILITY" | "TICKET" | "ESIM" | "DIGITAL"; name!: string; description?: string; price!: number; currency!: string; status!: boolean; metadata?: Record<string, unknown>; createdAt?: Date; updatedAt?: Date;
+  public static initModel(sequelize: Sequelize.Sequelize): typeof marketProduct { return marketProduct.init({ id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, primaryKey: true, allowNull: false }, category: { type: DataTypes.ENUM("GIFT_CARD", "UTILITY", "TICKET", "ESIM", "DIGITAL"), allowNull: false }, name: { type: DataTypes.STRING(160), allowNull: false }, description: { type: DataTypes.TEXT, allowNull: true }, price: { type: DataTypes.DECIMAL(24, 8), allowNull: false }, currency: { type: DataTypes.STRING(12), allowNull: false, defaultValue: "USD" }, status: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: true }, metadata: { type: DataTypes.JSON, allowNull: true } }, { sequelize, modelName: "marketProduct", tableName: "market_product", timestamps: true, indexes: [{ fields: ["category", "status"] }] }); }
+}

@@ -903,201 +903,42 @@ export const adminMenu: MenuItem[] = [
 
 export const userMenu: MenuItem[] = [
   {
-    key: "user-trading",
-    title: "Trading",
-    href: "/trade",
-    icon: "solar:chart-2-bold-duotone",
-    description:
-      "Access comprehensive trading platforms with advanced charting tools, real-time market data, and professional-grade execution capabilities for all asset classes.",
-    child: [
-      {
-        key: "user-trading-spot",
-        title: "Spot Trading",
-        href: "/trade",
-        icon: "solar:chart-2-bold-duotone",
-        description:
-          "Execute immediate buy and sell orders at current market prices with advanced order types, depth charts, and professional trading tools.",
-      },
-      {
-        key: "user-trading-binary",
-        title: "Binary Options",
-        href: "/binary",
-        icon: "mdi:chart-line",
-        env: process.env.NEXT_PUBLIC_BINARY_STATUS,
-        description:
-          "Trade binary options with sophisticated analytics, risk management tools, and streamlined execution for time-sensitive strategies.",
-      },
-      {
-        key: "user-trading-forex",
-        title: "Forex",
-        href: "/forex",
-        icon: "mdi:chart-line-variant",
-        extension: "forex",
-        description:
-          "Access global foreign exchange markets with MetaTrader 4/5 integration, advanced charting, and institutional-grade execution.",
-      },
-      {
-        key: "user-trading-p2p",
-        title: "P2P Exchange",
-        href: "/p2p",
-        icon: "material-symbols-light:p2p-outline",
-        extension: "p2p",
-        description:
-          "Engage in secure peer-to-peer cryptocurrency trading with escrow protection, flexible payment methods, and competitive rates.",
-      },
-    ],
-  },
-  {
-    key: "user-portfolio",
-    title: "Portfolio",
+    key: "user-dashboard",
+    title: "Dashboard / Wallet",
+    href: "/dashboard",
     icon: "solar:wallet-money-bold-duotone",
     auth: true,
     description:
-      "Comprehensive portfolio management suite for tracking assets, analyzing performance, and managing your financial instruments across all platforms.",
-    child: [
-      {
-        key: "user-portfolio-wallet",
-        title: "Wallet Management",
-        href: "/finance/wallet",
-        icon: "mdi:wallet",
-        auth: true,
-        description:
-          "Secure multi-currency wallet with real-time balance tracking, transaction history, and seamless deposit/withdrawal capabilities.",
-      },
-      {
-        key: "user-portfolio-transactions",
-        title: "Transaction History",
-        href: "/finance/history",
-        icon: "solar:clipboard-list-bold-duotone",
-        auth: true,
-        description:
-          "Detailed transaction records with advanced filtering, export capabilities, and comprehensive audit trails for all financial activities.",
-      },
-      {
-        key: "user-portfolio-transfers",
-        title: "Transfers",
-        href: "/finance/transfer",
-        icon: "solar:transfer-vertical-line-duotone",
-        auth: true,
-        description:
-          "Internal and external transfer services with instant processing, competitive fees, and multi-currency support.",
-      },
-    ],
+      "See your balances, virtual bank accounts, crypto wallets, and everyday money actions.",
   },
   {
-    key: "user-investments",
-    title: "Investments",
-    icon: "solar:course-up-line-duotone",
+    key: "user-card",
+    title: "Card",
+    href: "/card",
+    icon: "solar:card-bold-duotone",
     auth: true,
     description:
-      "Diversified investment opportunities with professional-grade analytics, risk assessment tools, and performance tracking across multiple asset classes.",
-    child: [
-      {
-        key: "user-investments-plans",
-        title: "Investment Plans",
-        href: "/investment",
-        icon: "solar:course-up-line-duotone",
-        auth: true,
-        settings: ["investment"],
-        description:
-          "Curated investment strategies with detailed risk profiles, historical performance data, and flexible terms to match your financial goals.",
-      },
-      {
-        key: "user-investments-staking",
-        title: "Staking Rewards",
-        href: "/staking",
-        icon: "mdi:bank-outline",
-        extension: "staking",
-        description:
-          "Earn passive income through cryptocurrency staking with competitive APY rates, flexible lock periods, and automated reward distribution.",
-      },
-      {
-        key: "user-investments-ico",
-        title: "Token Sales",
-        href: "/ico",
-        icon: "solar:dollar-minimalistic-line-duotone",
-        extension: "ico",
-        description:
-          "Early access to vetted Initial Coin Offerings with comprehensive due diligence reports, tokenomics analysis, and investment tracking.",
-      },
-    ],
+      "Manage your virtual USD card, funding, freeze controls, and card activity.",
   },
   {
-    key: "user-marketplace",
-    title: "Marketplace",
-    icon: "solar:bag-smile-bold-duotone",
+    key: "user-market",
+    title: "Market",
+    href: "/market",
+    icon: "solar:shop-2-bold-duotone",
+    auth: true,
     description:
-      "Explore premium digital and physical marketplaces with secure transactions, verified sellers, and comprehensive buyer protection.",
-    child: [
-      {
-        key: "user-marketplace-nft",
-        title: "NFT Marketplace",
-        href: "/nft",
-        icon: "ph:image-square-duotone",
-        extension: "nft",
-        description:
-          "Discover, create, and trade unique digital assets in our curated NFT marketplace with auction capabilities and creator royalties.",
-      },
-             {
-         key: "user-marketplace-store",
-         title: "Store",
-         href: "/ecommerce",
-         icon: "solar:bag-smile-bold-duotone",
-         extension: "ecommerce",
-         description:
-           "Premium marketplace featuring both digital and physical products with secure payment processing, worldwide shipping, and buyer protection.",
-       },
-    ],
+      "Buy digital services, gift cards, utilities, tickets, eSIMs, and other products.",
   },
   {
-    key: "user-services",
-    title: "Services",
+    key: "user-profile-settings",
+    title: "Profile & Settings",
+    href: "/user/profile",
     icon: "solar:settings-bold-duotone",
     auth: true,
     description:
-      "Professional services and tools to enhance your trading experience, including affiliate programs, educational resources, and premium support.",
-    child: [
-      {
-        key: "user-services-affiliate",
-        title: "Affiliate Program",
-        href: "/affiliate/dashboard",
-        icon: "mdi:handshake-outline",
-        extension: "mlm",
-        auth: true,
-        description:
-          "Monetize your network through our comprehensive affiliate program with competitive commissions, real-time tracking, and marketing tools.",
-      },
-      {
-        key: "user-services-support",
-        title: "Support Center",
-        href: "/support",
-        icon: "mdi:head-question",
-        auth: true,
-        description:
-          "Professional customer support with ticket management, live chat capabilities, and dedicated account management for premium users.",
-      },
-      {
-        key: "user-services-faq",
-        title: "Knowledge Base",
-        href: "/faq",
-        icon: "ph:question-duotone",
-        extension: "knowledge_base",
-        description:
-          "Comprehensive documentation, tutorials, and frequently asked questions to help you maximize platform capabilities.",
-      },
-    ],
+      "Manage your identity, security, two-factor authentication, rewards, referrals, and activity.",
   },
-     {
-     key: "user-insights",
-     title: "Insights",
-     href: "/blog",
-     icon: "fluent:content-view-28-regular",
-     env: process.env.NEXT_PUBLIC_BLOG_STATUS,
-     description:
-       "Professional market analysis, trading insights, and industry news from our team of financial experts and market researchers.",
-   },
 ];
-
 function isItemVisible(
   item: MenuItem,
   user: any,
