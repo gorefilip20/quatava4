@@ -1,6 +1,6 @@
 const mockModels = {
   wallet: { sequelize: { transaction: jest.fn() }, findOne: jest.fn(), create: jest.fn() },
-  transaction: { create: jest.fn() },
+  transaction: { findOne: jest.fn(), create: jest.fn() },
   virtualCard: { findOne: jest.fn() },
 };
 const mockGetWallet = jest.fn();
@@ -31,27 +31,29 @@ describe("phase-two API workflows", () => {
       const source = walletMock();
       const destination = walletMock({ id: "wallet-usdt", balance: 0 });
       mockModels.wallet.sequelize.transaction.mockResolvedValue(tx);
+      mockModels.transaction.findOne.mockResolvedValue(null);
       mockGetWallet.mockResolvedValue(source);
       mockModels.wallet.findOne.mockResolvedValue(destination);
       mockModels.transaction.create.mockResolvedValue({ id: "ledger-buy-1" });
 
-      const result = await buyCrypto({ user: { id: "user-1" }, body: { fiatCurrency: "USD", cryptoCurrency: "USDT", fiatAmount: 25, rate: 1.25 } } as any);
+      const result = await buyCrypto({ user: { id: "user-1" }, headers: { "idempotency-key": "buy-test-001" }, body: { fiatCurrency: "USD", cryptoCurrency: "USDT", fiatAmount: 25, rate: 1.25 } } as any);
 
-      expect(source.decrement).toHaveBeenCalledWith("balance", { by: 25, transaction: tx });
+      expect(source.decrement).toHaveBeenCalledWith("balance", { by: 25.1875, transaction: tx });
       expect(destination.increment).toHaveBeenCalledWith("balance", { by: 20, transaction: tx });
-      expect(mockModels.transaction.create).toHaveBeenCalledWith(expect.objectContaining({ type: "EXCHANGE_ORDER", amount: 20, walletId: "wallet-usdt" }), { transaction: tx });
+      expect(mockModels.transaction.create).toHaveBeenCalledWith(expect.objectContaining({ type: "EXCHANGE_ORDER", amount: 20, fee: 0.1875, walletId: "wallet-usdt" }), { transaction: tx });
       expect(tx.commit).toHaveBeenCalledTimes(1);
       expect(tx.rollback).not.toHaveBeenCalled();
-      expect(result).toMatchObject({ cryptoAmount: 20, cryptoCurrency: "USDT", transactionId: "ledger-buy-1" });
+      expect(result).toMatchObject({ cryptoAmount: 20, cryptoCurrency: "USDT", fee: 0.1875, totalDebit: 25.1875, transactionId: "ledger-buy-1" });
     });
 
     it("rolls back when the fiat wallet cannot cover the purchase", async () => {
       const tx = transactionMock();
       mockModels.wallet.sequelize.transaction.mockResolvedValue(tx);
+      mockModels.transaction.findOne.mockResolvedValue(null);
       mockGetWallet.mockResolvedValue(walletMock({ balance: 5 }));
       mockModels.wallet.findOne.mockResolvedValue(walletMock({ id: "wallet-usdt" }));
 
-      await expect(buyCrypto({ user: { id: "user-1" }, body: { fiatCurrency: "USD", cryptoCurrency: "USDT", fiatAmount: 25, rate: 1 } } as any)).rejects.toThrow("Insufficient fiat wallet balance");
+      await expect(buyCrypto({ user: { id: "user-1" }, headers: { "idempotency-key": "buy-test-002" }, body: { fiatCurrency: "USD", cryptoCurrency: "USDT", fiatAmount: 25, rate: 1 } } as any)).rejects.toThrow("Insufficient fiat wallet balance");
       expect(tx.rollback).toHaveBeenCalledTimes(1);
       expect(tx.commit).not.toHaveBeenCalled();
       expect(mockModels.transaction.create).not.toHaveBeenCalled();
@@ -65,14 +67,15 @@ describe("phase-two API workflows", () => {
       const card = { id: "card-1", balance: 10, status: "ACTIVE", increment: jest.fn(), decrement: jest.fn(), reload: jest.fn(), get: jest.fn(() => ({ id: "card-1", balance: 60, status: "ACTIVE" })) };
       mockModels.virtualCard.findOne.mockResolvedValue(card);
       mockModels.wallet.sequelize.transaction.mockResolvedValue(tx);
+      mockModels.transaction.findOne.mockResolvedValue(null);
       mockGetWallet.mockResolvedValue(wallet);
       mockModels.transaction.create.mockResolvedValue({ id: "ledger-card-1" });
 
-      const result = await fundCard({ user: { id: "user-1" }, body: { amount: 50, direction: "FUND", currency: "USD" } } as any);
+      const result = await fundCard({ user: { id: "user-1" }, headers: { "idempotency-key": "card-test-001" }, body: { amount: 50, direction: "FUND", currency: "USD" } } as any);
 
-      expect(wallet.decrement).toHaveBeenCalledWith("balance", { by: 50, transaction: tx });
+      expect(wallet.decrement).toHaveBeenCalledWith("balance", { by: 50.25, transaction: tx });
       expect(card.increment).toHaveBeenCalledWith("balance", { by: 50, transaction: tx });
-      expect(mockModels.transaction.create).toHaveBeenCalledWith(expect.objectContaining({ type: "PAYMENT", amount: 50, walletId: "wallet-usd" }), { transaction: tx });
+      expect(mockModels.transaction.create).toHaveBeenCalledWith(expect.objectContaining({ type: "PAYMENT", amount: 50, fee: 0.25, walletId: "wallet-usd" }), { transaction: tx });
       expect(tx.commit).toHaveBeenCalledTimes(1);
       expect(result).toMatchObject({ message: "Card funded", card: { id: "card-1", balance: 60 } });
     });
@@ -83,9 +86,10 @@ describe("phase-two API workflows", () => {
       const card = { id: "card-1", balance: 0, status: "ACTIVE", increment: jest.fn(), decrement: jest.fn(), reload: jest.fn(), get: jest.fn() };
       mockModels.virtualCard.findOne.mockResolvedValue(card);
       mockModels.wallet.sequelize.transaction.mockResolvedValue(tx);
+      mockModels.transaction.findOne.mockResolvedValue(null);
       mockGetWallet.mockResolvedValue(wallet);
 
-      await expect(fundCard({ user: { id: "user-1" }, body: { amount: 50, direction: "FUND", currency: "USD" } } as any)).rejects.toThrow("Insufficient wallet balance");
+      await expect(fundCard({ user: { id: "user-1" }, headers: { "idempotency-key": "card-test-002" }, body: { amount: 50, direction: "FUND", currency: "USD" } } as any)).rejects.toThrow("Insufficient wallet balance");
       expect(tx.rollback).toHaveBeenCalledTimes(1);
       expect(tx.commit).not.toHaveBeenCalled();
       expect(card.increment).not.toHaveBeenCalled();
