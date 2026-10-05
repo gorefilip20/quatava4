@@ -6,6 +6,7 @@ import { capitalize } from "lodash";
 import Stripe from "stripe";
 import twilio from "twilio";
 import { CacheManager } from "@b/utils/cache";
+import { getOpenExchangeRatesKey } from "@b/utils/provider-env";
 
 const cachedResults: { [key: string]: any } = {};
 
@@ -234,7 +235,7 @@ async function checkSmsService() {
 }
 
 async function checkOpenExchangeRatesService() {
-  const openExchangeRatesAppId = process.env.APP_OPENEXCHANGERATES_APP_ID;
+  const openExchangeRatesAppId = getOpenExchangeRatesKey();
 
   if (!openExchangeRatesAppId || openExchangeRatesAppId === "") {
     return {

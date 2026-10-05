@@ -1,6 +1,7 @@
 import { createError } from "@b/utils/error";
 import crypto from "crypto";
 import OpenAI from "openai"; // For SumSub branch
+import { getSumsubAppToken, getSumsubPrivateKey } from "@b/utils/provider-env";
 
 export const metadata = {
   summary: "Check Verification Service Connection",
@@ -75,14 +76,14 @@ async function checkSumSubConnection(): Promise<{
   connected: boolean;
   message: string;
 }> {
-  const apiKey = process.env.SUMSUB_API_KEY;
-  const apiSecret = process.env.SUMSUB_API_SECRET;
+  const apiKey = getSumsubAppToken();
+  const apiSecret = getSumsubPrivateKey();
 
   if (!apiKey || !apiSecret) {
     return {
       connected: false,
       message:
-        "Missing API credentials. Please configure SUMSUB_API_KEY and SUMSUB_API_SECRET.",
+        "Missing API credentials. Please configure SUMSUB_PUBLIC_KEY and SUMSUB_PRIVATE_KEY.",
     };
   }
 

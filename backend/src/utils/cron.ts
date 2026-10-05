@@ -29,6 +29,7 @@ import { processGeneralInvestments } from "./crons/investment";
 import { processAiInvestments } from "./crons/aiInvestment";
 import { processPendingOrders } from "./crons/order";
 import { processExpiredUserBlocks } from "./crons/userBlock";
+import { getOpenExchangeRatesKey } from "./provider-env";
 
 // Safe import for ecosystem cron functions
 async function processPendingEcoWithdrawals() {
@@ -678,7 +679,7 @@ async function fetchOpenExchangeRates(baseCurrency: string) {
     cronName,
     `Starting OpenExchangeRates API call with baseCurrency: ${baseCurrency}`
   );
-  const openExchangeRatesApiKey = process.env.APP_OPENEXCHANGERATES_APP_ID;
+  const openExchangeRatesApiKey = getOpenExchangeRatesKey();
   const openExchangeRatesUrl = `https://openexchangerates.org/api/latest.json?appId=${openExchangeRatesApiKey}&base=${baseCurrency}`;
   const frankfurterApiUrl = `https://api.frankfurter.app/latest?from=${baseCurrency}`;
 

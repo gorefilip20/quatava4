@@ -6,6 +6,7 @@ import path from "path";
 import { InlineDataPart, FileDataPart } from "@google/generative-ai";
 import { RedisSingleton } from "@b/utils/redis";
 import { evaluateSandboxKycDecision } from "@b/utils/sandbox";
+import { getSumsubAppToken, getSumsubPrivateKey } from "@b/utils/provider-env";
 
 // Metadata for the endpoint
 export const metadata = {
@@ -625,8 +626,8 @@ function analyzeAIResponse(aiResponse: string) {
 // ---------------------
 async function verifyWithSumSub(application: any, level: any) {
   try {
-    const apiKey = process.env.SUMSUB_API_KEY;
-    const apiSecret = process.env.SUMSUB_API_SECRET;
+    const apiKey = getSumsubAppToken();
+    const apiSecret = getSumsubPrivateKey();
 
     if (!apiKey || !apiSecret) {
       throw new Error("SumSub API credentials not configured");

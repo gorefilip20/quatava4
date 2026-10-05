@@ -1,12 +1,13 @@
 import { createError } from "@b/utils/error";
+import { getSumsubAppToken, getSumsubPrivateKey } from "@b/utils/provider-env";
 
 async function checkSumSubEnv(): Promise<{
   success: boolean;
   missingEnvVars: string[];
 }> {
   const requiredVars = {
-    SUMSUB_API_KEY: process.env.SUMSUB_API_KEY,
-    SUMSUB_API_SECRET: process.env.SUMSUB_API_SECRET,
+    SUMSUB_PUBLIC_KEY: getSumsubAppToken(),
+    SUMSUB_PRIVATE_KEY: getSumsubPrivateKey(),
   };
 
   const missingEnvVars = Object.entries(requiredVars)
